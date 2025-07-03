@@ -641,6 +641,24 @@
             document.getElementById('filtroFechaFin').addEventListener('change', filtrarPorRango);
             document.getElementById('btnReiniciarFiltros').addEventListener('click', reiniciarFiltros);
         });
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  const supabase = supabase.createClient(
+    'https://TU_PROJECT_URL.supabase.co',
+    'TU_ANON_KEY'
+  );
+
+  async function mostrarDatos() {
+    const { data, error } = await supabase.from('diario').select('*');
+    if (error) console.error(error);
+    else {
+      data.forEach(entry => {
+        document.body.innerHTML += `<p><strong>${entry.fecha}</strong>: ${entry.texto}</p>`;
+      });
+    }
+  }
+
+  mostrarDatos();
     </script>
 </body>
 </html>
