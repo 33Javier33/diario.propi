@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Recaudación</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h2, h3 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-container, .table-container {
+            background-color: #fff;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+        }
+
+        .controls-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px auto;
+            max-width: 900px; /* Ancho para los controles */
+            padding: 0 20px;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="date"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            white-space: nowrap; /* Evita que el texto del botón se rompa */
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .button-delete {
+            background-color: #dc3545;
+        }
+
+        .button-delete:hover {
+            background-color: #c82333;
+        }
+
+        .button-reset {
+            background-color: #007bff;
+        }
+
+        .button-reset:hover {
+            background-color: #0056b3;
+        }
+
+        .button-copy {
+            background-color: #ffc107; /* Color amarillo */
+            color: #333;
+        }
+        .button-copy:hover {
+            background-color: #e0a800; /* Tono más oscuro al pasar el ratón */
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            background-color: #fff;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 900px; /* Ajustado para contener la tabla */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tfoot td {
+            font-weight: bold;
+            background-color: #f9f9f9;
+            text-align: left;
+        }
+
+        tfoot tr {
+            background-color: #f2f2f2;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Estilos para pantallas pequeñas */
+        @media (max-width: 600px) {
+            .controls-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .control-group {
+                min-width: unset;
+                width: 100%;
+            }
+
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                border: 1px solid #ccc;
+                margin-bottom: 10px;
+                display: flex;
+                flex-wrap: wrap;
+            }
+
+            td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
+                width: 100%;
+            }
+
+            td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+            }
+            tfoot tr {
+                display: flex;
+                flex-wrap: wrap;
+                width: 100%;
+                border: 1px solid #ccc;
+                margin-top: 10px;
+            }
+            tfoot td {
+                width: 100%;
+                text-align: right;
+                padding-left: 50%;
+            }
+            tfoot td:first-child {
+                text-align: left;
+            }
+            tfoot td[colspan="2"] {
+                width: calc(100% - 12px); /* Ajuste para el padding */
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Datos Recaudados</h2>
+    <h3>Total Recaudado: <span id="totalRecaudado"></span></h3>
+
+    <div class="controls-container">
+        <button id="btnAgregarDato">Agregar Dato</button>
+        <button id="btnMinimizarTabla">Minimizar Tabla</button>
+        <div class="control-group">
+            <label for="filtroFechas">Filtrar por fechas específicas (YYYY-MM-DD):</label>
+            <input type="text" id="filtroFechas" placeholder="Ej: 2023-01-01, 2023-01-05">
+        </div>
+        <div class="control-group">
+            <label for="filtroFechaInicio">Filtrar desde:</label>
+            <input type="date" id="filtroFechaInicio">
+        </div>
+        <div class="control-group">
+            <label for="filtroFechaFin">hasta:</label>
+            <input type="date" id="filtroFechaFin">
+        </div>
+        <button id="btnReiniciarFiltros" class="button-reset">Reiniciar Filtros</button>
+    </div>
+
+    <div class="table-container">
+        <div id="tablaContainer"></div>
+    </div>
+
+    <div id="agregarModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeAgregarModal">×</span>
+            <h2>Agregar Datos</h2>
+            <form id="agregarForm">
+                <label for="tipo">Tipo:</label>
+                <select id="tipo" name="tipo">
+                    <option value="Máquinas">Máquinas</option>
+                    <option value="Mesas">Mesas</option>
+                    <option value="Otras">Otras</option>
+                </select><br><br>
+                <label for="fecha">Fecha:</label>
+                <input type="date" id="fecha" name="fecha" required><br><br>
+                <label for="monto">Monto Recaudado:</label>
+                <input type="tel" id="monto" name="monto" oninput="formatearMonto(this)" required><br><br>
+                <button type="submit">Agregar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeEditModal">×</span>
+            <h2>Editar Datos</h2>
+            <form id="editarForm">
+                <label for="editarTipo">Tipo:</label>
+                <select id="editarTipo" name="editarTipo">
+                    <option value="Máquinas">Máquinas</option>
+                    <option value="Mesas">Mesas</option>
+                    <option value="Otras">Otras</option>
+                </select><br><br>
+                <label for="editarFecha">Fecha:</label>
+                <input type="date" id="editarFecha" name="editarFecha" required><br><br>
+                <label for="editarMonto">Monto Recaudado:</label>
+                <input type="tel" id="editarMonto" name="editarMonto" oninput="formatearMonto(this)" required><br><br>
+                <button type="submit">Guardar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Array para almacenar los datos de recaudación
+        let datos = [];
+        // Estado para controlar la minimización de la tabla
+        let minimizado = false;
+        // Índice del dato que se está editando
+        let editIndex = -1;
+
+        // --- Funciones de Utilidad ---
+
+        // Abre un modal dado su ID
+        function abrirModal(id) {
+            document.getElementById(id).style.display = 'block';
+        }
+
+        // Cierra un modal dado su ID
+        function cerrarModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // Formatea una fecha para mostrarla (ej. DD/MM/AAAA)
+        function formatearFecha(fecha) {
+            const opciones = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Santiago' };
+            const fechaLocal = new Date(fecha + 'T12:00:00'); // Añadir una hora para evitar problemas de TZ
+            return fechaLocal.toLocaleDateString('es-ES', opciones);
+        }
+
+        // Formatea un número como moneda (ej. $1.234.567)
+        function formatearNumero(numero) {
+            return `$${Math.ceil(numero).toLocaleString('es-ES').replace(/,/g, '.')}`;
+        }
+
+        // Formatea el monto en el input a medida que el usuario escribe
+        function formatearMonto(input) {
+            let valor = input.value.replace(/\./g, '').replace('$', '');
+            if (!isNaN(valor) && valor !== '') {
+                valor = parseFloat(valor).toLocaleString('es-ES').replace(/,/g, '.');
+                input.value = `$${valor}`;
+            } else {
+                input.value = '';
+            }
+        }
+
+        // Limpia datos inválidos del localStorage (ej. entradas incompletas)
+        function limpiarDatosInvalidos() {
+            datos = datos.filter(dato => dato.fecha && dato.tipo && !isNaN(dato.monto) && dato.monto !== null);
+            localStorage.setItem('datos', JSON.stringify(datos));
+        }
+
+        // --- Funciones CRUD (Crear, Leer, Actualizar, Borrar) ---
+
+        // Agrega nuevos datos a la lista
+        function agregarDatos() {
+            const tipo = document.getElementById('tipo').value;
+            const fecha = document.getElementById('fecha').value;
+            let montoInput = document.getElementById('monto').value;
+            const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
+
+            if (fecha && !isNaN(monto) && monto !== null) {
+                datos.push({ fecha, tipo, monto });
+                localStorage.setItem('datos', JSON.stringify(datos));
+                cerrarModal('agregarModal');
+                // Limpiar el formulario después de agregar
+                document.getElementById('agregarForm').reset(); 
+                document.getElementById('monto').value = ''; // Limpiar campo de monto
+                actualizarTabla();
+            } else {
+                alert('Por favor, ingrese una fecha y un monto válido.');
+            }
+        }
+
+        // Abre el modal de edición y carga los datos del elemento a editar
+        function abrirModalEditar(index) {
+            editIndex = index;
+            const dato = datos[index];
+            document.getElementById('editarTipo').value = dato.tipo;
+            document.getElementById('editarFecha').value = dato.fecha;
+            // Remover formato para la edición, luego se reformatea al guardar
+            document.getElementById('editarMonto').value = dato.monto.toString(); 
+            formatearMonto(document.getElementById('editarMonto')); // Aplicar formato inicial
+            abrirModal('editModal');
+        }
+
+        // Guarda los cambios de un dato editado
+        function guardarEdicion() {
+            const tipo = document.getElementById('editarTipo').value;
+            const fecha = document.getElementById('editarFecha').value;
+            let montoInput = document.getElementById('editarMonto').value;
+            const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
+
+            if (fecha && !isNaN(monto) && monto !== null) {
+                datos[editIndex] = { fecha, tipo, monto };
+                localStorage.setItem('datos', JSON.stringify(datos));
+                cerrarModal('editModal');
+                actualizarTabla();
+            } else {
+                alert('Por favor, ingrese una fecha y un monto válido.');
+            }
+        }
+
+        // Borra un dato de la lista
+        function borrarDato(index) {
+            if (confirm('¿Estás seguro de que quieres borrar este dato?')) {
+                datos.splice(index, 1); // Elimina el elemento por su índice
+                localStorage.setItem('datos', JSON.stringify(datos));
+                actualizarTabla();
+            }
+        }
+
+        // --- Función para Copiar Datos del Día (Implementación alternativa para compatibilidad) ---
+        function copiarDatosDelDia(fecha) {
+            // Obtenemos los datos filtrados por la fecha específica
+            const datosDelDia = datos.filter(dato => dato.fecha === fecha);
+
+            let textoACopiar = `Datos de Recaudación del Día ${formatearFecha(fecha)}:\n`;
+            let totalDia = 0;
+
+            datosDelDia.forEach(dato => {
+                textoACopiar += `- ${dato.tipo}: ${formatearNumero(dato.monto)}\n`;
+                totalDia += dato.monto;
+            });
+
+            textoACopiar += `Total del Día: ${formatearNumero(totalDia)}\n`;
+
+            // Intenta copiar usando la API moderna (navigator.clipboard)
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textoACopiar)
+                    .then(() => {
+                        alert('Datos del día copiados al portapapeles:\n' + textoACopiar);
+                    })
+                    .catch(err => {
+                        console.error('Error al copiar con navigator.clipboard:', err);
+                        // Si falla, usa el método alternativo
+                        copiarTextoConFallback(textoACopiar);
+                    });
+            } else {
+                // Si navigator.clipboard no está disponible, usa el método alternativo directamente
+                copiarTextoConFallback(textoACopiar);
+            }
+        }
+
+        // Función de fallback para copiar texto al portapapeles
+        function copiarTextoConFallback(texto) {
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = texto;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            try {
+                document.execCommand('copy');
+                alert('Datos del día copiados al portapapeles:\n' + texto);
+            } catch (err) {
+                console.error('Error al copiar con document.execCommand:', err);
+                alert('Error al copiar los datos. Por favor, intente manualmente.');
+            } finally {
+                document.body.removeChild(tempTextArea);
+            }
+        }
+
+
+        // --- Funciones de Visualización y Filtrado de Tabla ---
+
+        // Genera el HTML de la tabla con los datos proporcionados
+        function generarTablaHTML(datosParaTabla, totalGlobal) {
+            const tablaContainer = document.getElementById('tablaContainer');
+            tablaContainer.innerHTML = ''; // Limpia el contenido actual
+
+            // Agrupar datos por fecha
+            const datosPorFecha = datosParaTabla.reduce((acc, dato) => {
+                if (!acc[dato.fecha]) {
+                    acc[dato.fecha] = [];
+                }
+                acc[dato.fecha].push(dato);
+                return acc;
+            }, {});
+
+            // Obtener fechas ordenadas para iterar
+            const fechasOrdenadas = Object.keys(datosPorFecha).sort();
+
+            fechasOrdenadas.forEach(fecha => {
+                // Si la tabla está minimizada, solo mostrar la última fecha
+                if (minimizado && fecha !== fechasOrdenadas[fechasOrdenadas.length - 1]) return;
+
+                const tabla = document.createElement('table');
+                const thead = document.createElement('thead');
+                const tbody = document.createElement('tbody');
+                const tfoot = document.createElement('tfoot');
+
+                thead.innerHTML = `
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Monto Recaudado</th>
+                        <th>Acciones</th>
+                    </tr>
+                `;
+
+                let totalDia = 0;
+                // Filtrar los datos por fecha y luego mapearlos a filas de tabla
+                datosPorFecha[fecha].forEach((dato) => {
+                    // Encontrar el índice original en el array 'datos' para el borrado/edición
+                    const actualIndex = datos.findIndex(d => 
+                        d.fecha === dato.fecha && d.tipo === dato.tipo && d.monto === dato.monto
+                    );
+
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td data-label="Fecha">${formatearFecha(dato.fecha)}</td>
+                        <td data-label="Tipo">${dato.tipo}</td>
+                        <td data-label="Monto Recaudado">${formatearNumero(dato.monto)}</td>
+                        <td data-label="Acciones">
+                            <button onclick="abrirModalEditar(${actualIndex})">Editar</button>
+                            <button class="button-delete" onclick="borrarDato(${actualIndex})">Borrar</button>
+                        </td>
+                    `;
+                    totalDia += dato.monto;
+                    tbody.appendChild(fila);
+                });
+
+                tfoot.innerHTML = `
+                    <tr>
+                        <td colspan="2"><strong>Total por Día:</strong></td>
+                        <td>${formatearNumero(totalDia)}</td>
+                        <td><button class="button-copy" onclick="copiarDatosDelDia('${fecha}')">Copiar Datos del Día</button></td>
+                    </tr>
+                `;
+
+                tabla.appendChild(thead);
+                tabla.appendChild(tbody);
+                tabla.appendChild(tfoot);
+                tablaContainer.appendChild(tabla);
+            });
+
+            // Mostrar el total global (puede ser el total total o el total parcial del filtro)
+            document.getElementById('totalRecaudado').textContent = formatearNumero(totalGlobal);
+        }
+
+        // Actualiza la tabla principal con todos los datos o la última fecha si está minimizada
+        function actualizarTabla() {
+            limpiarDatosInvalidos(); // Asegurarse de que los datos estén limpios
+            datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); // Ordenar por fecha
+
+            const totalRecaudadoGlobal = datos.reduce((acc, dato) => acc + dato.monto, 0);
+            
+            generarTablaHTML(datos, totalRecaudadoGlobal);
+        }
+
+        // Toggles la vista minimizada de la tabla
+        function minimizarTabla() {
+            minimizado = !minimizado;
+            actualizarTabla();
+        }
+
+        // Filtra la tabla por fechas específicas (separadas por comas)
+        function filtrarTabla() {
+            const filtroFechasInput = document.getElementById('filtroFechas').value.trim();
+            const filtroFechaInicio = document.getElementById('filtroFechaInicio').value;
+            const filtroFechaFin = document.getElementById('filtroFechaFin').value;
+
+            // Si hay filtros de rango, priorizar esos
+            if (filtroFechaInicio && filtroFechaFin) {
+                filtrarPorRango();
+                return;
+            }
+
+            // Si hay filtro por fechas específicas
+            if (filtroFechasInput) {
+                const fechasAFiltrar = filtroFechasInput.split(',').map(fecha => fecha.trim()).filter(f => f !== '');
+                const datosFiltrados = datos.filter(dato => fechasAFiltrar.includes(dato.fecha));
+                const totalParcial = datosFiltrados.reduce((acc, dato) => acc + dato.monto, 0);
+                generarTablaHTML(datosFiltrados, totalParcial);
+            } else {
+                actualizarTabla(); // Si no hay filtro, mostrar todo
+            }
+        }
+
+        // Filtra la tabla por un rango de fechas
+        function filtrarPorRango() {
+            const filtroFechaInicio = document.getElementById('filtroFechaInicio').value;
+            const filtroFechaFin = document.getElementById('filtroFechaFin').value;
+
+            // Si hay filtro por fechas específicas, priorizar ese
+            const filtroFechasInput = document.getElementById('filtroFechas').value.trim();
+            if (filtroFechasInput) {
+                filtrarTabla();
+                return;
+            }
+
+            if (filtroFechaInicio && filtroFechaFin) {
+                const datosFiltrados = datos.filter(dato => dato.fecha >= filtroFechaInicio && dato.fecha <= filtroFechaFin);
+                const totalParcial = datosFiltrados.reduce((acc, dato) => acc + dato.monto, 0);
+                generarTablaHTML(datosFiltrados, totalParcial);
+            } else {
+                actualizarTabla(); // Si no hay rango completo, mostrar todo
+            }
+        }
+
+        // Resetea todos los filtros y actualiza la tabla
+        function reiniciarFiltros() {
+            document.getElementById('filtroFechas').value = '';
+            document.getElementById('filtroFechaInicio').value = '';
+            document.getElementById('filtroFechaFin').value = '';
+            minimizado = false; // Asegurarse de que no esté minimizado al reiniciar
+            actualizarTabla();
+        }
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cargar datos al inicio
+            datos = JSON.parse(localStorage.getItem('datos')) || [];
+            actualizarTabla();
+
+            // Eventos para botones y formularios
+            document.getElementById('btnAgregarDato').addEventListener('click', () => abrirModal('agregarModal'));
+            document.getElementById('closeAgregarModal').addEventListener('click', () => cerrarModal('agregarModal'));
+            document.getElementById('agregarForm').addEventListener('submit', (e) => {
+                e.preventDefault(); // Evitar el envío de formulario por defecto
+                agregarDatos();
+            });
+
+            document.getElementById('closeEditModal').addEventListener('click', () => cerrarModal('editModal'));
+            document.getElementById('editarForm').addEventListener('submit', (e) => {
+                e.preventDefault(); // Evitar el envío de formulario por defecto
+                guardarEdicion();
+            });
+
+            document.getElementById('btnMinimizarTabla').addEventListener('click', minimizarTabla);
+            document.getElementById('filtroFechas').addEventListener('input', filtrarTabla);
+            document.getElementById('filtroFechaInicio').addEventListener('change', filtrarPorRango);
+            document.getElementById('filtroFechaFin').addEventListener('change', filtrarPorRango);
+            document.getElementById('btnReiniciarFiltros').addEventListener('click', reiniciarFiltros);
+        });
+    </script>
+</body>
+</html>
