@@ -81,7 +81,7 @@
         }
 
         .button-delete:hover {
-            background-color: #c82333;
+                background-color: #c82333;
         }
 
         .button-reset {
@@ -159,6 +159,15 @@
             max-width: 500px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-content textarea {
+            width: calc(100% - 20px); /* Ajuste para el padding */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            resize: vertical; /* Permite redimensionar verticalmente */
         }
 
         .close {
@@ -251,7 +260,7 @@
     <div class="controls-container">
         <button id="btnAgregarDato">Agregar Dato</button>
         <button id="btnMinimizarTabla">Minimizar Tabla</button>
-        <div class="control-group">
+        <button id="btnImportarDatos" class="button-copy">Importar Datos</button> <div class="control-group">
             <label for="filtroFechas">Filtrar por fechas específicas (YYYY-MM-DD):</label>
             <input type="text" id="filtroFechas" placeholder="Ej: 2023-01-01, 2023-01-05">
         </div>
@@ -307,6 +316,16 @@
                 <input type="tel" id="editarMonto" name="editarMonto" oninput="formatearMonto(this)" required><br><br>
                 <button type="submit">Guardar</button>
             </form>
+        </div>
+    </div>
+
+    <div id="importarModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeImportarModal">×</span>
+            <h2>Importar Datos desde Texto</h2>
+            <p>Pega aquí el texto de los datos de recaudación (ej. desde WhatsApp):</p>
+            <textarea id="importDataTextarea" rows="10" cols="50" placeholder="Pega el texto aquí..."></textarea><br><br>
+            <button id="btnProcesarImportacion">Procesar Importación</button>
         </div>
     </div>
 
@@ -427,10 +446,20 @@
             let textoACopiar = `Datos de Recaudación del Día ${formatearFecha(fecha)}:\n`;
             let totalDia = 0;
 
+            // Agrupar por tipo para el formato final
+            const totalesPorTipo = {};
             datosDelDia.forEach(dato => {
-                textoACopiar += `- ${dato.tipo}: ${formatearNumero(dato.monto)}\n`;
+                if (!totalesPorTipo[dato.tipo]) {
+                    totalesPorTipo[dato.tipo] = 0;
+                }
+                totalesPorTipo[dato.tipo] += dato.monto;
                 totalDia += dato.monto;
             });
+
+            // Añadir tipos al texto a copiar
+            for (const tipo in totalesPorTipo) {
+                textoACopiar += `- ${tipo}: ${formatearNumero(totalesPorTipo[tipo])}\n`;
+            }
 
             textoACopiar += `Total del Día: ${formatearNumero(totalDia)}\n`;
 
@@ -468,6 +497,81 @@
             }
         }
 
+        // --- Funciones para Importar Datos (NUEVAS) ---
+        function abrirModalImportar() {
+            document.getElementById('importDataTextarea').value = ''; // Limpiar el textarea
+            abrirModal('importarModal');
+        }
+
+        function procesarImportacion() {
+            const texto = document.getElementById('importDataTextarea').value;
+            if (!texto) {
+                alert('Por favor, pega el texto de los datos en el área.');
+                return;
+            }
+
+            const nuevasEntradas = parsearTextoRecaudacion(texto);
+
+            if (nuevasEntradas.length > 0) {
+                // Obtener la fecha del primer elemento importado (asumiendo que todos son del mismo día)
+                const fechaImportada = nuevasEntradas[0].fecha; 
+                
+                // Eliminar entradas existentes para esa fecha antes de agregar las nuevas
+                // Esto evita duplicados si se importa el mismo día varias veces
+                datos = datos.filter(dato => dato.fecha !== fechaImportada);
+
+                // Agregar las nuevas entradas al array de datos
+                nuevasEntradas.forEach(nuevaEntrada => {
+                    datos.push(nuevaEntrada);
+                });
+                
+                localStorage.setItem('datos', JSON.stringify(datos));
+                alert(`¡Se importaron ${nuevasEntradas.length} nuevas entradas para el día ${formatearFecha(fechaImportada)}!`);
+                cerrarModal('importarModal');
+                actualizarTabla();
+            } else {
+                alert('No se pudieron extraer datos válidos del texto proporcionado. Asegúrate de que el formato sea similar a:\n\nDatos de Recaudación del Día DD/MM/AAAA:\n- Máquinas: $XXX.XXX\n- Mesas: $YYY.YYY\nTotal del Día: $ZZZ.ZZZ');
+            }
+        }
+
+        // Función para analizar el texto pegado y extraer los datos
+        function parsearTextoRecaudacion(texto) {
+            const lineas = texto.split('\n').map(linea => linea.trim()).filter(linea => linea !== '');
+            const entradasEncontradas = [];
+            let fechaActual = null;
+
+            // Patrón para la fecha: "Datos de Recaudación del Día DD/MM/AAAA:"
+            const regexFecha = /Datos de Recaudación del Día (\d{2}\/\d{2}\/\d{4}):/;
+            // Patrón para los tipos de recaudación: "- Tipo: $Monto"
+            // Se actualizó para ser más flexible con "Otras" o "Otros"
+            const regexMonto = /^- (Máquinas|Mesas|Otras|Otros):\s*\$?([\d.,]+)/; 
+            // Se añadió [\d.,]+ para permitir comas en los miles, no solo puntos
+
+            for (const linea of lineas) {
+                const matchFecha = linea.match(regexFecha);
+                if (matchFecha) {
+                    const fechaParts = matchFecha[1].split('/');
+                    // Convertir a formato YYYY-MM-DD para compatibilidad
+                    fechaActual = `${fechaParts[2]}-${fechaParts[1]}-${fechaParts[0]}`;
+                    continue; // Pasa a la siguiente línea
+                }
+
+                const matchMonto = linea.match(regexMonto);
+                if (matchMonto && fechaActual) {
+                    const tipo = matchMonto[1];
+                    // Eliminar puntos de miles y reemplazar comas por puntos para parseFloat
+                    const monto = parseFloat(matchMonto[2].replace(/\./g, '').replace(/,/g, '.')); 
+                    if (!isNaN(monto)) {
+                        entradasEncontradas.push({
+                            fecha: fechaActual,
+                            tipo: tipo,
+                            monto: monto
+                        });
+                    }
+                }
+            }
+            return entradasEncontradas;
+        }
 
         // --- Funciones de Visualización y Filtrado de Tabla ---
 
@@ -486,7 +590,7 @@
             }, {});
 
             // Obtener fechas ordenadas para iterar
-            const fechasOrdenadas = Object.keys(datosPorFecha).sort();
+            const fechasOrdenadas = Object.keys(datosPorFecha).sort((a, b) => new Date(a) - new Date(b)); // Asegurarse de ordenar por fecha
 
             fechasOrdenadas.forEach(fecha => {
                 // Si la tabla está minimizada, solo mostrar la última fecha
@@ -549,7 +653,7 @@
         // Actualiza la tabla principal con todos los datos o la última fecha si está minimizada
         function actualizarTabla() {
             limpiarDatosInvalidos(); // Asegurarse de que los datos estén limpios
-            datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); // Ordenar por fecha
+            datos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); // Ordenar por fecha para asegurar consistencia
 
             const totalRecaudadoGlobal = datos.reduce((acc, dato) => acc + dato.monto, 0);
             
@@ -568,7 +672,7 @@
             const filtroFechaInicio = document.getElementById('filtroFechaInicio').value;
             const filtroFechaFin = document.getElementById('filtroFechaFin').value;
 
-            // Si hay filtros de rango, priorizar esos
+            // Si hay filtros de rango, priorizar esos si están completos
             if (filtroFechaInicio && filtroFechaFin) {
                 filtrarPorRango();
                 return;
@@ -590,7 +694,7 @@
             const filtroFechaInicio = document.getElementById('filtroFechaInicio').value;
             const filtroFechaFin = document.getElementById('filtroFechaFin').value;
 
-            // Si hay filtro por fechas específicas, priorizar ese
+            // Si hay filtro por fechas específicas, esa tiene prioridad
             const filtroFechasInput = document.getElementById('filtroFechas').value.trim();
             if (filtroFechasInput) {
                 filtrarTabla();
@@ -621,8 +725,12 @@
             datos = JSON.parse(localStorage.getItem('datos')) || [];
             actualizarTabla();
 
-            // Eventos para botones y formularios
-            document.getElementById('btnAgregarDato').addEventListener('click', () => abrirModal('agregarModal'));
+            // Eventos para botones y formularios CRUD
+            document.getElementById('btnAgregarDato').addEventListener('click', () => {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('fecha').value = today; // Establecer la fecha actual por defecto
+                abrirModal('agregarModal');
+            });
             document.getElementById('closeAgregarModal').addEventListener('click', () => cerrarModal('agregarModal'));
             document.getElementById('agregarForm').addEventListener('submit', (e) => {
                 e.preventDefault(); // Evitar el envío de formulario por defecto
@@ -635,6 +743,13 @@
                 guardarEdicion();
             });
 
+            // Eventos para el nuevo botón y modal de importar
+            document.getElementById('btnImportarDatos').addEventListener('click', abrirModalImportar);
+            document.getElementById('closeImportarModal').addEventListener('click', () => cerrarModal('importarModal'));
+            document.getElementById('btnProcesarImportacion').addEventListener('click', procesarImportacion);
+
+
+            // Eventos para los controles de la tabla
             document.getElementById('btnMinimizarTabla').addEventListener('click', minimizarTabla);
             document.getElementById('filtroFechas').addEventListener('input', filtrarTabla);
             document.getElementById('filtroFechaInicio').addEventListener('change', filtrarPorRango);
