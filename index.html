@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario de Recaudación</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -39,11 +39,27 @@
             padding: 0 20px;
         }
 
-        .control-group {
-            flex: 1;
-            min-width: 250px;
-            margin-bottom: 10px;
+        /* Contenedor específico para los botones principales para que se ordenen mejor */
+        .main-buttons-group {
+            display: flex;
+            flex-wrap: wrap; /* Para que bajen si no caben */
+            gap: 8px; /* Espacio más compacto entre ellos */
+            justify-content: center;
+            width: 100%; /* Para que ocupe todo el ancho disponible del controls-container */
+            margin-bottom: 10px; /* Separación del grupo de filtros */
         }
+
+        /* Oculta los grupos de control de filtro por defecto */
+        .control-group, #btnReiniciarFiltros {
+            display: none; 
+        }
+
+        /* Cuando la tabla no está minimizada, muestra los filtros */
+        .controls-expanded .control-group,
+        .controls-expanded #btnReiniciarFiltros {
+            display: block; /* O flex, dependiendo de cómo quieras que se comporten */
+        }
+
 
         label {
             display: block;
@@ -64,12 +80,12 @@
         }
 
         button {
-            padding: 10px 15px;
+            padding: 8px 12px; /* Reduje el padding para hacerlos más compactos */
             background-color: #28a745;
             border: none;
             border-radius: 4px;
             color: white;
-            font-size: 16px;
+            font-size: 14px; /* Reduje el tamaño de la fuente */
             cursor: pointer;
             transition: background-color 0.3s ease;
             white-space: nowrap; /* Evita que el texto del botón se rompa */
@@ -107,16 +123,17 @@
         .button-to-data {
             background-color: #6c757d;
             color: white;
-            padding: 10px 12px; /* Ajustado para ícono */
+            padding: 8px 12px; /* Ajustado para ícono, igual que los otros botones */
             display: flex; /* Para centrar el ícono */
             align-items: center;
             justify-content: center;
+            font-size: 14px; /* Mismo tamaño de fuente */
         }
         .button-to-data:hover {
             background-color: #5a6268;
         }
         .button-to-data i {
-            font-size: 18px; /* Tamaño del ícono */
+            font-size: 16px; /* Tamaño del ícono levemente más grande que la fuente */
         }
 
         /* Estilos para el botón flotante de ir al inicio */
@@ -239,6 +256,27 @@
                 align-items: center;
             }
 
+            .main-buttons-group {
+                flex-direction: row; /* Mantenerlos en fila si caben */
+                justify-content: center;
+                width: 100%;
+            }
+            .main-buttons-group button {
+                flex-grow: 1; /* Permite que los botones crezcan un poco */
+                min-width: unset; /* Reinicia el min-width */
+                font-size: 13px; /* Un pelito más chico en móviles */
+                padding: 7px 10px; /* Más compacto aún */
+            }
+            /* Si son muchos, que bajen y ocupen la mitad cada uno */
+            .main-buttons-group button:nth-child(odd):last-child { /* si queda uno solo */
+                width: 100%;
+            }
+            .main-buttons-group button:nth-child(even),
+            .main-buttons-group button:nth-child(odd):not(:last-child) { /* si hay pares o no es el último impar */
+                 width: calc(50% - 4px); /* Dos por fila */
+            }
+
+
             .control-group {
                 min-width: unset;
                 width: 100%;
@@ -305,13 +343,15 @@
     <h2>Datos Recaudados</h2>
     <h3>Total Recaudado: <span id="totalRecaudado"></span></h3>
 
-    <div class="controls-container">
-        <button id="btnAgregarDato">Agregar Dato</button>
-        <button id="btnMinimizarTabla">Minimizar Tabla</button>
-        <button id="btnImportarDatos" class="button-copy">Importar Datos</button>
-        <button id="btnOrdenarFechaAsc" class="button-reset">Ordenar por Fecha (Viejo a Nuevo)</button>
-        <button id="btnOrdenarFechaDesc" class="button-reset">Ordenar por Fecha (Nuevo a Viejo)</button>
-        <button id="scrollToDataBtn" class="button-to-data" title="Ir a los datos"><i class="fas fa-chart-bar"></i></button>
+    <div class="controls-container" id="controlsContainer">
+        <div class="main-buttons-group">
+            <button id="btnAgregarDato">Agregar Dato</button>
+            <button id="btnMinimizarTabla">Maximizar Tabla</button> <button id="btnImportarDatos" class="button-copy">Importar Datos</button>
+            <button id="btnOrdenarFechaAsc" class="button-reset">Ordenar por Fecha (Viejo a Nuevo)</button>
+            <button id="btnOrdenarFechaDesc" class="button-reset">Ordenar por Fecha (Nuevo a Viejo)</button>
+            <button id="scrollToDataBtn" class="button-to-data" title="Ir a los datos"><i class="fas fa-chart-bar"></i></button>
+        </div>
+        
         <div class="control-group">
             <label for="filtroFechas">Filtrar por fechas específicas (AAAA-MM-DD):</label>
             <input type="text" id="filtroFechas" placeholder="Ej: 2023-01-01, 2023-01-05">
@@ -389,7 +429,7 @@
         // Array pa' guardar los datos de recaudación
         let datos = [];
         // Pa' saber si la tabla está "mini" o completa
-        let minimizado = false;
+        let minimizado = true; // CAMBIO: Ahora inicia en true (minimizado)
         // El índice del dato que estamos editando
         let editIndex = -1;
         // Pa' controlar el orden de las fechas: 'asc' pa' las antiguas primero, 'desc' pa' las nuevas
@@ -446,7 +486,7 @@
             const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
 
             if (fecha && !isNaN(monto) && monto !== null) {
-                // ¡Aquí está el cambio! Agregamos el dato al principio del array (unshift)
+                // Agregamos el dato al principio del array (unshift)
                 datos.unshift({ fecha, tipo, monto }); 
                 localStorage.setItem('datos', JSON.stringify(datos));
                 cerrarModal('agregarModal');
@@ -655,7 +695,6 @@
 
             fechasOrdenadas.forEach(fecha => {
                 // Si la tabla está "mini", solo mostramos la fecha que corresponda al principio de la lista ordenada
-                // Es decir, la primera (si es ascendente) o la última (si es descendente) en la vista actual
                 if (minimizado && fecha !== fechasOrdenadas[0]) {
                     return;
                 }
@@ -721,18 +760,30 @@
             const totalRecaudadoGlobal = datos.reduce((acc, dato) => acc + dato.monto, 0);
             
             generarTablaHTML(datos, totalRecaudadoGlobal);
+            
+            // CAMBIO: Controla la visibilidad de los filtros al actualizar la tabla
+            const controlsContainer = document.getElementById('controlsContainer');
+            if (minimizado) {
+                controlsContainer.classList.remove('controls-expanded');
+            } else {
+                controlsContainer.classList.add('controls-expanded');
+            }
         }
 
-        // Cambia la vista de la tabla entre "mini" y completa
+        // Cambia la vista de la tabla y los filtros entre "mini" y completa
         function minimizarTabla() {
             minimizado = !minimizado;
             const btn = document.getElementById('btnMinimizarTabla');
+            const controlsContainer = document.getElementById('controlsContainer');
+
             if (minimizado) {
                 btn.textContent = 'Maximizar Tabla';
+                controlsContainer.classList.remove('controls-expanded');
             } else {
                 btn.textContent = 'Minimizar Tabla';
+                controlsContainer.classList.add('controls-expanded');
             }
-            actualizarTabla();
+            actualizarTabla(); // Vuelve a renderizar la tabla para aplicar el filtro de minimizado
         }
 
         // Filtra la tabla por fechas específicas (separadas por comas)
@@ -784,8 +835,8 @@
             document.getElementById('filtroFechas').value = '';
             document.getElementById('filtroFechaInicio').value = '';
             document.getElementById('filtroFechaFin').value = '';
-            minimizado = false; // Nos aseguramos que no esté "mini"
-            document.getElementById('btnMinimizarTabla').textContent = 'Minimizar Tabla'; // Volvemos el texto del botón
+            minimizado = true; // CAMBIO: Vuelve a estar minimizado al reiniciar
+            document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; // Volvemos el texto del botón
             ordenFecha = 'asc'; // Volvemos el orden a ascendente por defecto
             actualizarTabla();
         }
@@ -816,8 +867,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Cargamos los datos guardados al principio
             datos = JSON.parse(localStorage.getItem('datos')) || [];
-            actualizarTabla();
-
+            
+            // CAMBIO: Al cargar, forzamos el estado minimizado y actualizamos la tabla
+            minimizado = true; // Aseguramos que la variable esté en true
+            document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; // Aseguramos el texto del botón
+            actualizarTabla(); // Esto ocultará los filtros y mostrará solo la última fecha
+            
             // Eventos pa' los botones y formularios
             document.getElementById('btnAgregarDato').addEventListener('click', () => {
                 const today = new Date().toISOString().split('T')[0];
