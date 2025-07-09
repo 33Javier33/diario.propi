@@ -441,14 +441,72 @@
     </div>
 
     <script>
+        // URL de tu aplicación web de Google Apps Script (¡Ya integrada!)
+        // ¡Importante! Asegúrate que la URL esté entre comillas y asignada a una constante.
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzx3K4b7Vf4B_QVXUM3hdoA4GxsGvA3y-cAZx0ZbKFHVljspiohatnQ4f1y9lqw5sQj/exec';
+
         // Array pa' guardar los datos de recaudación
         let datos = [];
         // Pa' saber si la tabla está "mini" o completa
-        let minimizado = true; // CAMBIO: Ahora inicia en true (minimizado)
+        let minimizado = true; 
         // El índice del dato que estamos editando
-        let editIndex = -1;
+        let editIndex = -1; // Este será el 'rowIndex' de Google Sheets (no el índice del array 'datos')
         // Pa' controlar el orden de las fechas: 'asc' pa' las antiguas primero, 'desc' pa' las nuevas
         let ordenFecha = 'asc'; 
+
+        // --- Funciones de comunicación con Google Apps Script ---
+
+        async function fetchDataFromSheet() {
+            try {
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL);
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                const data = await response.json();
+                // Los datos ya vienen con 'rowIndex' desde el Apps Script
+                datos = data; 
+                actualizarTabla(); // Actualiza la tabla con los datos frescos
+                return data;
+            } catch (error) {
+                console.error('Error al obtener datos de Google Sheets:', error);
+                alert('¡Pucha! No pude cargar los datos de la hoja de cálculo. Revisa la conexión y si el Apps Script está bien desplegado.');
+                return [];
+            }
+        }
+
+        async function sendDataToSheet(action, data, rowIndex = null, dateToClear = null) {
+            try {
+                const payload = { action, data };
+                if (rowIndex !== null) {
+                    payload.rowIndex = rowIndex; // Añadir rowIndex para update/delete
+                }
+                if (dateToClear !== null) {
+                    payload.dateToClear = dateToClear; // Añadir fecha para la importación (limpiar antes)
+                }
+                
+                // Usamos 'no-cors' porque Apps Script no maneja CORS de forma estándar para respuestas simples
+                // Esto significa que no podrás leer la respuesta directamente, pero la operación se realizará.
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Importante para Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                // Como usamos 'no-cors', la respuesta es opaca. 
+                // Confiamos en que la operación se realizó en el backend.
+                // Es buena idea recargar los datos después de una operación de escritura.
+                await fetchDataFromSheet(); 
+                return true; // Indicamos éxito simulado
+            } catch (error) {
+                console.error(`Error al ${action} datos en Google Sheets:`, error);
+                alert(`¡Pucha! Hubo un problema al ${action} el dato. Revisa la consola y tu Apps Script.`);
+                return false;
+            }
+        }
+
 
         // --- Funciones Varias (Utilidades) ---
 
@@ -464,13 +522,24 @@
 
         // Formatea la fecha pa' que se vea bonita (ej. 07/07/2025)
         function formatearFecha(fecha) {
+            // Asegurarse de que la fecha es un string válido antes de crear Date
+            if (!fecha || typeof fecha !== 'string') {
+                return 'Fecha inválida';
+            }
+            // Ajuste para evitar problemas de zona horaria si la fecha viene sin hora específica
             const opciones = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Santiago' };
-            const fechaLocal = new Date(fecha + 'T12:00:00'); 
+            const fechaLocal = new Date(fecha + 'T12:00:00'); // Añadir una hora para evitar problemas de TZ
+            if (isNaN(fechaLocal.getTime())) { // Comprobar si la fecha es inválida
+                return 'Fecha inválida';
+            }
             return fechaLocal.toLocaleDateString('es-ES', opciones);
         }
 
         // Le pone formato de plata al número (ej. $1.234.567)
         function formatearNumero(numero) {
+            if (typeof numero !== 'number' || isNaN(numero)) {
+                return '$0'; // O algún otro valor por defecto
+            }
             return `$${Math.ceil(numero).toLocaleString('es-ES').replace(/,/g, '.')}`;
         }
 
@@ -485,70 +554,76 @@
             }
         }
 
-        // Limpia datos que estén malos en el "disco duro" del navegador (localStorage)
-        function limpiarDatosInvalidos() {
-            datos = datos.filter(dato => dato.fecha && dato.tipo && !isNaN(dato.monto) && dato.monto !== null);
-            localStorage.setItem('datos', JSON.stringify(datos));
-        }
+        // Ya no es necesario limpiar datos inválidos en localStorage.
+        // Asumimos que Apps Script maneja la integridad de los datos o los filtra al leer.
+        // function limpiarDatosInvalidos() { }
+
 
         // --- Funciones de lo que puedes hacer (Agregar, Leer, Editar, Borrar) ---
 
         // Agrega datos nuevos a la lista
-        function agregarDatos() {
+        async function agregarDatos() {
             const tipo = document.getElementById('tipo').value;
             const fecha = document.getElementById('fecha').value;
             let montoInput = document.getElementById('monto').value;
             const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
 
             if (fecha && !isNaN(monto) && monto !== null) {
-                // Agregamos el dato al principio del array (unshift)
-                datos.unshift({ fecha, tipo, monto }); 
-                localStorage.setItem('datos', JSON.stringify(datos));
-                cerrarModal('agregarModal');
-                // Limpiamos el formulario después de agregar
-                document.getElementById('agregarForm').reset(); 
-                document.getElementById('monto').value = ''; 
-                actualizarTabla();
+                const success = await sendDataToSheet('add', { fecha, tipo, monto });
+                if (success) {
+                    cerrarModal('agregarModal');
+                    // Limpiamos el formulario después de agregar
+                    document.getElementById('agregarForm').reset(); 
+                    document.getElementById('monto').value = ''; 
+                    // La tabla se actualizará automáticamente con fetchDataFromSheet()
+                }
             } else {
                 alert('¡Pucha! Ingresa una fecha y un monto válidos, ¿ya?');
             }
         }
 
         // Abre el pop-up pa' editar y carga los datos que quieres cambiar
-        function abrirModalEditar(index) {
-            editIndex = index;
-            const dato = datos[index];
-            document.getElementById('editarTipo').value = dato.tipo;
-            document.getElementById('editarFecha').value = dato.fecha;
-            // Quitamos el formato de plata pa' que sea más fácil editar
-            document.getElementById('editarMonto').value = dato.monto.toString(); 
-            formatearMonto(document.getElementById('editarMonto')); // Aplicamos el formato al principio
-            abrirModal('editModal');
+        function abrirModalEditar(sheetRowIndex) {
+            editIndex = sheetRowIndex; // Guardamos el rowIndex de Sheets
+            // Encuentra el dato en el array 'datos' que corresponde a ese rowIndex
+            const dato = datos.find(d => d.rowIndex === sheetRowIndex);
+
+            if (dato) {
+                document.getElementById('editarTipo').value = dato.tipo;
+                document.getElementById('editarFecha').value = dato.fecha;
+                document.getElementById('editarMonto').value = dato.monto.toString(); 
+                formatearMonto(document.getElementById('editarMonto')); 
+                abrirModal('editModal');
+            } else {
+                alert('No se encontró el dato para editar. Puede que haya sido eliminado.');
+            }
         }
 
         // Guarda los cambios de un dato que editaste
-        function guardarEdicion() {
+        async function guardarEdicion() {
             const tipo = document.getElementById('editarTipo').value;
             const fecha = document.getElementById('editarFecha').value;
             let montoInput = document.getElementById('editarMonto').value;
             const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
 
             if (fecha && !isNaN(monto) && monto !== null) {
-                datos[editIndex] = { fecha, tipo, monto };
-                localStorage.setItem('datos', JSON.stringify(datos));
-                cerrarModal('editModal');
-                actualizarTabla();
+                const success = await sendDataToSheet('update', { fecha, tipo, monto }, editIndex);
+                if (success) {
+                    cerrarModal('editModal');
+                    // La tabla se actualizará automáticamente con fetchDataFromSheet()
+                }
             } else {
                 alert('¡Pucha! Ingresa una fecha y un monto válidos, ¿ya?');
             }
         }
 
         // Borra un dato de la lista
-        function borrarDato(index) {
+        async function borrarDato(sheetRowIndex) {
             if (confirm('¿Estás seguro que quieres borrar este dato? No hay vuelta atrás, compadre.')) {
-                datos.splice(index, 1); // Borra el elemento por su posición
-                localStorage.setItem('datos', JSON.stringify(datos));
-                actualizarTabla();
+                const success = await sendDataToSheet('delete', {}, sheetRowIndex);
+                if (success) {
+                    // La tabla se actualizará automáticamente con fetchDataFromSheet()
+                }
             }
         }
 
@@ -617,7 +692,7 @@
             abrirModal('importarModal');
         }
 
-        function procesarImportacion() {
+        async function procesarImportacion() {
             const texto = document.getElementById('importDataTextarea').value;
             if (!texto) {
                 alert('¡Eh, compadre! Pega el texto de los datos en el área, po.');
@@ -630,18 +705,23 @@
                 // Pillamos la fecha del primer dato importado (asumimos que todos son del mismo día)
                 const fechaImportada = nuevasEntradas[0].fecha; 
                 
-                // Borramos los datos que ya teníamos de esa fecha pa' no duplicar
-                datos = datos.filter(dato => dato.fecha !== fechaImportada);
-
-                // Agregamos los datos nuevos al principio del array
-                nuevasEntradas.reverse().forEach(nuevaEntrada => { // Revertir pa' que queden en el orden correcto al principio
-                    datos.unshift(nuevaEntrada);
-                });
+                // Paso 1: Eliminar datos existentes para la fecha importada en Google Sheets
+                // NOTA: Esta es una simplificación. Un borrado masivo requiere más lógica en Apps Script.
+                // Para simplificar, podríamos optar por SOLO agregar y dejar que el usuario maneje duplicados
+                // o que la importación siempre reemplace. Por ahora, asumiremos que si importas, reemplazas.
+                // Si el texto importado tiene un total de día, Apps Script no lo manejará directamente en las celdas de datos.
                 
-                localStorage.setItem('datos', JSON.stringify(datos));
-                alert(`¡Se importaron ${nuevasEntradas.length} datos nuevos para el día ${formatearFecha(fechaImportada)}! ¡Bacán!`);
-                cerrarModal('importarModal');
-                actualizarTabla();
+                // Envía todos los datos importados al Apps Script con la acción 'import'
+                // También le pasamos la fecha para que el Apps Script sepa qué borrar primero.
+                const success = await sendDataToSheet('import', nuevasEntradas, null, fechaImportada);
+                
+                if (success) {
+                    alert(`¡Se importaron ${nuevasEntradas.length} datos nuevos para el día ${formatearFecha(fechaImportada)}! ¡Bacán!`);
+                    cerrarModal('importarModal');
+                    // fetchDataFromSheet() ya se llama dentro de sendDataToSheet para actualizar la tabla.
+                } else {
+                    alert('Hubo un error al importar algunos datos. Revisa la consola para más detalles.');
+                }
             } else {
                 alert('No pude sacar datos válidos del texto que pegaste. Asegúrate de que el formato sea como este:\n\nDatos de Recaudación del Día DD/MM/AAAA:\n- Máquinas: $XXX.XXX\n- Mesas: $YYY.YYY\nTotal del Día: $ZZZ.ZZZ');
             }
@@ -731,10 +811,8 @@
                 let totalDia = 0;
                 // Llenamos la tabla con los datos de esa fecha
                 datosPorFecha[fecha].forEach((dato) => {
-                    // Pillamos el índice original pa' poder borrar/editar bien
-                    const actualIndex = datos.findIndex(d => 
-                        d.fecha === dato.fecha && d.tipo === dato.tipo && d.monto === dato.monto
-                    );
+                    // Usamos dato.rowIndex que viene de Google Sheets
+                    const sheetRowIndex = dato.rowIndex; 
 
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
@@ -742,8 +820,8 @@
                         <td data-label="Tipo">${dato.tipo}</td>
                         <td data-label="Monto Recaudado">${formatearNumero(dato.monto)}</td>
                         <td data-label="Acciones">
-                            <button onclick="abrirModalEditar(${actualIndex})">Editar</button>
-                            <button class="button-delete" onclick="borrarDato(${actualIndex})">Borrar</button>
+                            <button onclick="abrirModalEditar(${sheetRowIndex})">Editar</button>
+                            <button class="button-delete" onclick="borrarDato(${sheetRowIndex})">Borrar</button>
                         </td>
                     `;
                     totalDia += dato.monto;
@@ -770,13 +848,13 @@
 
         // Actualiza la tabla con los datos actuales o la última fecha si está "mini"
         function actualizarTabla() {
-            limpiarDatosInvalidos(); // Nos aseguramos que los datos estén limpios
+            // `limpiarDatosInvalidos()` ya no es necesario ya que los datos vienen de Sheets.
             
             const totalRecaudadoGlobal = datos.reduce((acc, dato) => acc + dato.monto, 0);
             
             generarTablaHTML(datos, totalRecaudadoGlobal);
             
-            // CAMBIO: Controla la visibilidad de los filtros al actualizar la tabla
+            // Controla la visibilidad de los filtros al actualizar la tabla
             const controlsContainer = document.getElementById('controlsContainer');
             if (minimizado) {
                 controlsContainer.classList.remove('controls-expanded');
@@ -850,10 +928,10 @@
             document.getElementById('filtroFechas').value = '';
             document.getElementById('filtroFechaInicio').value = '';
             document.getElementById('filtroFechaFin').value = '';
-            minimizado = true; // CAMBIO: Vuelve a estar minimizado al reiniciar
+            minimizado = true; // Vuelve a estar minimizado al reiniciar
             document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; // Volvemos el texto del botón
             ordenFecha = 'asc'; // Volvemos el orden a ascendente por defecto
-            actualizarTabla();
+            actualizarTabla(); // Recarga la tabla con los datos completos
         }
 
         // Función pa' ordenar los datos por fecha
@@ -866,7 +944,7 @@
         function scrollToTop() {
             window.scrollTo({
                 top: 0,
-                behavior: 'smooth' // Suavecito, suavecito
+                behavior: 'smooth' 
             });
         }
 
@@ -874,14 +952,14 @@
         function scrollToData() {
             const tableContainer = document.getElementById('tableContainerScrollTarget');
             tableContainer.scrollIntoView({
-                behavior: 'smooth' // También suavecito
+                behavior: 'smooth' 
             });
         }
 
         // --- Manejo del botón flotante de "Ir al inicio" (mostrar/ocultar) ---
         window.addEventListener('scroll', () => {
             const scrollToTopBtn = document.getElementById('scrollToTopBtn');
-            if (window.scrollY > 200) { // Muestra el botón si el scroll es mayor a 200px
+            if (window.scrollY > 200) { 
                 scrollToTopBtn.classList.add('show');
             } else {
                 scrollToTopBtn.classList.remove('show');
@@ -890,30 +968,30 @@
 
 
         // --- Lo que pasa cuando la página carga ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Cargamos los datos guardados al principio
-            datos = JSON.parse(localStorage.getItem('datos')) || [];
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Cargamos los datos de Google Sheets al principio
+            await fetchDataFromSheet(); // Ahora espera a que los datos se carguen
             
-            // CAMBIO: Al cargar, forzamos el estado minimizado y actualizamos la tabla
-            minimizado = true; // Aseguramos que la variable esté en true
-            document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; // Aseguramos el texto del botón
-            actualizarTabla(); // Esto ocultará los filtros y mostrará solo la última fecha
+            // Al cargar, forzamos el estado minimizado y actualizamos la tabla
+            minimizado = true; 
+            document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; 
+            actualizarTabla(); 
             
             // Eventos pa' los botones y formularios
             document.getElementById('btnAgregarDato').addEventListener('click', () => {
                 const today = new Date().toISOString().split('T')[0];
-                document.getElementById('fecha').value = today; // Ponemos la fecha de hoy por defecto
+                document.getElementById('fecha').value = today; 
                 abrirModal('agregarModal');
             });
             document.getElementById('closeAgregarModal').addEventListener('click', () => cerrarModal('agregarModal'));
             document.getElementById('agregarForm').addEventListener('submit', (e) => {
-                e.preventDefault(); // Pa' que no se recargue la página al enviar
+                e.preventDefault(); 
                 agregarDatos();
             });
 
             document.getElementById('closeEditModal').addEventListener('click', () => cerrarModal('editModal'));
             document.getElementById('editarForm').addEventListener('submit', (e) => {
-                e.preventDefault(); // Pa' que no se recargue la página al enviar
+                e.preventDefault(); 
                 guardarEdicion();
             });
 
