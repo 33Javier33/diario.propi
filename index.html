@@ -442,7 +442,8 @@
 
     <script>
         // URL de tu aplicación web de Google Apps Script (¡Ya integrada!)
-        https://script.google.com/macros/s/AKfycbxI0-OGJzEZSCu8qIJEKEemINfwlIfHL6GQ0dPGzaeu8zjznUrUVp6-zIPOWnHG7A/exec
+        // ¡Importante! Asegúrate que la URL esté entre comillas y asignada a una constante.
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxI0-OGJzEZSCu8qIJEKEemINfwlIfHL6GQ0dPGzaeu8zjznUrUVp6-zIPOWnHG7A/exec';
 
         // Array pa' guardar los datos de recaudación
         let datos = [];
@@ -705,9 +706,6 @@
                 // NOTA: Esta es una simplificación. Un borrado masivo requiere más lógica en Apps Script.
                 // Para simplificar, podríamos optar por SOLO agregar y dejar que el usuario maneje duplicados
                 // o que la importación siempre reemplace. Por ahora, asumiremos que si importas, reemplazas.
-                // Si quieres borrar primero, necesitarías una función en Apps Script que reciba una fecha
-                // y borre todas las filas con esa fecha. Esto es más complejo.
-                // Para este ejemplo, simplemente agregaremos y confiaremos en la importación para no duplicar en el texto.
                 // Si el texto importado tiene un total de día, Apps Script no lo manejará directamente en las celdas de datos.
                 
                 let allSuccess = true;
