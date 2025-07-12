@@ -4,20 +4,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario de Recaudación</title>
-    <link rel="stylesheet" href="all.min.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
-            position: relative; /* Necesario para el botón flotante */
+            position: relative; /* Necesario para el botón flotante y el balance */
             padding-bottom: 70px; /* Espacio para el botón flotante */
+            display: flex; /* Para centrar el modal de login */
+            justify-content: center; /* Para centrar el modal de login */
+            align-items: center; /* Para centrar el modal de login */
+            min-height: 100vh; /* Para que el body ocupe toda la altura de la vista */
+        }
+
+        /* Estilos para el modal de inicio de sesión */
+        #loginOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000; /* Asegura que esté por encima de todo */
+        }
+
+        #loginBox {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+        }
+
+        #loginBox h2 {
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        #loginBox label {
+            display: block;
+            margin-bottom: 10px;
+            text-align: left;
+            font-weight: bold;
+            color: #555;
+        }
+
+        #loginBox input[type="text"],
+        #loginBox input[type="password"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        #loginBox button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #loginBox button:hover {
+            background-color: #0056b3;
+        }
+
+        #loginMessage {
+            color: red;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        /* Oculta el contenido principal por defecto */
+        #mainContent {
+            display: none;
+            width: 100%;
         }
 
         h2, h3 {
             text-align: center;
             color: #333;
+        }
+
+        /* Ajuste para el título h2 para dejar espacio al punto actual */
+        h2 {
+            margin-top: 50px; /* Aumenta el margen superior para que no se solape con el punto actual */
         }
 
         .form-container, .table-container {
@@ -29,24 +114,59 @@
             max-width: 400px;
         }
 
+        /* Contenedor del punto actual en la esquina superior derecha */
+        .top-right-balance {
+            position: absolute; 
+            top: 25px; /* Mantener la distancia del top */
+            right: 25px; /* Mantener la distancia de la derecha */
+            background-color: #f0f0f0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex; 
+            align-items: center; 
+            font-size: 14px;
+            color: #333;
+            z-index: 999; 
+            white-space: nowrap; 
+        }
+
+        .top-right-balance .edit-balance-btn {
+            background: none;
+            border: none;
+            color: #007bff; 
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 8px; 
+            padding: 0; 
+            transition: color 0.2s ease;
+        }
+        .top-right-balance .edit-balance-btn:hover {
+            color: #0056b3;
+        }
+        .top-right-balance .edit-balance-btn i {
+            pointer-events: none; 
+        }
+
+
         .controls-container {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             justify-content: center;
             margin: 20px auto;
-            max-width: 900px; /* Ancho para los controles */
+            max-width: 900px; 
             padding: 0 20px;
         }
 
         /* Contenedor específico para los botones principales para que se ordenen mejor */
         .main-buttons-group {
             display: flex;
-            flex-wrap: wrap; /* Para que bajen si no caben */
-            gap: 8px; /* Espacio más compacto entre ellos */
+            flex-wrap: wrap; 
+            gap: 8px; 
             justify-content: center;
-            width: 100%; /* Para que ocupe todo el ancho disponible del controls-container */
-            margin-bottom: 10px; /* Separación del grupo de filtros */
+            width: 100%; 
+            margin-bottom: 10px; 
         }
 
         /* Oculta los grupos de control de filtro por defecto */
@@ -57,7 +177,7 @@
         /* Cuando la tabla no está minimizada, muestra los filtros */
         .controls-expanded .control-group,
         .controls-expanded #btnReiniciarFiltros {
-            display: block; /* O flex, dependiendo de cómo quieras que se comporten */
+            display: block; 
         }
 
 
@@ -80,15 +200,15 @@
         }
 
         button {
-            padding: 8px 12px; /* Reduje el padding para hacerlos más compactos */
+            padding: 8px 12px; 
             background-color: #28a745;
             border: none;
             border-radius: 4px;
             color: white;
-            font-size: 14px; /* Reduje el tamaño de la fuente */
+            font-size: 14px; 
             cursor: pointer;
             transition: background-color 0.3s ease;
-            white-space: nowrap; /* Evita que el texto del botón se rompa */
+            white-space: nowrap; 
         }
 
         button:hover {
@@ -112,29 +232,29 @@
         }
 
         .button-copy {
-            background-color: #ffc107; /* Color amarillo */
+            background-color: #ffc107; 
             color: #333;
         }
         .button-copy:hover {
-            background-color: #e0a800; /* Tono más oscuro al pasar el ratón */
+            background-color: #e0a800; 
         }
         
         /* Estilos para el botón de ir a datos (arriba, con ícono) */
         .button-to-data {
             background-color: #6c757d;
             color: white;
-            padding: 8px 12px; /* Ajustado para ícono, igual que los otros botones */
-            display: flex; /* Para centrar el ícono */
+            padding: 8px 12px; 
+            display: flex; 
             align-items: center;
             justify-content: center;
-            font-size: 14px; /* Mismo tamaño de fuente */
+            font-size: 14px; 
         }
         .button-to-data:hover {
             background-color: #5a6268;
         }
         .button-to-data i {
-            font-size: 16px; /* Tamaño del ícono levemente más grande que la fuente */
-            margin-right: 5px; /* Espacio entre el ícono y el texto */
+            font-size: 16px; 
+            margin-right: 5px; 
         }
         /* Si no hay texto, ajusta el padding */
         .button-to-data:not(:has(span)) i {
@@ -149,7 +269,7 @@
             right: 20px;
             background-color: #030406c5;
             color: white;
-            border-radius: 50%; /* Redondo */
+            border-radius: 50%; 
             width: 50px;
             height: 50px;
             display: flex;
@@ -158,21 +278,21 @@
             font-size: 24px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             cursor: pointer;
-            z-index: 1000; /* Para que esté siempre encima */
-            transition: background-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease; /* Añadido para la transición de ocultar/mostrar */
-            opacity: 0; /* Por defecto invisible */
-            visibility: hidden; /* Por defecto oculto */
+            z-index: 1000; 
+            transition: background-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease; 
+            opacity: 0; 
+            visibility: hidden; 
         }
         .fab-scroll-to-top.show {
-            opacity: 1; /* Visible */
-            visibility: visible; /* Visible */
+            opacity: 1; 
+            visibility: visible; 
         }
         .fab-scroll-to-top:hover {
             background-color: #0056b3;
-            transform: scale(1.05); /* Un pequeño efecto al pasar el mouse */
+            transform: scale(1.05); 
         }
         .fab-scroll-to-top i {
-            margin: 0; /* Aseguramos que no tenga margen extra */
+            margin: 0; 
         }
 
 
@@ -183,8 +303,8 @@
             margin: 20px auto;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 900px; /* Ajustado para contener la tabla */
-            scroll-margin-top: 20px; /* Para que el scroll sea más suave y no tape el encabezado */
+            max-width: 900px; 
+            scroll-margin-top: 20px; 
         }
 
         table {
@@ -217,7 +337,7 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1;
+            z-index: 1001; /* Z-index alto para que esté por encima de todo */
             left: 0;
             top: 0;
             width: 100%;
@@ -239,12 +359,12 @@
         }
 
         .modal-content textarea {
-            width: calc(100% - 20px); /* Ajuste para el padding */
+            width: calc(100% - 20px); 
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
-            resize: vertical; /* Permite redimensionar verticalmente */
+            resize: vertical; 
         }
 
         .close {
@@ -263,29 +383,43 @@
 
         /* Estilos para pantallas pequeñas */
         @media (max-width: 600px) {
+            .top-right-balance {
+                position: relative; /* Vuelve a ser relativo para que ocupe espacio en el flujo */
+                width: 90%; 
+                margin: 10px auto; /* Centra y da margen */
+                top: auto; /* Resetea el top absoluto */
+                right: auto; /* Resetea el right absoluto */
+                justify-content: center; 
+            }
+
+            /* Asegurarse de que el h2 siempre esté debajo del punto actual en móviles */
+            h2 {
+                margin-top: 20px; /* Un margen superior suficiente en móviles */
+            }
+
             .controls-container {
                 flex-direction: column;
                 align-items: center;
             }
 
             .main-buttons-group {
-                flex-direction: row; /* Mantenerlos en fila si caben */
+                flex-direction: row; 
                 justify-content: center;
                 width: 100%;
             }
             .main-buttons-group button {
-                flex-grow: 1; /* Permite que los botones crezcan un poco */
-                min-width: unset; /* Reinicia el min-width */
-                font-size: 13px; /* Un pelito más chico en móviles */
-                padding: 7px 10px; /* Más compacto aún */
+                flex-grow: 1; 
+                min-width: unset; 
+                font-size: 13px; 
+                padding: 7px 10px; 
             }
             /* Si son muchos, que bajen y ocupen la mitad cada uno */
-            .main-buttons-group button:nth-child(odd):last-child { /* si queda uno solo */
+            .main-buttons-group button:nth-child(odd):last-child { 
                 width: 100%;
             }
             .main-buttons-group button:nth-child(even),
-            .main-buttons-group button:nth-child(odd):not(:last-child) { /* si hay pares o no es el último impar */
-                 width: calc(50% - 4px); /* Dos por fila */
+            .main-buttons-group button:nth-child(odd):not(:last-child) { 
+                 width: calc(50% - 4px); 
             }
 
 
@@ -346,217 +480,329 @@
                 text-align: left;
             }
             tfoot td[colspan="2"] {
-                width: calc(100% - 12px); /* Ajuste para el padding */
+                width: calc(100% - 12px); 
             }
         }
     </style>
 </head>
 <body>
-    <h2>Datos Recaudados</h2>
-    <h3>Total Recaudado: <span id="totalRecaudado"></span></h3>
+    <div id="loginOverlay">
+        <div id="loginBox">
+            <h2>Acceso Requerido</h2>
+            <form id="loginForm">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" required autocomplete="username">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" required autocomplete="current-password">
+                <button type="submit">Entrar</button>
+                <p id="loginMessage" style="display: none;"></p>
+            </form>
+        </div>
+    </div>
 
-    <div class="controls-container" id="controlsContainer">
-        <div class="main-buttons-group">
-            <button id="btnAgregarDato">Agregar Dato</button>
-            <button id="btnMinimizarTabla">Maximizar Tabla</button> 
-            <button id="btnImportarDatos" class="button-copy">Importar Datos</button>
-            <button id="btnOrdenarFechaAsc" class="button-reset">Fecha (Antiguo)</button>
-            <button id="btnOrdenarFechaDesc" class="button-reset">Fecha (Reciente)</button>
-            <button id="scrollToDataBtn" class="button-to-data" title="Ir a los datos">
-                <i class="fas fa-chart-bar"></i> <span>Ir al Historial</span>
+    <div id="mainContent">
+        <div class="top-right-balance" id="topRightBalance">
+            Punto Actual: <span id="displaySaldoGuardado"></span> 
+            (<span id="displayFechaSaldo"></span>)
+            <button class="edit-balance-btn" id="btnEditBalance" title="Editar Punto Actual">
+                <i class="fas fa-pencil-alt"></i>
             </button>
         </div>
-        
-        <div class="control-group">
-            <label for="filtroFechas">Filtrar por fechas específicas (AAAA-MM-DD):</label>
-            <input type="text" id="filtroFechas" placeholder="Ej: 2023-01-01, 2023-01-05">
-        </div>
-        <div class="control-group">
-            <label for="filtroFechaInicio">Filtrar desde:</label>
-            <input type="date" id="filtroFechaInicio">
-        </div>
-        <div class="control-group">
-            <label for="filtroFechaFin">hasta:</label>
-            <input type="date" id="filtroFechaFin">
-        </div>
-        <button id="btnReiniciarFiltros" class="button-reset">Reiniciar Filtros</button>
-    </div>
 
-    <div class="table-container" id="tableContainerScrollTarget">
-        <div id="tablaContainer"></div>
-    </div>
+        <h2>Datos Recaudados</h2>
+        <h3>Total Recaudado: <span id="totalRecaudado"></span></h3>
 
-    <div id="scrollToTopBtn" class="fab-scroll-to-top" title="Ir al inicio">
-        <i class="fas fa-arrow-up">↑</i>
-    </div>
-
-    <div id="agregarModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeAgregarModal">×</span>
-            <h2>Agregar Datos</h2>
-            <form id="agregarForm">
-                <label for="tipo">Tipo:</label>
-                <select id="tipo" name="tipo">
-                    <option value="Máquinas">Máquinas</option>
-                    <option value="Mesas">Mesas</option>
-                    <option value="Otras">Otras</option>
-                </select><br><br>
-                <label for="fecha">Fecha:</label>
-                <input type="date" id="fecha" name="fecha" required><br><br>
-                <label for="monto">Monto Recaudado:</label>
-                <input type="tel" id="monto" name="monto" oninput="formatearMonto(this)" required><br><br>
-                <button type="submit">Agregar</button>
-            </form>
+        <div class="controls-container" id="controlsContainer">
+            <div class="main-buttons-group">
+                <button id="btnAgregarDato">Agregar Dato</button>
+                <button id="btnMinimizarTabla">Maximizar Tabla</button> 
+                <button id="btnImportarDatos" class="button-copy">Importar Datos</button>
+                <button id="btnOrdenarFechaAsc" class="button-reset">Fecha (Antiguo)</button>
+                <button id="btnOrdenarFechaDesc" class="button-reset">Fecha (Reciente)</button>
+                <button id="scrollToDataBtn" class="button-to-data" title="Ir a los datos">
+                    <i class="fas fa-chart-bar"></i> <span>Ir al Historial</span>
+                </button>
+            </div>
+            
+            <div class="control-group">
+                <label for="filtroFechas">Filtrar por fechas específicas (AAAA-MM-DD):</label>
+                <input type="text" id="filtroFechas" placeholder="Ej: 2023-01-01, 2023-01-05">
+            </div>
+            <div class="control-group">
+                <label for="filtroFechaInicio">Filtrar desde:</label>
+                <input type="date" id="filtroFechaInicio">
+            </div>
+            <div class="control-group">
+                <label for="filtroFechaFin">hasta:</label>
+                <input type="date" id="filtroFechaFin">
+            </div>
+            <button id="btnReiniciarFiltros" class="button-reset">Reiniciar Filtros</button>
         </div>
-    </div>
 
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeEditModal">×</span>
-            <h2>Editar Datos</h2>
-            <form id="editarForm">
-                <label for="editarTipo">Tipo:</label>
-                <select id="editarTipo" name="editarTipo">
-                    <option value="Máquinas">Máquinas</option>
-                    <option value="Mesas">Mesas</option>
-                    <option value="Otras">Otras</option>
-                </select><br><br>
-                <label for="editarFecha">Fecha:</label>
-                <input type="date" id="editarFecha" name="editarFecha" required><br><br>
-                <label for="editarMonto">Monto Recaudado:</label>
-                <input type="tel" id="editarMonto" name="editarMonto" oninput="formatearMonto(this)" required><br><br>
-                <button type="submit">Guardar</button>
-            </form>
+        <div class="table-container" id="tableContainerScrollTarget">
+            <div id="tablaContainer"></div>
         </div>
-    </div>
 
-    <div id="importarModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeImportarModal">×</span>
-            <h2>Importar Datos desde Texto</h2>
-            <p>Pega aquí el texto de los datos de recaudación (ej. desde WhatsApp):</p>
-            <textarea id="importDataTextarea" rows="10" cols="50" placeholder="Pega el texto aquí..."></textarea><br><br>
-            <button id="btnProcesarImportacion">Procesar Importación</button>
+        <div id="scrollToTopBtn" class="fab-scroll-to-top" title="Ir al inicio">
+            <i class="fas fa-arrow-up">↑</i>
+        </div>
+
+        <div id="agregarModal" class="modal">
+            <div class="modal-content">
+                <span class="close" data-modal-id="agregarModal">×</span>
+                <h2>Agregar Datos</h2>
+                <form id="agregarForm">
+                    <label for="tipo">Tipo:</label>
+                    <select id="tipo" name="tipo">
+                        <option value="Máquinas">Máquinas</option>
+                        <option value="Mesas">Mesas</option>
+                        <option value="Otras">Otras</option>
+                    </select><br><br>
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" name="fecha" required><br><br>
+                    <label for="monto">Monto Recaudado:</label>
+                    <input type="tel" id="monto" name="monto" oninput="formatearMonto(this)" required><br><br>
+                    <button type="submit">Agregar</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <span class="close" data-modal-id="editModal">×</span>
+                <h2>Editar Datos</h2>
+                <form id="editarForm">
+                    <label for="editarTipo">Tipo:</label>
+                    <select id="editarTipo" name="editarTipo">
+                        <option value="Máquinas">Máquinas</option>
+                        <option value="Mesas">Mesas</option>
+                        <option value="Otras">Otras</option>
+                    </select><br><br>
+                    <label for="editarFecha">Fecha:</label>
+                    <input type="date" id="editarFecha" name="editarFecha" required><br><br>
+                    <label for="editarMonto">Monto Recaudado:</label>
+                    <input type="tel" id="editarMonto" name="editarMonto" oninput="formatearMonto(this)" required><br><br>
+                    <button type="submit">Guardar</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="editBalanceModal" class="modal">
+            <div class="modal-content">
+                <span class="close" data-modal-id="editBalanceModal">×</span>
+                <h2>Editar Punto Actual</h2>
+                <form id="editBalanceForm">
+                    <div style="margin-bottom: 15px;"> 
+                        <label for="editBalanceDate">Fecha del Punto:</label>
+                        <input type="date" id="editBalanceDate" name="editBalanceDate" required>
+                    </div>
+                    <label for="editSaldoActual">Monto del Punto:</label>
+                    <input type="tel" id="editSaldoActual" name="editSaldoActual" oninput="formatearMonto(this)" required><br><br>
+                    <button type="submit">Guardar Punto</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="importarModal" class="modal">
+            <div class="modal-content">
+                <span class="close" data-modal-id="importarModal">×</span>
+                <h2>Importar Datos desde Texto</h2>
+                <p>Pega aquí el texto de los datos de recaudación (ej. desde WhatsApp):</p>
+                <textarea id="importDataTextarea" rows="10" cols="50" placeholder="Pega el texto aquí..."></textarea><br><br>
+                <button id="btnProcesarImportacion">Procesar Importación</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // URL de tu aplicación web de Google Apps Script (¡Ya integrada!)
-        // ¡Importante! Asegúrate que la URL esté entre comillas y asignada a una constante.
-        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwWcJRhlWEgcgbFGDxlzPivoAGYbLYBqxD9_1PrCsKTGc6BOn4HlWUE2_8nUKbBBfW9kA/exec';
+        // --- Bloqueo por Contraseña ---
+        const VALID_USERNAME = 'croupier'; // Puedes cambiarlo
+        const VALID_PASSWORD = '1234'; // Puedes cambiarlo
 
-        // Array pa' guardar los datos de recaudación
+        const loginOverlay = document.getElementById('loginOverlay');
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginMessage = document.getElementById('loginMessage');
+        const mainContent = document.getElementById('mainContent');
+        const topRightBalance = document.getElementById('topRightBalance');
+
+        // ¡IMPORTANTE! Reemplaza 'URL_DE_TU_APLICACION_WEB_AQUI' con la URL de tu Google Apps Script
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxna9EH5LZPTPCPws58pGro6qCrZ8_zNwvUkUHS28BYfd8CsAcD1MRcqlITbDm4lTk/exec'; 
+
+        function checkLogin() {
+            const storedLogin = sessionStorage.getItem('isLoggedIn');
+            if (storedLogin === 'true') {
+                loginOverlay.style.display = 'none';
+                mainContent.style.display = 'block';
+                initializeApp();
+            } else {
+                loginOverlay.style.display = 'flex';
+                mainContent.style.display = 'none';
+            }
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+
+            if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                loginOverlay.style.display = 'none';
+                mainContent.style.display = 'block';
+                initializeApp();
+            } else {
+                loginMessage.textContent = 'Usuario o contraseña incorrectos. Intenta de nuevo.';
+                loginMessage.style.display = 'block';
+            }
+        });
+        // --- Fin Bloqueo por Contraseña ---
+
+
+        // Array pa' guardar los datos de recaudación (ahora será un caché local de lo que viene de Sheets)
         let datos = [];
         // Pa' saber si la tabla está "mini" o completa
         let minimizado = true; 
         // El índice del dato que estamos editando
-        let editIndex = -1; // Este será el 'rowIndex' de Google Sheets (no el índice del array 'datos')
+        let editIndex = -1; // Este será el índice original en el array 'datos' (0-based)
         // Pa' controlar el orden de las fechas: 'asc' pa' las antiguas primero, 'desc' pa' las nuevas
         let ordenFecha = 'asc'; 
 
-        // --- Funciones de comunicación con Google Apps Script ---
+        // Variable para almacenar el punto inicial (fecha y monto)
+        let saldoInicialGuardado = { fecha: null, monto: null };
 
-        async function fetchDataFromSheet() {
+        // --- Funciones de Interacción con Google Apps Script ---
+
+        async function fetchFromScript(params) {
+            const url = new URL(SCRIPT_URL);
+            for (const key in params) {
+                url.searchParams.append(key, params[key]);
+            }
             try {
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL);
+                const response = await fetch(url.toString());
                 if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                const data = await response.json();
-                // Los datos ya vienen con 'rowIndex' desde el Apps Script
-                datos = data; 
-                actualizarTabla(); // Actualiza la tabla con los datos frescos
-                return data;
+                return await response.json();
             } catch (error) {
-                console.error('Error al obtener datos de Google Sheets:', error);
-                alert('¡Pucha! No pude cargar los datos de la hoja de cálculo. Revisa la conexión y si el Apps Script está bien desplegado.');
-                return [];
+                console.error('Error fetching data from Apps Script:', error);
+                alert('Error al conectar con el servidor de datos. Revisa la consola para más detalles.');
+                return { status: 'error', message: error.message };
             }
         }
 
-        async function sendDataToSheet(action, data, rowIndex = null, dateToClear = null) {
+        async function postToScript(params, data) {
+            const url = new URL(SCRIPT_URL);
+            for (const key in params) {
+                url.searchParams.append(key, params[key]);
+            }
             try {
-                const payload = { action, data };
-                if (rowIndex !== null) {
-                    payload.rowIndex = rowIndex; // Añadir rowIndex para update/delete
-                }
-                if (dateToClear !== null) {
-                    payload.dateToClear = dateToClear; // Añadir fecha para la importación (limpiar antes)
-                }
-                
-                // Usamos 'no-cors' porque Apps Script no maneja CORS de forma estándar para respuestas simples
-                // Esto significa que no podrás leer la respuesta directamente, pero la operación se realizará.
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                const response = await fetch(url.toString(), {
                     method: 'POST',
-                    mode: 'no-cors', // Importante para Apps Script
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'text/plain;charset=utf-8', // Requerido por Apps Script para JSON.parse(e.postData.contents)
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(data),
                 });
-
-                // Como usamos 'no-cors', la respuesta es opaca. 
-                // Confiamos en que la operación se realizó en el backend.
-                // Es buena idea recargar los datos después de una operación de escritura.
-                await fetchDataFromSheet(); 
-                return true; // Indicamos éxito simulado
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
             } catch (error) {
-                console.error(`Error al ${action} datos en Google Sheets:`, error);
-                alert(`¡Pucha! Hubo un problema al ${action} el dato. Revisa la consola y tu Apps Script.`);
-                return false;
+                console.error('Error posting data to Apps Script:', error);
+                alert('Error al enviar datos al servidor. Revisa la consola para más detalles.');
+                return { status: 'error', message: error.message };
             }
         }
-
 
         // --- Funciones Varias (Utilidades) ---
 
         // Abre un pop-up (modal)
         function abrirModal(id) {
             document.getElementById(id).style.display = 'block';
+            topRightBalance.style.display = 'none'; // Oculta el balance cuando se abre un modal
         }
 
         // Cierra un pop-up (modal)
         function cerrarModal(id) {
             document.getElementById(id).style.display = 'none';
+            topRightBalance.style.display = 'flex'; // Muestra el balance cuando se cierra un modal
         }
 
         // Formatea la fecha pa' que se vea bonita (ej. 07/07/2025)
         function formatearFecha(fecha) {
-            // Asegurarse de que la fecha es un string válido antes de crear Date
-            if (!fecha || typeof fecha !== 'string') {
-                return 'Fecha inválida';
-            }
-            // Ajuste para evitar problemas de zona horaria si la fecha viene sin hora específica
+            if (!fecha) return 'N/A';
             const opciones = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Santiago' };
-            const fechaLocal = new Date(fecha + 'T12:00:00'); // Añadir una hora para evitar problemas de TZ
-            if (isNaN(fechaLocal.getTime())) { // Comprobar si la fecha es inválida
-                return 'Fecha inválida';
-            }
-            return fechaLocal.toLocaleDateString('es-ES', opciones);
+            const fechaObj = new Date(fecha + 'T12:00:00'); 
+            return fechaObj.toLocaleDateString('es-ES', opciones);
         }
 
         // Le pone formato de plata al número (ej. $1.234.567)
         function formatearNumero(numero) {
-            if (typeof numero !== 'number' || isNaN(numero)) {
-                return '$0'; // O algún otro valor por defecto
-            }
+            if (isNaN(numero) || numero === null) return '$0';
             return `$${Math.ceil(numero).toLocaleString('es-ES').replace(/,/g, '.')}`;
         }
 
         // Pone el formato de plata en el campo de monto mientras escribes
         function formatearMonto(input) {
-            let valor = input.value.replace(/\./g, '').replace('$', '');
-            if (!isNaN(valor) && valor !== '') {
-                valor = parseFloat(valor).toLocaleString('es-ES').replace(/,/g, '.');
+            let valor = input.value.replace(/\D/g, ''); 
+            if (valor) {
+                valor = parseFloat(valor).toLocaleString('es-ES');
                 input.value = `$${valor}`;
             } else {
                 input.value = '';
             }
         }
 
-        // Ya no es necesario limpiar datos inválidos en localStorage.
-        // Asumimos que Apps Script maneja la integridad de los datos o los filtra al leer.
-        // function limpiarDatosInvalidos() { }
+        // --- Funciones para el Punto Actual ---
+        async function cargarSaldoInicial() {
+            const response = await fetchFromScript({ action: 'getSaldo' });
+            if (response.status === 'success' && response.data) {
+                saldoInicialGuardado = { 
+                    fecha: response.data.fecha || null, 
+                    monto: response.data.monto || null 
+                };
+            } else {
+                console.error('Error al cargar saldo inicial:', response.message);
+                saldoInicialGuardado = { fecha: null, monto: null }; // Asegura un estado válido
+            }
+            mostrarSaldoInicial();
+        }
+
+        async function guardarSaldoInicialDesdeModal() {
+            const fecha = document.getElementById('editBalanceDate').value;
+            let montoInput = document.getElementById('editSaldoActual').value;
+            const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
+
+            if (fecha && !isNaN(monto) && monto !== null) {
+                const response = await postToScript({ action: 'updateSaldo' }, { fecha, monto });
+                if (response.status === 'success') {
+                    alert('¡Punto actual guardado con éxito!');
+                    cerrarModal('editBalanceModal');
+                    cargarSaldoInicial(); // Recargar el saldo inicial desde Sheets
+                } else {
+                    alert('Error al guardar el punto actual: ' + response.message);
+                }
+            } else {
+                alert('¡Pucha! Ingresa una fecha y un monto válidos para el punto actual.');
+            }
+        }
+
+        function mostrarSaldoInicial() {
+            const displayMonto = document.getElementById('displaySaldoGuardado');
+            const displayFecha = document.getElementById('displayFechaSaldo');
+
+            displayMonto.textContent = formatearNumero(saldoInicialGuardado.monto);
+            displayFecha.textContent = formatearFecha(saldoInicialGuardado.fecha);
+        }
+
+        function abrirModalEditarSaldo() {
+            document.getElementById('editBalanceDate').value = saldoInicialGuardado.fecha || '';
+            document.getElementById('editSaldoActual').value = saldoInicialGuardado.monto !== null ? String(saldoInicialGuardado.monto) : '';
+            formatearMonto(document.getElementById('editSaldoActual'));
+            abrirModal('editBalanceModal');
+        }
 
 
         // --- Funciones de lo que puedes hacer (Agregar, Leer, Editar, Borrar) ---
@@ -569,13 +815,14 @@
             const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
 
             if (fecha && !isNaN(monto) && monto !== null) {
-                const success = await sendDataToSheet('add', { fecha, tipo, monto });
-                if (success) {
+                const response = await postToScript({ action: 'add' }, { fecha, tipo, monto });
+                if (response.status === 'success') {
                     cerrarModal('agregarModal');
-                    // Limpiamos el formulario después de agregar
                     document.getElementById('agregarForm').reset(); 
                     document.getElementById('monto').value = ''; 
-                    // La tabla se actualizará automáticamente con fetchDataFromSheet()
+                    await cargarDatosDesdeSheet(); // Recargar todos los datos
+                } else {
+                    alert('Error al agregar dato: ' + response.message);
                 }
             } else {
                 alert('¡Pucha! Ingresa una fecha y un monto válidos, ¿ya?');
@@ -583,20 +830,14 @@
         }
 
         // Abre el pop-up pa' editar y carga los datos que quieres cambiar
-        function abrirModalEditar(sheetRowIndex) {
-            editIndex = sheetRowIndex; // Guardamos el rowIndex de Sheets
-            // Encuentra el dato en el array 'datos' que corresponde a ese rowIndex
-            const dato = datos.find(d => d.rowIndex === sheetRowIndex);
-
-            if (dato) {
-                document.getElementById('editarTipo').value = dato.tipo;
-                document.getElementById('editarFecha').value = dato.fecha;
-                document.getElementById('editarMonto').value = dato.monto.toString(); 
-                formatearMonto(document.getElementById('editarMonto')); 
-                abrirModal('editModal');
-            } else {
-                alert('No se encontró el dato para editar. Puede que haya sido eliminado.');
-            }
+        function abrirModalEditar(index) {
+            editIndex = index; // Guarda el índice del dato en el array 'datos'
+            const dato = datos[index];
+            document.getElementById('editarTipo').value = dato.tipo;
+            document.getElementById('editarFecha').value = dato.fecha;
+            document.getElementById('editarMonto').value = String(dato.monto); 
+            formatearMonto(document.getElementById('editarMonto'));
+            abrirModal('editModal');
         }
 
         // Guarda los cambios de un dato que editaste
@@ -607,10 +848,18 @@
             const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
 
             if (fecha && !isNaN(monto) && monto !== null) {
-                const success = await sendDataToSheet('update', { fecha, tipo, monto }, editIndex);
-                if (success) {
+                // Pasamos el índice original del dato para que Apps Script sepa qué fila actualizar
+                const response = await postToScript({ action: 'update' }, { 
+                    sheetIndex: editIndex, // Este es el índice 0-based en nuestro array 'datos'
+                    fecha, 
+                    tipo, 
+                    monto 
+                });
+                if (response.status === 'success') {
                     cerrarModal('editModal');
-                    // La tabla se actualizará automáticamente con fetchDataFromSheet()
+                    await cargarDatosDesdeSheet(); // Recargar todos los datos
+                } else {
+                    alert('Error al actualizar dato: ' + response.message);
                 }
             } else {
                 alert('¡Pucha! Ingresa una fecha y un monto válidos, ¿ya?');
@@ -618,24 +867,46 @@
         }
 
         // Borra un dato de la lista
-        async function borrarDato(sheetRowIndex) {
+        async function borrarDato(index) {
             if (confirm('¿Estás seguro que quieres borrar este dato? No hay vuelta atrás, compadre.')) {
-                const success = await sendDataToSheet('delete', {}, sheetRowIndex);
-                if (success) {
-                    // La tabla se actualizará automáticamente con fetchDataFromSheet()
+                // Pasamos el índice original del dato para que Apps Script sepa qué fila borrar
+                const response = await postToScript({ action: 'delete' }, { index: index });
+                if (response.status === 'success') {
+                    await cargarDatosDesdeSheet(); // Recargar todos los datos
+                } else {
+                    alert('Error al borrar dato: ' + response.message);
                 }
             }
         }
 
+        // --- Carga inicial de datos desde Google Sheets ---
+        async function cargarDatosDesdeSheet() {
+            const response = await fetchFromScript({ action: 'get' });
+            if (response.status === 'success' && response.data) {
+                datos = response.data.map((item, index) => ({
+                    fecha: item.fecha,
+                    tipo: item.tipo,
+                    monto: item.monto,
+                    // Agregamos un 'originalIndex' para poder referenciar la fila en Google Sheets
+                    // Este índice es el 0-based index del array de datos que recibimos
+                    originalIndex: index 
+                }));
+                actualizarTabla(); // Después de cargar, actualiza la tabla
+            } else {
+                console.error('Error al cargar datos desde Sheet:', response.message);
+                datos = []; // Limpia los datos si hay un error
+                actualizarTabla();
+            }
+        }
+
+
         // --- Pa' copiar los datos del día (Si no funciona una forma, prueba la otra) ---
         function copiarDatosDelDia(fecha) {
-            // Pillamos los datos de esa fecha nomás
             const datosDelDia = datos.filter(dato => dato.fecha === fecha);
 
             let textoACopiar = `Datos de Recaudación del Día ${formatearFecha(fecha)}:\n`;
             let totalDia = 0;
 
-            // Agrupamos por tipo pa' que el resumen quede bueno
             const totalesPorTipo = {};
             datosDelDia.forEach(dato => {
                 if (!totalesPorTipo[dato.tipo]) {
@@ -645,14 +916,12 @@
                 totalDia += dato.monto;
             });
 
-            // Agregamos los tipos al texto que vamos a copiar
             for (const tipo in totalesPorTipo) {
                 textoACopiar += `- ${tipo}: ${formatearNumero(totalesPorTipo[tipo])}\n`;
             }
 
             textoACopiar += `Total del Día: ${formatearNumero(totalDia)}\n`;
 
-            // Intentamos copiar usando la forma moderna
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(textoACopiar)
                     .then(() => {
@@ -660,16 +929,13 @@
                     })
                     .catch(err => {
                         console.error('Error al copiar con navigator.clipboard:', err);
-                        // Si falla, usamos la forma más antigua
                         copiarTextoConFallback(textoACopiar);
                     });
             } else {
-                // Si la forma moderna no está, vamos directo a la antigua
                 copiarTextoConFallback(textoACopiar);
             }
         }
 
-        // Función "salvavidas" pa' copiar texto al portapapeles
         function copiarTextoConFallback(texto) {
             const tempTextArea = document.createElement('textarea');
             tempTextArea.value = texto;
@@ -688,7 +954,7 @@
 
         // --- Funciones pa' importar datos (NUEVAS) ---
         function abrirModalImportar() {
-            document.getElementById('importDataTextarea').value = ''; // Limpiamos el cajón de texto
+            document.getElementById('importDataTextarea').value = '';
             abrirModal('importarModal');
         }
 
@@ -702,55 +968,59 @@
             const nuevasEntradas = parsearTextoRecaudacion(texto);
 
             if (nuevasEntradas.length > 0) {
-                // Pillamos la fecha del primer dato importado (asumimos que todos son del mismo día)
                 const fechaImportada = nuevasEntradas[0].fecha; 
                 
-                // Paso 1: Eliminar datos existentes para la fecha importada en Google Sheets
-                // NOTA: Esta es una simplificación. Un borrado masivo requiere más lógica en Apps Script.
-                // Para simplificar, podríamos optar por SOLO agregar y dejar que el usuario maneje duplicados
-                // o que la importación siempre reemplace. Por ahora, asumiremos que si importas, reemplazas.
-                // Si el texto importado tiene un total de día, Apps Script no lo manejará directamente en las celdas de datos.
+                // Lógica para manejar la eliminación de datos existentes para la fecha importada
+                // Esto implicaría una llamada al script para borrar por fecha, lo cual no está implementado
+                // en el Apps Script actual. Por simplicidad, asumiremos que no hay duplicados masivos
+                // o que la importación siempre añade nuevos. Para un borrado por fecha, necesitarías
+                // una nueva función en Apps Script que reciba la fecha y elimine esas filas.
                 
-                // Envía todos los datos importados al Apps Script con la acción 'import'
-                // También le pasamos la fecha para que el Apps Script sepa qué borrar primero.
-                const success = await sendDataToSheet('import', nuevasEntradas, null, fechaImportada);
+                // Para esta implementación, simplemente agregaremos los datos. Si necesitas reemplazar,
+                // la lógica sería más compleja y requeriría una función POST en el Apps Script
+                // que primero filtre y elimine por fecha antes de añadir los nuevos.
+
+                let importadosConExito = 0;
+                for (const entrada of nuevasEntradas) {
+                    const response = await postToScript({ action: 'add' }, entrada);
+                    if (response.status === 'success') {
+                        importadosConExito++;
+                    } else {
+                        console.error('Error al importar dato:', entrada, response.message);
+                    }
+                }
                 
-                if (success) {
-                    alert(`¡Se importaron ${nuevasEntradas.length} datos nuevos para el día ${formatearFecha(fechaImportada)}! ¡Bacán!`);
+                if (importadosConExito > 0) {
+                    alert(`¡Se importaron ${importadosConExito} datos nuevos para el día ${formatearFecha(fechaImportada)}! ¡Bacán!`);
                     cerrarModal('importarModal');
-                    // fetchDataFromSheet() ya se llama dentro de sendDataToSheet para actualizar la tabla.
+                    await cargarDatosDesdeSheet(); // Recargar todos los datos después de la importación
                 } else {
-                    alert('Hubo un error al importar algunos datos. Revisa la consola para más detalles.');
+                    alert('No se pudo importar ningún dato válido.');
                 }
             } else {
                 alert('No pude sacar datos válidos del texto que pegaste. Asegúrate de que el formato sea como este:\n\nDatos de Recaudación del Día DD/MM/AAAA:\n- Máquinas: $XXX.XXX\n- Mesas: $YYY.YYY\nTotal del Día: $ZZZ.ZZZ');
             }
         }
 
-        // Función pa' "desarmar" el texto pegado y sacar los datos
         function parsearTextoRecaudacion(texto) {
             const lineas = texto.split('\n').map(linea => linea.trim()).filter(linea => linea !== '');
             const entradasEncontradas = [];
             let fechaActual = null;
 
-            // Patrón pa' encontrar la fecha
             const regexFecha = /Datos de Recaudación del Día (\d{2}\/\d{2}\/\d{4}):/;
-            // Patrón pa' encontrar los montos y tipos (ahora acepta "Otras" u "Otros")
             const regexMonto = /^- (Máquinas|Mesas|Otras|Otros):\s*\$?([\d.,]+)/; 
 
             for (const linea of lineas) {
                 const matchFecha = linea.match(regexFecha);
                 if (matchFecha) {
                     const fechaParts = matchFecha[1].split('/');
-                    // Convertimos a formato AAAA-MM-DD pa' que funcione bien
                     fechaActual = `${fechaParts[2]}-${fechaParts[1]}-${fechaParts[0]}`;
-                    continue; // Seguimos a la siguiente línea
+                    continue;
                 }
 
                 const matchMonto = linea.match(regexMonto);
                 if (matchMonto && fechaActual) {
                     const tipo = matchMonto[1];
-                    // Sacamos los puntos de miles y cambiamos comas por puntos pa' que JavaScript lo entienda como número
                     const monto = parseFloat(matchMonto[2].replace(/\./g, '').replace(/,/g, '.')); 
                     if (!isNaN(monto)) {
                         entradasEncontradas.push({
@@ -766,12 +1036,10 @@
 
         // --- Funciones pa' mostrar y filtrar la tabla ---
 
-        // Genera el código HTML de la tabla con los datos que le pasemos
         function generarTablaHTML(datosParaTabla, totalGlobal) {
             const tablaContainer = document.getElementById('tablaContainer');
-            tablaContainer.innerHTML = ''; // Borramos lo que hay ahora en la tabla
+            tablaContainer.innerHTML = '';
 
-            // Agrupamos los datos por fecha
             const datosPorFecha = datosParaTabla.reduce((acc, dato) => {
                 if (!acc[dato.fecha]) {
                     acc[dato.fecha] = [];
@@ -780,16 +1048,14 @@
                 return acc;
             }, {});
 
-            // Ordenamos las fechas según lo que eligió el usuario (ascendente o descendente)
             let fechasOrdenadas = Object.keys(datosPorFecha);
             if (ordenFecha === 'asc') {
-                fechasOrdenadas.sort((a, b) => new Date(a) - new Date(b)); // De la más antigua a la más nueva
+                fechasOrdenadas.sort((a, b) => new Date(a) - new Date(b));
             } else {
-                fechasOrdenadas.sort((a, b) => new Date(b) - new Date(a)); // De la más nueva a la más antigua
+                fechasOrdenadas.sort((a, b) => new Date(b) - new Date(a));
             }
 
             fechasOrdenadas.forEach(fecha => {
-                // Si la tabla está "mini", solo mostramos la fecha que corresponda al principio de la lista ordenada
                 if (minimizado && fecha !== fechasOrdenadas[0]) {
                     return;
                 }
@@ -809,10 +1075,9 @@
                 `;
 
                 let totalDia = 0;
-                // Llenamos la tabla con los datos de esa fecha
                 datosPorFecha[fecha].forEach((dato) => {
-                    // Usamos dato.rowIndex que viene de Google Sheets
-                    const sheetRowIndex = dato.rowIndex; 
+                    // Usamos dato.originalIndex para referenciar la fila correcta en Sheets
+                    const actualSheetIndex = dato.originalIndex;
 
                     const fila = document.createElement('tr');
                     fila.innerHTML = `
@@ -820,8 +1085,8 @@
                         <td data-label="Tipo">${dato.tipo}</td>
                         <td data-label="Monto Recaudado">${formatearNumero(dato.monto)}</td>
                         <td data-label="Acciones">
-                            <button onclick="abrirModalEditar(${sheetRowIndex})">Editar</button>
-                            <button class="button-delete" onclick="borrarDato(${sheetRowIndex})">Borrar</button>
+                            <button onclick="abrirModalEditar(${actualSheetIndex})">Editar</button>
+                            <button class="button-delete" onclick="borrarDato(${actualSheetIndex})">Borrar</button>
                         </td>
                     `;
                     totalDia += dato.monto;
@@ -842,19 +1107,16 @@
                 tablaContainer.appendChild(tabla);
             });
 
-            // Mostramos el total recaudado (puede ser el total general o el total del filtro)
             document.getElementById('totalRecaudado').textContent = formatearNumero(totalGlobal);
         }
 
-        // Actualiza la tabla con los datos actuales o la última fecha si está "mini"
         function actualizarTabla() {
-            // `limpiarDatosInvalidos()` ya no es necesario ya que los datos vienen de Sheets.
+            // No necesitamos limpiar datos inválidos aquí, ya que el Apps Script debería manejarlo
             
             const totalRecaudadoGlobal = datos.reduce((acc, dato) => acc + dato.monto, 0);
             
             generarTablaHTML(datos, totalRecaudadoGlobal);
             
-            // Controla la visibilidad de los filtros al actualizar la tabla
             const controlsContainer = document.getElementById('controlsContainer');
             if (minimizado) {
                 controlsContainer.classList.remove('controls-expanded');
@@ -863,7 +1125,6 @@
             }
         }
 
-        // Cambia la vista de la tabla y los filtros entre "mini" y completa
         function minimizarTabla() {
             minimizado = !minimizado;
             const btn = document.getElementById('btnMinimizarTabla');
@@ -876,71 +1137,52 @@
                 btn.textContent = 'Minimizar Tabla';
                 controlsContainer.classList.add('controls-expanded');
             }
-            actualizarTabla(); // Vuelve a renderizar la tabla para aplicar el filtro de minimizado
+            actualizarTabla();
         }
 
-        // Filtra la tabla por fechas específicas (separadas por comas)
         function filtrarTabla() {
             const filtroFechasInput = document.getElementById('filtroFechas').value.trim();
             const filtroFechaInicio = document.getElementById('filtroFechaInicio').value;
             const filtroFechaFin = document.getElementById('filtroFechaFin').value;
 
-            // Si hay filtros de rango, esos van primero
-            if (filtroFechaInicio && filtroFechaFin) {
-                filtrarPorRango();
-                return;
-            }
+            let datosFiltrados = datos; // Empieza con todos los datos
 
-            // Si hay filtro por fechas específicas
-            if (filtroFechasInput) {
+            if (filtroFechaInicio && filtroFechaFin) {
+                datosFiltrados = datosFiltrados.filter(dato => dato.fecha >= filtroFechaInicio && dato.fecha <= filtroFechaFin);
+            } else if (filtroFechasInput) {
                 const fechasAFiltrar = filtroFechasInput.split(',').map(fecha => fecha.trim()).filter(f => f !== '');
-                const datosFiltrados = datos.filter(dato => fechasAFiltrar.includes(dato.fecha));
-                const totalParcial = datosFiltrados.reduce((acc, dato) => acc + dato.monto, 0);
-                generarTablaHTML(datosFiltrados, totalParcial);
-            } else {
-                actualizarTabla(); // Si no hay filtro, mostramos todo
-            }
+                datosFiltrados = datosFiltrados.filter(dato => fechasAFiltrar.includes(dato.fecha));
+            } 
+            
+            const totalParcial = datosFiltrados.reduce((acc, dato) => acc + dato.monto, 0);
+            generarTablaHTML(datosFiltrados, totalParcial);
         }
 
-        // Filtra la tabla por un rango de fechas
-        function filtrarPorRango() {
-            const filtroFechaInicio = document.getElementById('filtroFechaInicio').value;
-            const filtroFechaFin = document.getElementById('filtroFechaFin').value;
+        // La función filtrarPorRango ahora se unifica con filtrarTabla
+        // Ya no es necesaria como función separada si se llama desde filtrarTabla
+        /* function filtrarPorRango() { ... } */
 
-            // Si hay filtro por fechas específicas, ese tiene prioridad
-            const filtroFechasInput = document.getElementById('filtroFechas').value.trim();
-            if (filtroFechasInput) {
-                filtrarTabla();
-                return;
-            }
-
-            if (filtroFechaInicio && filtroFechaFin) {
-                const datosFiltrados = datos.filter(dato => dato.fecha >= filtroFechaInicio && dato.fecha <= filtroFechaFin);
-                const totalParcial = datosFiltrados.reduce((acc, dato) => acc + dato.monto, 0);
-                generarTablaHTML(datosFiltrados, totalParcial);
-            } else {
-                actualizarTabla(); // Si no hay rango completo, mostramos todo
-            }
-        }
-
-        // Reinicia todos los filtros y actualiza la tabla
         function reiniciarFiltros() {
             document.getElementById('filtroFechas').value = '';
             document.getElementById('filtroFechaInicio').value = '';
             document.getElementById('filtroFechaFin').value = '';
-            minimizado = true; // Vuelve a estar minimizado al reiniciar
-            document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; // Volvemos el texto del botón
-            ordenFecha = 'asc'; // Volvemos el orden a ascendente por defecto
-            actualizarTabla(); // Recarga la tabla con los datos completos
+            minimizado = true; 
+            document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; 
+            ordenFecha = 'asc'; 
+            actualizarTabla(); // Mostrar todos los datos nuevamente
         }
 
-        // Función pa' ordenar los datos por fecha
         function ordenarPorFecha(orden) {
             ordenFecha = orden;
+            // Reordenar los datos locales antes de actualizar la tabla
+            datos.sort((a, b) => {
+                const dateA = new Date(a.fecha);
+                const dateB = new Date(b.fecha);
+                return orden === 'asc' ? dateA - dateB : dateB - dateA;
+            });
             actualizarTabla();
         }
 
-        // Función pa' ir al principio de la página
         function scrollToTop() {
             window.scrollTo({
                 top: 0,
@@ -948,7 +1190,6 @@
             });
         }
 
-        // Función pa' ir a donde está la tabla
         function scrollToData() {
             const tableContainer = document.getElementById('tableContainerScrollTarget');
             tableContainer.scrollIntoView({
@@ -956,7 +1197,6 @@
             });
         }
 
-        // --- Manejo del botón flotante de "Ir al inicio" (mostrar/ocultar) ---
         window.addEventListener('scroll', () => {
             const scrollToTopBtn = document.getElementById('scrollToTopBtn');
             if (window.scrollY > 200) { 
@@ -968,54 +1208,69 @@
 
 
         // --- Lo que pasa cuando la página carga ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Cargamos los datos de Google Sheets al principio
-            await fetchDataFromSheet(); // Ahora espera a que los datos se carguen
-            
-            // Al cargar, forzamos el estado minimizado y actualizamos la tabla
+        async function initializeApp() {
+            // Cargar datos y saldo inicial desde Google Sheets
+            await cargarDatosDesdeSheet();
+            await cargarSaldoInicial();
+
             minimizado = true; 
             document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; 
             actualizarTabla(); 
             
-            // Eventos pa' los botones y formularios
             document.getElementById('btnAgregarDato').addEventListener('click', () => {
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('fecha').value = today; 
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                document.getElementById('fecha').value = `${year}-${month}-${day}`; 
                 abrirModal('agregarModal');
             });
-            document.getElementById('closeAgregarModal').addEventListener('click', () => cerrarModal('agregarModal'));
-            document.getElementById('agregarForm').addEventListener('submit', (e) => {
-                e.preventDefault(); 
-                agregarDatos();
+
+            document.querySelectorAll('.modal .close').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const modalId = event.target.dataset.modalId;
+                    cerrarModal(modalId);
+                });
             });
 
-            document.getElementById('closeEditModal').addEventListener('click', () => cerrarModal('editModal'));
-            document.getElementById('editarForm').addEventListener('submit', (e) => {
+            document.getElementById('agregarForm').addEventListener('submit', async (e) => {
                 e.preventDefault(); 
-                guardarEdicion();
+                await agregarDatos();
             });
 
-            // Eventos pa' los botones de importar
+            document.getElementById('editarForm').addEventListener('submit', async (e) => {
+                e.preventDefault(); 
+                await guardarEdicion();
+            });
+
             document.getElementById('btnImportarDatos').addEventListener('click', abrirModalImportar);
-            document.getElementById('closeImportarModal').addEventListener('click', () => cerrarModal('importarModal'));
-            document.getElementById('btnProcesarImportacion').addEventListener('click', procesarImportacion);
+            document.getElementById('btnProcesarImportacion').addEventListener('click', async () => {
+                await procesarImportacion();
+            });
 
+            document.getElementById('btnEditBalance').addEventListener('click', abrirModalEditarSaldo);
+            document.getElementById('editBalanceForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await guardarSaldoInicialDesdeModal();
+            });
 
-            // Eventos pa' los controles de la tabla (minimizar, filtrar)
             document.getElementById('btnMinimizarTabla').addEventListener('click', minimizarTabla);
+            // Eventos para filtros ahora llaman directamente a filtrarTabla
             document.getElementById('filtroFechas').addEventListener('input', filtrarTabla);
-            document.getElementById('filtroFechaInicio').addEventListener('change', filtrarPorRango);
-            document.getElementById('filtroFechaFin').addEventListener('change', filtrarPorRango);
+            document.getElementById('filtroFechaInicio').addEventListener('change', filtrarTabla); 
+            document.getElementById('filtroFechaFin').addEventListener('change', filtrarTabla); 
             document.getElementById('btnReiniciarFiltros').addEventListener('click', reiniciarFiltros);
 
-            // Eventos pa' los nuevos botones de ordenar
             document.getElementById('btnOrdenarFechaAsc').addEventListener('click', () => ordenarPorFecha('asc'));
             document.getElementById('btnOrdenarFechaDesc').addEventListener('click', () => ordenarPorFecha('desc'));
 
-            // Eventos pa' los nuevos botones de desplazamiento
             document.getElementById('scrollToTopBtn').addEventListener('click', scrollToTop);
             document.getElementById('scrollToDataBtn').addEventListener('click', scrollToData);
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', checkLogin);
     </script>
 </body>
+</html>
+>
 </html>
