@@ -4,20 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario de Recaudación</title>
+    <!-- INICIO: Enlaces para PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <!-- FIN: Enlaces para PWA -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
             --menu-width: 250px;
             --primary-color: #007bff;
             --secondary-color: #28a745;
+            
+            --bg-main: #f4f4f4;
+            --bg-content: #ffffff;
+            --text-primary: #333;
+            --text-secondary: #555;
+            --border-color: #ddd;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --header-bg: #f2f2f2;
             --row-color-even: #ffffff;
             --row-color-odd: #e7f5ff;
             --row-footer-odd: #dbeffc;
         }
 
+        body.dark-mode {
+            --bg-main: #121212;
+            --bg-content: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --border-color: #444;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --header-bg: #2a2a2a;
+            --row-color-even: #1e1e1e;
+            --row-color-odd: #2c3e50;
+            --row-footer-odd: #34495e;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
             margin: 0;
             padding: 0;
             display: flex;
@@ -26,87 +52,23 @@
             min-height: 100vh;
         }
 
-        body.loggedin {
-            display: block;
-            justify-content: initial;
-            align-items: initial;
-        }
-
-        .menu-toggle {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1002;
-            width: 40px;
-            height: 40px;
-            background-color: var(--primary-color);
-            border: none;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: left 0.3s ease;
-        }
-        .menu-toggle span {
-            display: block;
-            width: 22px;
-            height: 2px;
-            background-color: white;
-            margin: 2px 0;
-            transition: all 0.3s ease;
-        }
-        .side-menu.open + .main-container .menu-toggle {
-            left: calc(var(--menu-width) + 15px);
-        }
+        body.loggedin { display: block; justify-content: initial; align-items: initial; }
+        .menu-toggle { position: fixed; top: 15px; left: 15px; z-index: 1002; width: 40px; height: 40px; background-color: var(--primary-color); border: none; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: left 0.3s ease; }
+        .menu-toggle span { display: block; width: 22px; height: 2px; background-color: white; margin: 2px 0; transition: all 0.3s ease; }
+        .side-menu.open + .main-container .menu-toggle { left: calc(var(--menu-width) + 15px); }
         .menu-toggle.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
         .menu-toggle.active span:nth-child(2) { opacity: 0; }
         .menu-toggle.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-
-        .side-menu {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: var(--menu-width);
-            height: 100%;
-            background-color: #2c3e50;
-            z-index: 1001;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            padding-top: 20px;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-        }
+        .side-menu { position: fixed; top: 0; left: 0; width: var(--menu-width); height: 100%; background-color: #2c3e50; z-index: 1001; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; padding-top: 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
         .side-menu.open { transform: translateX(0); }
         .side-menu .menu-header { color: white; font-size: 1.4em; font-weight: 700; text-align: center; padding: 20px 10px; border-bottom: 1px solid #4a627a; }
         .side-menu a { color: white; text-decoration: none; padding: 15px 20px; display: block; font-size: 1.0em; transition: background-color 0.2s ease, padding-left 0.2s ease; border-bottom: 1px solid #3e5268; }
         .side-menu a:hover, .side-menu a.active-link { background-color: var(--primary-color); padding-left: 25px; }
-        
-        .main-container {
-            transition: margin-left 0.3s ease;
-            width: 100%;
-        }
-
-        .content-panel {
-            display: none;
-        }
-        .content-panel.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @media (min-width: 992px) {
-            body.loggedin { margin-left: var(--menu-width); }
-            .menu-toggle { display: none; }
-            .side-menu { transform: translateX(0); }
-        }
+        .main-container { transition: margin-left 0.3s ease; width: 100%; }
+        .content-panel { display: none; }
+        .content-panel.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @media (min-width: 992px) { body.loggedin { margin-left: var(--menu-width); } .menu-toggle { display: none; } .side-menu { transform: translateX(0); } }
         
         #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 2000; }
         #loginBox { background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); width: 90%; max-width: 350px; text-align: center; }
@@ -118,39 +80,41 @@
         #loginMessage { color: red; margin-top: 15px; font-weight: bold; }
         
         #mainContent { display: none; padding: 0 15px; }
-        h2, h3 { text-align: center; color: #333; }
+        h2, h3 { text-align: center; color: var(--text-primary); }
         h2 { margin-top: 20px; }
-        .form-container, .table-container { background-color: #fff; padding: 20px; margin: 20px auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); max-width: 400px; }
+        .form-container, .table-container { background-color: var(--bg-content); padding: 20px; margin: 20px auto; border-radius: 8px; box-shadow: 0 0 10px var(--shadow-color); max-width: 400px; }
         
-        .top-right-balance {
+        .balance-info-container {
             position: relative;
-            top: auto;
-            right: auto;
-            background-color: #f0f0f0;
-            padding: 10px 15px;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px var(--shadow-color);
+            margin: 0 auto 15px auto;
+            max-width: 400px;
+        }
+
+        .balance-display {
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 16px;
-            color: #333;
+            color: var(--text-primary);
             white-space: nowrap;
-            margin: 0 auto 15px auto;
             width: auto;
-            max-width: 100%;
         }
-
-        .top-right-balance .edit-balance-btn { background: none; border: none; color: #007bff; cursor: pointer; font-size: 14px; margin-left: 8px; padding: 0; transition: color 0.2s ease; }
-        .top-right-balance .edit-balance-btn:hover { color: #0056b3; }
-        .top-right-balance .edit-balance-btn i { pointer-events: none; }
+        .balance-display .edit-balance-btn { background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 14px; margin-left: 8px; padding: 0; transition: color 0.2s ease; }
+        .balance-display .edit-balance-btn:hover { color: #0056b3; }
+        .balance-display .edit-balance-btn i { pointer-events: none; }
+        
         .controls-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px auto; max-width: 900px; padding: 0 20px; }
         .main-buttons-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; margin-bottom: 10px; }
         .control-group, #btnReiniciarFiltros { display: none; }
         .controls-expanded .control-group, .controls-expanded #btnReiniciarFiltros { display: block; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
-        input[type="date"], input[type="tel"], select, .modal-content textarea { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { padding: 8px 12px; background-color: #28a745; border: none; border-radius: 4px; color: white; font-size: 14px; cursor: pointer; transition: background-color 0.3s ease; white-space: nowrap; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-secondary); }
+        input[type="date"], input[type="tel"], input[type="text"], select, .modal-content textarea { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; background-color: var(--bg-content); color: var(--text-primary); }
+        button { padding: 8px 12px; background-color: var(--secondary-color); border: none; border-radius: 4px; color: white; font-size: 14px; cursor: pointer; transition: background-color 0.3s ease; white-space: nowrap; }
         button:hover { background-color: #218838; }
         .button-delete { background-color: #dc3545; }
         .button-delete:hover { background-color: #c82333; }
@@ -162,29 +126,34 @@
         .button-to-data:hover { background-color: #5a6268; }
         .button-to-data i { font-size: 16px; margin-right: 5px; }
         .button-to-data:not(:has(span)) i { margin-right: 0; }
-        .fab-scroll-to-top { position: fixed; bottom: 20px; right: 20px; background-color: #030406c5; color: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1000; transition: all 0.3s ease; opacity: 0; visibility: hidden; }
-        .fab-scroll-to-top.show { opacity: 1; visibility: visible; }
-        .fab-scroll-to-top:hover { background-color: #0056b3; transform: scale(1.05); }
-        .fab-scroll-to-top i { margin: 0; }
-        .table-container { overflow-x: auto; background-color: #fff; padding: 20px; margin: 20px auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); max-width: 900px; scroll-margin-top: 20px; }
+        
+        .fab-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+        .fab { background-color: #030406c5; color: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 2px 10px var(--shadow-color); cursor: pointer; transition: all 0.3s ease; }
+        .fab:hover { background-color: var(--primary-color); transform: scale(1.05); }
+        #scrollToTopBtn { opacity: 0; visibility: hidden; }
+        #scrollToTopBtn.show { opacity: 1; visibility: visible; }
+        #themeToggle i { transition: transform 0.3s ease; }
+        body.dark-mode #themeToggle i { transform: rotate(180deg); }
+
         table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #f2f2f2; font-weight: bold; }
-        tfoot td { font-weight: bold; background-color: #f9f9f9; text-align: left; }
-        tfoot tr { background-color: #f2f2f2; }
-        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); padding-top: 60px; }
-        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-        .modal-content textarea { width: calc(100% - 20px); resize: vertical; }
+        th, td { padding: 12px; border: 1px solid var(--border-color); text-align: left; }
+        th { background-color: var(--header-bg); font-weight: bold; }
+        tfoot td { font-weight: bold; text-align: left; }
+        tfoot tr { background-color: var(--header-bg); }
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); padding-top: 60px; }
+        .modal-content { background-color: var(--bg-content); margin: 5% auto; padding: 20px; border: 1px solid var(--border-color); width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 0 10px var(--shadow-color); }
         .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
-        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+        .close:hover, .close:focus { color: var(--text-primary); text-decoration: none; cursor: pointer; }
         
         .fecha-par tbody tr { background-color: var(--row-color-even); }
         .fecha-impar tbody tr { background-color: var(--row-color-odd); }
         .fecha-impar tfoot tr { background-color: var(--row-footer-odd); }
-        .fecha-impar tfoot td { background-color: transparent; }
+        .fecha-impar tfoot td, .fecha-par tfoot td { background-color: transparent; }
 
+        footer { text-align: center; padding: 20px; margin-top: 30px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.9em; }
+        
         @media (max-width: 600px) { 
-            .top-right-balance { position: relative; width: 90%; margin: 10px auto; top: auto; right: auto; justify-content: center; } 
+            .balance-info-container { width: 90%; }
             h2 { margin-top: 20px; } 
             .controls-container { flex-direction: column; align-items: center; } 
             .main-buttons-group { flex-direction: row; justify-content: center; width: 100%; } 
@@ -194,15 +163,14 @@
             .control-group { min-width: unset; width: 100%; } 
             table, thead, tbody, th, td, tr { display: block; } 
             thead tr { position: absolute; top: -9999px; left: -9999px; } 
-            tr { border: 1px solid #ccc; margin-bottom: 10px; display: flex; flex-wrap: wrap; } 
-            td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50%; text-align: right; width: 100%; } 
+            tr { border: 1px solid var(--border-color); margin-bottom: 10px; display: flex; flex-wrap: wrap; } 
+            td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50%; text-align: right; width: 100%; background-color: transparent !important; } 
             td:before { content: attr(data-label); position: absolute; left: 6px; width: 45%; padding-right: 10px; white-space: nowrap; text-align: left; font-weight: bold; } 
             tfoot tr { display: flex; flex-wrap: wrap; width: 100%; border: 1px solid #ccc; margin-top: 10px; } 
             tfoot td { width: 100%; text-align: right; padding-left: 50%; } 
             tfoot td:first-child { text-align: left; } 
             tfoot td[colspan="2"] { width: calc(100% - 12px); } 
-            .fecha-par tr { background-color: var(--row-color-even); }
-            .fecha-impar tr { background-color: var(--row-color-odd); }
+            .fecha-par tr, .fecha-impar tr { background-color: transparent; }
         }
     </style>
 </head>
@@ -233,6 +201,18 @@
             
             <section id="historialPanel" class="content-panel">
                 <h2>Datos Recaudados</h2>
+                <!-- INICIO: Contenedor de Balance para Historial -->
+                <div class="balance-info-container">
+                    <div class="balance-display" id="historialBalanceDisplay">
+                        Punto Actual: <span id="displaySaldoGuardadoHistorial"></span> 
+                        (<span id="displayFechaSaldoHistorial"></span>)
+                        <button class="edit-balance-btn" id="btnEditBalanceHistorial" title="Editar Punto Actual">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+                    <h3>Total Recaudado: <span id="totalRecaudadoHistorial"></span></h3>
+                </div>
+                <!-- FIN: Contenedor de Balance para Historial -->
                 <div class="controls-container" id="controlsContainer">
                     <div class="main-buttons-group">
                         <button id="btnMinimizarTabla">Maximizar Tabla</button> 
@@ -243,16 +223,8 @@
                         </button>
                     </div>
                     <div class="control-group">
-                        <label for="filtroFechas">Filtrar por fechas específicas (AAAA-MM-DD):</label>
+                        <label for="filtroFechas">Filtrar por fechas (AAAA-MM-DD, AAAA-MM-DD):</label>
                         <input type="text" id="filtroFechas" placeholder="Ej: 2023-01-01, 2023-01-05">
-                    </div>
-                    <div class="control-group">
-                        <label for="filtroFechaInicio">Filtrar desde:</label>
-                        <input type="date" id="filtroFechaInicio">
-                    </div>
-                    <div class="control-group">
-                        <label for="filtroFechaFin">hasta:</label>
-                        <input type="date" id="filtroFechaFin">
                     </div>
                     <button id="btnReiniciarFiltros" class="button-reset">Reiniciar Filtros</button>
                 </div>
@@ -263,14 +235,16 @@
 
             <section id="agregarPanel" class="content-panel active">
                 <div class="form-container">
-                    <div class="top-right-balance" id="topRightBalance">
-                        Punto Actual: <span id="displaySaldoGuardado"></span> 
-                        (<span id="displayFechaSaldo"></span>)
-                        <button class="edit-balance-btn" id="btnEditBalance" title="Editar Punto Actual">
-                            <i class="fas fa-pencil-alt"></i>
-                        </button>
+                    <div class="balance-info-container">
+                         <div class="balance-display" id="agregarBalanceDisplay">
+                            Punto Actual: <span id="displaySaldoGuardadoAgregar"></span> 
+                            (<span id="displayFechaSaldoAgregar"></span>)
+                            <button class="edit-balance-btn" id="btnEditBalanceAgregar" title="Editar Punto Actual">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                        <h3>Total Recaudado: <span id="totalRecaudadoAgregar"></span></h3>
                     </div>
-                    <h3>Total Recaudado: <span id="totalRecaudado"></span></h3>
                     <hr style="margin-bottom: 25px;">
 
                     <h2>Agregar Datos</h2>
@@ -299,10 +273,19 @@
                 </div>
             </section>
 
-            <div id="scrollToTopBtn" class="fab-scroll-to-top" title="Ir al inicio">
-                <i class="fas fa-arrow-up">↑</i>
+            <div class="fab-container">
+                <button id="themeToggle" class="fab theme-toggle" title="Cambiar Tema">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button id="scrollToTopBtn" class="fab scroll-to-top" title="Ir al inicio">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
             </div>
             
+            <footer>
+                <p>CarlosPN Interactive®</p>
+            </footer>
+
         </div>
     </div> 
 
@@ -342,6 +325,17 @@
     </div>
 
     <script>
+        // --- Service Worker Registration ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+
         const VALID_USERNAME = 'croupier';
         const VALID_PASSWORD = '1234';
 
@@ -359,14 +353,11 @@
 
         const setupMenu = () => {
             sideMenu.innerHTML = '<div class="menu-header">Menú</div>'; 
-            
-            // INICIO: Orden del menú actualizado
             const menuItems = [
                 { id: 'agregarPanel', title: 'Agregar Dato', icon: 'fa-plus-circle' },
                 { id: 'historialPanel', title: 'Historial', icon: 'fa-history' },
                 { id: 'importarPanel', title: 'Importar Datos', icon: 'fa-file-import' }
             ];
-            // FIN: Orden del menú actualizado
 
             menuItems.forEach(item => {
                 const section = document.getElementById(item.id);
@@ -376,25 +367,19 @@
                     link.innerHTML = `<i class="fas ${item.icon}" style="margin-right: 10px;"></i>${item.title}`;
                     link.className = 'menu-link';
                     link.dataset.target = item.id;
-                    if (section.classList.contains('active')) {
-                        link.classList.add('active-link');
-                    }
+                    if (section.classList.contains('active')) { link.classList.add('active-link'); }
                     sideMenu.appendChild(link);
                 }
             });
 
-            const menuLinks = document.querySelectorAll('.menu-link');
-            menuLinks.forEach(link => {
+            document.querySelectorAll('.menu-link').forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const targetId = link.dataset.target;
-                    
                     document.querySelectorAll('.content-panel').forEach(panel => panel.classList.remove('active'));
                     document.getElementById(targetId).classList.add('active');
-
-                    menuLinks.forEach(l => l.classList.remove('active-link'));
+                    document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active-link'));
                     link.classList.add('active-link');
-
                     if (window.innerWidth < 992) {
                         sideMenu.classList.remove('open');
                         menuToggle.classList.remove('active');
@@ -428,7 +413,6 @@
             e.preventDefault();
             const username = usernameInput.value;
             const password = passwordInput.value;
-
             if (username === VALID_USERNAME && password === VALID_PASSWORD) {
                 sessionStorage.setItem('isLoggedIn', 'true');
                 checkLogin();
@@ -436,6 +420,28 @@
                 loginMessage.textContent = 'Usuario o contraseña incorrectos.';
                 loginMessage.style.display = 'block';
             }
+        });
+
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                document.body.classList.remove('dark-mode');
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
         });
 
         let datos = [];
@@ -476,12 +482,8 @@
             }
         }
 
-        function abrirModal(id) {
-            document.getElementById(id).style.display = 'block';
-        }
-        function cerrarModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
+        function abrirModal(id) { document.getElementById(id).style.display = 'block'; }
+        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
         function formatearFecha(fecha) {
             if (!fecha) return 'N/A';
             const opciones = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Santiago' };
@@ -524,8 +526,11 @@
         }
 
         function mostrarSaldoInicial() {
-            document.getElementById('displaySaldoGuardado').textContent = formatearNumero(saldoInicialGuardado.monto);
-            document.getElementById('displayFechaSaldo').textContent = formatearFecha(saldoInicialGuardado.fecha);
+            // Actualizar en ambas secciones
+            document.getElementById('displaySaldoGuardadoAgregar').textContent = formatearNumero(saldoInicialGuardado.monto);
+            document.getElementById('displayFechaSaldoAgregar').textContent = formatearFecha(saldoInicialGuardado.fecha);
+            document.getElementById('displaySaldoGuardadoHistorial').textContent = formatearNumero(saldoInicialGuardado.monto);
+            document.getElementById('displayFechaSaldoHistorial').textContent = formatearFecha(saldoInicialGuardado.fecha);
         }
 
         function abrirModalEditarSaldo() {
@@ -690,6 +695,7 @@
             }, {});
             
             const fechasOrdenadas = Object.keys(datosPorFecha);
+            fechasOrdenadas.sort((a,b) => ordenFecha === 'asc' ? new Date(a) - new Date(b) : new Date(b) - new Date(a));
             
             let colorIndex = 0;
             
@@ -724,7 +730,9 @@
                 tfoot.innerHTML = `<tr><td colspan="2"><strong>Total Día:</strong></td><td>${formatearNumero(totalDia)}</td><td><button class="button-copy" onclick="copiarDatosDelDia('${fecha}')">Copiar</button></td></tr>`;
                 tablaContainer.appendChild(tabla);
             });
-            document.getElementById('totalRecaudado').textContent = formatearNumero(totalGlobal);
+            // Actualizar en ambas secciones
+            document.getElementById('totalRecaudadoAgregar').textContent = formatearNumero(totalGlobal);
+            document.getElementById('totalRecaudadoHistorial').textContent = formatearNumero(totalGlobal);
         }
         
         function minimizarTabla() {
@@ -735,13 +743,9 @@
 
         function filtrarTabla() {
             const filtroFechasInput = document.getElementById('filtroFechas').value.trim();
-            const filtroFechaInicio = document.getElementById('filtroFechaInicio').value;
-            const filtroFechaFin = document.getElementById('filtroFechaFin').value;
             let datosFiltrados = [...datos]; 
 
-            if (filtroFechaInicio && filtroFechaFin) {
-                datosFiltrados = datosFiltrados.filter(d => d.fecha >= filtroFechaInicio && d.fecha <= filtroFechaFin);
-            } else if (filtroFechasInput) {
+            if (filtroFechasInput) {
                 const fechas = filtroFechasInput.split(',').map(f => f.trim()).filter(Boolean);
                 datosFiltrados = datosFiltrados.filter(d => fechas.includes(d.fecha));
             } 
@@ -754,13 +758,11 @@
             
             const totalParcial = datosFiltrados.reduce((acc, dato) => acc + dato.monto, 0);
             generarTablaHTML(datosFiltrados, totalParcial);
-            document.getElementById('controlsContainer').classList.toggle('controls-expanded', !minimizado || !!filtroFechaInicio || !!filtroFechaFin || !!filtroFechasInput);
+            document.getElementById('controlsContainer').classList.toggle('controls-expanded', !minimizado || !!filtroFechasInput);
         }
         
         function reiniciarFiltros() {
             document.getElementById('filtroFechas').value = '';
-            document.getElementById('filtroFechaInicio').value = '';
-            document.getElementById('filtroFechaFin').value = '';
             minimizado = true; 
             document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; 
             ordenFecha = 'desc'; 
@@ -781,6 +783,9 @@
 
         async function initializeApp() {
             setupMenu();
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+
             await cargarDatosDesdeSheet();
             await cargarSaldoInicial();
             minimizado = true; 
@@ -801,15 +806,17 @@
                 await guardarEdicion();
             });
             document.getElementById('btnProcesarImportacion').addEventListener('click', procesarImportacion);
-            document.getElementById('btnEditBalance').addEventListener('click', abrirModalEditarSaldo);
+            
+            // Asignar evento a ambos botones de editar balance
+            document.getElementById('btnEditBalanceAgregar').addEventListener('click', abrirModalEditarSaldo);
+            document.getElementById('btnEditBalanceHistorial').addEventListener('click', abrirModalEditarSaldo);
+
             document.getElementById('editBalanceForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 await guardarSaldoInicialDesdeModal();
             });
             document.getElementById('btnMinimizarTabla').addEventListener('click', minimizarTabla);
             document.getElementById('filtroFechas').addEventListener('input', filtrarTabla);
-            document.getElementById('filtroFechaInicio').addEventListener('change', filtrarTabla); 
-            document.getElementById('filtroFechaFin').addEventListener('change', filtrarTabla); 
             document.getElementById('btnReiniciarFiltros').addEventListener('click', reiniciarFiltros);
             document.getElementById('btnOrdenarFechaAsc').addEventListener('click', () => ordenarPorFecha('asc'));
             document.getElementById('btnOrdenarFechaDesc').addEventListener('click', () => ordenarPorFecha('desc'));
