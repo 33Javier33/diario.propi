@@ -727,7 +727,32 @@
                         </td>`;
                     totalDia += dato.monto;
                 });
-                tfoot.innerHTML = `<tr><td colspan="2"><strong>Total Día:</strong></td><td>${formatearNumero(totalDia)}</td><td><button class="button-copy" onclick="copiarDatosDelDia('${fecha}')">Copiar</button></td></tr>`;
+
+                // --- INICIO: CÓDIGO MODIFICADO ---
+                // 1. Preparamos el array con todos los registros del día para la importación
+                const datosParaImportar = datosPorFecha[fecha].map(dato => ({
+                    fecha: dato.fecha,
+                    tipo: dato.tipo,
+                    monto: dato.monto
+                }));
+
+                // 2. Convertimos el array a un string JSON y lo codificamos para la URL
+                const datosCodificados = encodeURIComponent(JSON.stringify(datosParaImportar));
+
+                // 3. Creamos el HTML para el pie de la tabla con el botón de Copiar y el nuevo de Importar
+                // ¡ASEGÚRATE DE QUE EL NOMBRE DEL ARCHIVO 'pagina_gestion_propina.html' SEA CORRECTO!
+                tfoot.innerHTML = `
+                    <tr>
+                        <td colspan="2"><strong>Total Día:</strong></td>
+                        <td>${formatearNumero(totalDia)}</td>
+                        <td style="display: flex; flex-wrap: wrap; gap: 5px;">
+                            <button class="button-copy" onclick="copiarDatosDelDia('${fecha}')">Copiar</button>
+                            <a href="./pagina_gestion_propina.html?importData=${datosCodificados}" class="button-to-data" style="text-decoration: none; background-color: #3498db;">Importar a Gestión</a>
+                        </td>
+                    </tr>
+                `;
+                // --- FIN: CÓDIGO MODIFICADO ---
+
                 tablaContainer.appendChild(tabla);
             });
             // Actualizar en ambas secciones
@@ -834,5 +859,4 @@
     </script>
 </body>
 </html>
-
 
