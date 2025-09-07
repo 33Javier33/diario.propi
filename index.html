@@ -6,482 +6,203 @@
     <title>Formulario de Recaudación</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        :root {
+            --menu-width: 250px;
+            --primary-color: #007bff;
+            --secondary-color: #28a745;
+            --row-color-even: #ffffff;
+            --row-color-odd: #e7f5ff;
+            --row-footer-odd: #dbeffc;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
-            position: relative; /* Necesario para el botón flotante y el balance */
-            padding-bottom: 70px; /* Espacio para el botón flotante */
-            display: flex; /* Para centrar el modal de login */
-            justify-content: center; /* Para centrar el modal de login */
-            align-items: center; /* Para centrar el modal de login */
-            min-height: 100vh; /* Para que el body ocupe toda la altura de la vista */
-        }
-
-        /* Estilos para el modal de inicio de sesión */
-        #loginOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2000; /* Asegura que esté por encima de todo */
+            min-height: 100vh;
         }
 
-        #loginBox {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-            width: 90%;
-            max-width: 350px;
-            text-align: center;
-        }
-
-        #loginBox h2 {
-            margin-bottom: 25px;
-            color: #333;
-        }
-
-        #loginBox label {
+        body.loggedin {
             display: block;
-            margin-bottom: 10px;
-            text-align: left;
-            font-weight: bold;
-            color: #555;
+            justify-content: initial;
+            align-items: initial;
         }
 
-        #loginBox input[type="text"],
-        #loginBox input[type="password"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-
-        #loginBox button {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
+        .menu-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1002;
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
             border: none;
-            border-radius: 4px;
-            color: white;
-            font-size: 18px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: left 0.3s ease;
+        }
+        .menu-toggle span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background-color: white;
+            margin: 2px 0;
+            transition: all 0.3s ease;
+        }
+        .side-menu.open + .main-container .menu-toggle {
+            left: calc(var(--menu-width) + 15px);
+        }
+        .menu-toggle.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        .menu-toggle.active span:nth-child(2) { opacity: 0; }
+        .menu-toggle.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--menu-width);
+            height: 100%;
+            background-color: #2c3e50;
+            z-index: 1001;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+        }
+        .side-menu.open { transform: translateX(0); }
+        .side-menu .menu-header { color: white; font-size: 1.4em; font-weight: 700; text-align: center; padding: 20px 10px; border-bottom: 1px solid #4a627a; }
+        .side-menu a { color: white; text-decoration: none; padding: 15px 20px; display: block; font-size: 1.0em; transition: background-color 0.2s ease, padding-left 0.2s ease; border-bottom: 1px solid #3e5268; }
+        .side-menu a:hover, .side-menu a.active-link { background-color: var(--primary-color); padding-left: 25px; }
+        
+        .main-container {
+            transition: margin-left 0.3s ease;
+            width: 100%;
         }
 
-        #loginBox button:hover {
-            background-color: #0056b3;
-        }
-
-        #loginMessage {
-            color: red;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-
-        /* Oculta el contenido principal por defecto */
-        #mainContent {
+        .content-panel {
             display: none;
-            width: 100%;
         }
-
-        h2, h3 {
-            text-align: center;
-            color: #333;
-        }
-
-        /* Ajuste para el título h2 para dejar espacio al punto actual */
-        h2 {
-            margin-top: 50px; /* Aumenta el margen superior para que no se solape con el punto actual */
-        }
-
-        .form-container, .table-container {
-            background-color: #fff;
-            padding: 20px;
-            margin: 20px auto;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-        }
-
-        /* Contenedor del punto actual en la esquina superior derecha */
-        .top-right-balance {
-            position: absolute; 
-            top: 25px; /* Mantener la distancia del top */
-            right: 25px; /* Mantener la distancia de la derecha */
-            background-color: #f0f0f0;
-            padding: 8px 12px;
-            border-radius: 6px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            display: flex; 
-            align-items: center; 
-            font-size: 14px;
-            color: #333;
-            z-index: 999; 
-            white-space: nowrap; 
-        }
-
-        .top-right-balance .edit-balance-btn {
-            background: none;
-            border: none;
-            color: #007bff; 
-            cursor: pointer;
-            font-size: 14px;
-            margin-left: 8px; 
-            padding: 0; 
-            transition: color 0.2s ease;
-        }
-        .top-right-balance .edit-balance-btn:hover {
-            color: #0056b3;
-        }
-        .top-right-balance .edit-balance-btn i {
-            pointer-events: none; 
-        }
-
-
-        .controls-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin: 20px auto;
-            max-width: 900px; 
-            padding: 0 20px;
-        }
-
-        /* Contenedor específico para los botones principales para que se ordenen mejor */
-        .main-buttons-group {
-            display: flex;
-            flex-wrap: wrap; 
-            gap: 8px; 
-            justify-content: center;
-            width: 100%; 
-            margin-bottom: 10px; 
-        }
-
-        /* Oculta los grupos de control de filtro por defecto */
-        .control-group, #btnReiniciarFiltros {
-            display: none; 
-        }
-
-        /* Cuando la tabla no está minimizada, muestra los filtros */
-        .controls-expanded .control-group,
-        .controls-expanded #btnReiniciarFiltros {
-            display: block; 
-        }
-
-
-        label {
+        .content-panel.active {
             display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        input[type="date"],
-        input[type="tel"],
-        select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        button {
-            padding: 8px 12px; 
-            background-color: #28a745;
-            border: none;
-            border-radius: 4px;
-            color: white;
-            font-size: 14px; 
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            white-space: nowrap; 
-        }
-
-        button:hover {
-            background-color: #218838;
-        }
-
-        .button-delete {
-            background-color: #dc3545;
-        }
-
-        .button-delete:hover {
-                background-color: #c82333;
-        }
-
-        .button-reset {
-            background-color: #007bff;
-        }
-
-        .button-reset:hover {
-            background-color: #0056b3;
-        }
-
-        .button-copy {
-            background-color: #ffc107; 
-            color: #333;
-        }
-        .button-copy:hover {
-            background-color: #e0a800; 
+        @media (min-width: 992px) {
+            body.loggedin { margin-left: var(--menu-width); }
+            .menu-toggle { display: none; }
+            .side-menu { transform: translateX(0); }
         }
         
-        /* Estilos para el botón de ir a datos (arriba, con ícono) */
-        .button-to-data {
-            background-color: #6c757d;
-            color: white;
-            padding: 8px 12px; 
-            display: flex; 
-            align-items: center;
-            justify-content: center;
-            font-size: 14px; 
-        }
-        .button-to-data:hover {
-            background-color: #5a6268;
-        }
-        .button-to-data i {
-            font-size: 16px; 
-            margin-right: 5px; 
-        }
-        /* Si no hay texto, ajusta el padding */
-        .button-to-data:not(:has(span)) i {
-            margin-right: 0;
-        }
-
-
-        /* Estilos para el botón flotante de ir al inicio */
-        .fab-scroll-to-top {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #030406c5;
-            color: white;
-            border-radius: 50%; 
-            width: 50px;
-            height: 50px;
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        #loginBox { background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); width: 90%; max-width: 350px; text-align: center; }
+        #loginBox h2 { margin-bottom: 25px; color: #333; }
+        #loginBox label { display: block; margin-bottom: 10px; text-align: left; font-weight: bold; color: #555; }
+        #loginBox input[type="text"], #loginBox input[type="password"] { width: calc(100% - 22px); padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        #loginBox button { width: 100%; padding: 12px; background-color: #007bff; border: none; border-radius: 4px; color: white; font-size: 18px; cursor: pointer; transition: background-color 0.3s ease; }
+        #loginBox button:hover { background-color: #0056b3; }
+        #loginMessage { color: red; margin-top: 15px; font-weight: bold; }
+        
+        #mainContent { display: none; padding: 0 15px; }
+        h2, h3 { text-align: center; color: #333; }
+        h2 { margin-top: 20px; }
+        .form-container, .table-container { background-color: #fff; padding: 20px; margin: 20px auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); max-width: 400px; }
+        
+        .top-right-balance {
+            position: relative;
+            top: auto;
+            right: auto;
+            background-color: #f0f0f0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            z-index: 1000; 
-            transition: background-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease; 
-            opacity: 0; 
-            visibility: hidden; 
-        }
-        .fab-scroll-to-top.show {
-            opacity: 1; 
-            visibility: visible; 
-        }
-        .fab-scroll-to-top:hover {
-            background-color: #0056b3;
-            transform: scale(1.05); 
-        }
-        .fab-scroll-to-top i {
-            margin: 0; 
+            font-size: 16px;
+            color: #333;
+            white-space: nowrap;
+            margin: 0 auto 15px auto;
+            width: auto;
+            max-width: 100%;
         }
 
+        .top-right-balance .edit-balance-btn { background: none; border: none; color: #007bff; cursor: pointer; font-size: 14px; margin-left: 8px; padding: 0; transition: color 0.2s ease; }
+        .top-right-balance .edit-balance-btn:hover { color: #0056b3; }
+        .top-right-balance .edit-balance-btn i { pointer-events: none; }
+        .controls-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px auto; max-width: 900px; padding: 0 20px; }
+        .main-buttons-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; margin-bottom: 10px; }
+        .control-group, #btnReiniciarFiltros { display: none; }
+        .controls-expanded .control-group, .controls-expanded #btnReiniciarFiltros { display: block; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        input[type="date"], input[type="tel"], select, .modal-content textarea { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { padding: 8px 12px; background-color: #28a745; border: none; border-radius: 4px; color: white; font-size: 14px; cursor: pointer; transition: background-color 0.3s ease; white-space: nowrap; }
+        button:hover { background-color: #218838; }
+        .button-delete { background-color: #dc3545; }
+        .button-delete:hover { background-color: #c82333; }
+        .button-reset { background-color: #007bff; }
+        .button-reset:hover { background-color: #0056b3; }
+        .button-copy { background-color: #ffc107; color: #333; }
+        .button-copy:hover { background-color: #e0a800; }
+        .button-to-data { background-color: #6c757d; color: white; padding: 8px 12px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .button-to-data:hover { background-color: #5a6268; }
+        .button-to-data i { font-size: 16px; margin-right: 5px; }
+        .button-to-data:not(:has(span)) i { margin-right: 0; }
+        .fab-scroll-to-top { position: fixed; bottom: 20px; right: 20px; background-color: #030406c5; color: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1000; transition: all 0.3s ease; opacity: 0; visibility: hidden; }
+        .fab-scroll-to-top.show { opacity: 1; visibility: visible; }
+        .fab-scroll-to-top:hover { background-color: #0056b3; transform: scale(1.05); }
+        .fab-scroll-to-top i { margin: 0; }
+        .table-container { overflow-x: auto; background-color: #fff; padding: 20px; margin: 20px auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); max-width: 900px; scroll-margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        tfoot td { font-weight: bold; background-color: #f9f9f9; text-align: left; }
+        tfoot tr { background-color: #f2f2f2; }
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); padding-top: 60px; }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        .modal-content textarea { width: calc(100% - 20px); resize: vertical; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+        
+        .fecha-par tbody tr { background-color: var(--row-color-even); }
+        .fecha-impar tbody tr { background-color: var(--row-color-odd); }
+        .fecha-impar tfoot tr { background-color: var(--row-footer-odd); }
+        .fecha-impar tfoot td { background-color: transparent; }
 
-        .table-container {
-            overflow-x: auto;
-            background-color: #fff;
-            padding: 20px;
-            margin: 20px auto;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 900px; 
-            scroll-margin-top: 20px; 
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        th, td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-
-        tfoot td {
-            font-weight: bold;
-            background-color: #f9f9f9;
-            text-align: left;
-        }
-
-        tfoot tr {
-            background-color: #f2f2f2;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1001; /* Z-index alto para que esté por encima de todo */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-            padding-top: 60px;
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .modal-content textarea {
-            width: calc(100% - 20px); 
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            resize: vertical; 
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        /* Estilos para pantallas pequeñas */
-        @media (max-width: 600px) {
-            .top-right-balance {
-                position: relative; /* Vuelve a ser relativo para que ocupe espacio en el flujo */
-                width: 90%; 
-                margin: 10px auto; /* Centra y da margen */
-                top: auto; /* Resetea el top absoluto */
-                right: auto; /* Resetea el right absoluto */
-                justify-content: center; 
-            }
-
-            /* Asegurarse de que el h2 siempre esté debajo del punto actual en móviles */
-            h2 {
-                margin-top: 20px; /* Un margen superior suficiente en móviles */
-            }
-
-            .controls-container {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .main-buttons-group {
-                flex-direction: row; 
-                justify-content: center;
-                width: 100%;
-            }
-            .main-buttons-group button {
-                flex-grow: 1; 
-                min-width: unset; 
-                font-size: 13px; 
-                padding: 7px 10px; 
-            }
-            /* Si son muchos, que bajen y ocupen la mitad cada uno */
-            .main-buttons-group button:nth-child(odd):last-child { 
-                width: 100%;
-            }
-            .main-buttons-group button:nth-child(even),
-            .main-buttons-group button:nth-child(odd):not(:last-child) { 
-                 width: calc(50% - 4px); 
-            }
-
-
-            .control-group {
-                min-width: unset;
-                width: 100%;
-            }
-
-            table, thead, tbody, th, td, tr {
-                display: block;
-            }
-
-            thead tr {
-                position: absolute;
-                top: -9999px;
-                left: -9999px;
-            }
-
-            tr {
-                border: 1px solid #ccc;
-                margin-bottom: 10px;
-                display: flex;
-                flex-wrap: wrap;
-            }
-
-            td {
-                border: none;
-                border-bottom: 1px solid #eee;
-                position: relative;
-                padding-left: 50%;
-                text-align: right;
-                width: 100%;
-            }
-
-            td:before {
-                content: attr(data-label);
-                position: absolute;
-                left: 6px;
-                width: 45%;
-                padding-right: 10px;
-                white-space: nowrap;
-                text-align: left;
-                font-weight: bold;
-            }
-            tfoot tr {
-                display: flex;
-                flex-wrap: wrap;
-                width: 100%;
-                border: 1px solid #ccc;
-                margin-top: 10px;
-            }
-            tfoot td {
-                width: 100%;
-                text-align: right;
-                padding-left: 50%;
-            }
-            tfoot td:first-child {
-                text-align: left;
-            }
-            tfoot td[colspan="2"] {
-                width: calc(100% - 12px); 
-            }
+        @media (max-width: 600px) { 
+            .top-right-balance { position: relative; width: 90%; margin: 10px auto; top: auto; right: auto; justify-content: center; } 
+            h2 { margin-top: 20px; } 
+            .controls-container { flex-direction: column; align-items: center; } 
+            .main-buttons-group { flex-direction: row; justify-content: center; width: 100%; } 
+            .main-buttons-group button { flex-grow: 1; min-width: unset; font-size: 13px; padding: 7px 10px; } 
+            .main-buttons-group button:nth-child(odd):last-child { width: 100%; } 
+            .main-buttons-group button:nth-child(even), .main-buttons-group button:nth-child(odd):not(:last-child) { width: calc(50% - 4px); } 
+            .control-group { min-width: unset; width: 100%; } 
+            table, thead, tbody, th, td, tr { display: block; } 
+            thead tr { position: absolute; top: -9999px; left: -9999px; } 
+            tr { border: 1px solid #ccc; margin-bottom: 10px; display: flex; flex-wrap: wrap; } 
+            td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50%; text-align: right; width: 100%; } 
+            td:before { content: attr(data-label); position: absolute; left: 6px; width: 45%; padding-right: 10px; white-space: nowrap; text-align: left; font-weight: bold; } 
+            tfoot tr { display: flex; flex-wrap: wrap; width: 100%; border: 1px solid #ccc; margin-top: 10px; } 
+            tfoot td { width: 100%; text-align: right; padding-left: 50%; } 
+            tfoot td:first-child { text-align: left; } 
+            tfoot td[colspan="2"] { width: calc(100% - 12px); } 
+            .fecha-par tr { background-color: var(--row-color-even); }
+            .fecha-impar tr { background-color: var(--row-color-odd); }
         }
     </style>
 </head>
@@ -500,124 +221,129 @@
         </div>
     </div>
 
-    <div id="mainContent">
-        <div class="top-right-balance" id="topRightBalance">
-            Punto Actual: <span id="displaySaldoGuardado"></span> 
-            (<span id="displayFechaSaldo"></span>)
-            <button class="edit-balance-btn" id="btnEditBalance" title="Editar Punto Actual">
-                <i class="fas fa-pencil-alt"></i>
-            </button>
-        </div>
+    <nav id="sideMenu" class="side-menu"></nav>
+    <div id="mainContainer" class="main-container">
+        <button id="menuToggle" class="menu-toggle" style="display: none;">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
 
-        <h2>Datos Recaudados</h2>
-        <h3>Total Recaudado: <span id="totalRecaudado"></span></h3>
+        <div id="mainContent">
+            
+            <section id="historialPanel" class="content-panel">
+                <h2>Datos Recaudados</h2>
+                <div class="controls-container" id="controlsContainer">
+                    <div class="main-buttons-group">
+                        <button id="btnMinimizarTabla">Maximizar Tabla</button> 
+                        <button id="btnOrdenarFechaAsc" class="button-reset">Fecha (Antiguo)</button>
+                        <button id="btnOrdenarFechaDesc" class="button-reset">Fecha (Reciente)</button>
+                        <button id="scrollToDataBtn" class="button-to-data" title="Ir a los datos">
+                            <i class="fas fa-chart-bar"></i> <span>Ir al Historial</span>
+                        </button>
+                    </div>
+                    <div class="control-group">
+                        <label for="filtroFechas">Filtrar por fechas específicas (AAAA-MM-DD):</label>
+                        <input type="text" id="filtroFechas" placeholder="Ej: 2023-01-01, 2023-01-05">
+                    </div>
+                    <div class="control-group">
+                        <label for="filtroFechaInicio">Filtrar desde:</label>
+                        <input type="date" id="filtroFechaInicio">
+                    </div>
+                    <div class="control-group">
+                        <label for="filtroFechaFin">hasta:</label>
+                        <input type="date" id="filtroFechaFin">
+                    </div>
+                    <button id="btnReiniciarFiltros" class="button-reset">Reiniciar Filtros</button>
+                </div>
+                <div class="table-container" id="tableContainerScrollTarget">
+                    <div id="tablaContainer"></div>
+                </div>
+            </section>
 
-        <div class="controls-container" id="controlsContainer">
-            <div class="main-buttons-group">
-                <button id="btnAgregarDato">Agregar Dato</button>
-                <button id="btnMinimizarTabla">Maximizar Tabla</button> 
-                <button id="btnImportarDatos" class="button-copy">Importar Datos</button>
-                <button id="btnOrdenarFechaAsc" class="button-reset">Fecha (Antiguo)</button>
-                <button id="btnOrdenarFechaDesc" class="button-reset">Fecha (Reciente)</button>
-                <button id="scrollToDataBtn" class="button-to-data" title="Ir a los datos">
-                    <i class="fas fa-chart-bar"></i> <span>Ir al Historial</span>
-                </button>
+            <section id="agregarPanel" class="content-panel active">
+                <div class="form-container">
+                    <div class="top-right-balance" id="topRightBalance">
+                        Punto Actual: <span id="displaySaldoGuardado"></span> 
+                        (<span id="displayFechaSaldo"></span>)
+                        <button class="edit-balance-btn" id="btnEditBalance" title="Editar Punto Actual">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+                    <h3>Total Recaudado: <span id="totalRecaudado"></span></h3>
+                    <hr style="margin-bottom: 25px;">
+
+                    <h2>Agregar Datos</h2>
+                    <form id="agregarForm">
+                        <label for="tipo">Tipo:</label>
+                        <select id="tipo" name="tipo">
+                            <option value="Máquinas">Máquinas</option>
+                            <option value="Mesas">Mesas</option>
+                            <option value="Otras">Otras</option>
+                        </select>
+                        <label for="fecha">Fecha:</label>
+                        <input type="date" id="fecha" name="fecha" required>
+                        <label for="monto">Monto Recaudado:</label>
+                        <input type="tel" id="monto" name="monto" oninput="formatearMonto(this)" required>
+                        <button type="submit">Agregar</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="importarPanel" class="content-panel">
+                 <div class="form-container">
+                    <h2>Importar Datos desde Texto</h2>
+                    <p>Pega aquí el texto de los datos de recaudación (ej. desde WhatsApp):</p>
+                    <textarea id="importDataTextarea" rows="10" placeholder="Pega el texto aquí..."></textarea>
+                    <button id="btnProcesarImportacion">Procesar Importación</button>
+                </div>
+            </section>
+
+            <div id="scrollToTopBtn" class="fab-scroll-to-top" title="Ir al inicio">
+                <i class="fas fa-arrow-up">↑</i>
             </div>
             
-            <div class="control-group">
-                <label for="filtroFechas">Filtrar por fechas específicas (AAAA-MM-DD):</label>
-                <input type="text" id="filtroFechas" placeholder="Ej: 2023-01-01, 2023-01-05">
-            </div>
-            <div class="control-group">
-                <label for="filtroFechaInicio">Filtrar desde:</label>
-                <input type="date" id="filtroFechaInicio">
-            </div>
-            <div class="control-group">
-                <label for="filtroFechaFin">hasta:</label>
-                <input type="date" id="filtroFechaFin">
-            </div>
-            <button id="btnReiniciarFiltros" class="button-reset">Reiniciar Filtros</button>
         </div>
+    </div> 
 
-        <div class="table-container" id="tableContainerScrollTarget">
-            <div id="tablaContainer"></div>
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal-id="editModal">×</span>
+            <h2>Editar Datos</h2>
+            <form id="editarForm">
+                <label for="editarTipo">Tipo:</label>
+                <select id="editarTipo" name="editarTipo">
+                    <option value="Máquinas">Máquinas</option>
+                    <option value="Mesas">Mesas</option>
+                    <option value="Otras">Otras</option>
+                </select>
+                <label for="editarFecha">Fecha:</label>
+                <input type="date" id="editarFecha" name="editarFecha" required>
+                <label for="editarMonto">Monto Recaudado:</label>
+                <input type="tel" id="editarMonto" name="editarMonto" oninput="formatearMonto(this)" required>
+                <button type="submit">Guardar</button>
+            </form>
         </div>
-
-        <div id="scrollToTopBtn" class="fab-scroll-to-top" title="Ir al inicio">
-            <i class="fas fa-arrow-up">↑</i>
-        </div>
-
-        <div id="agregarModal" class="modal">
-            <div class="modal-content">
-                <span class="close" data-modal-id="agregarModal">×</span>
-                <h2>Agregar Datos</h2>
-                <form id="agregarForm">
-                    <label for="tipo">Tipo:</label>
-                    <select id="tipo" name="tipo">
-                        <option value="Máquinas">Máquinas</option>
-                        <option value="Mesas">Mesas</option>
-                        <option value="Otras">Otras</option>
-                    </select><br><br>
-                    <label for="fecha">Fecha:</label>
-                    <input type="date" id="fecha" name="fecha" required><br><br>
-                    <label for="monto">Monto Recaudado:</label>
-                    <input type="tel" id="monto" name="monto" oninput="formatearMonto(this)" required><br><br>
-                    <button type="submit">Agregar</button>
-                </form>
-            </div>
-        </div>
-
-        <div id="editModal" class="modal">
-            <div class="modal-content">
-                <span class="close" data-modal-id="editModal">×</span>
-                <h2>Editar Datos</h2>
-                <form id="editarForm">
-                    <label for="editarTipo">Tipo:</label>
-                    <select id="editarTipo" name="editarTipo">
-                        <option value="Máquinas">Máquinas</option>
-                        <option value="Mesas">Mesas</option>
-                        <option value="Otras">Otras</option>
-                    </select><br><br>
-                    <label for="editarFecha">Fecha:</label>
-                    <input type="date" id="editarFecha" name="editarFecha" required><br><br>
-                    <label for="editarMonto">Monto Recaudado:</label>
-                    <input type="tel" id="editarMonto" name="editarMonto" oninput="formatearMonto(this)" required><br><br>
-                    <button type="submit">Guardar</button>
-                </form>
-            </div>
-        </div>
-
-        <div id="editBalanceModal" class="modal">
-            <div class="modal-content">
-                <span class="close" data-modal-id="editBalanceModal">×</span>
-                <h2>Editar Punto Actual</h2>
-                <form id="editBalanceForm">
-                    <div style="margin-bottom: 15px;"> 
-                        <label for="editBalanceDate">Fecha del Punto:</label>
-                        <input type="date" id="editBalanceDate" name="editBalanceDate" required>
-                    </div>
-                    <label for="editSaldoActual">Monto del Punto:</label>
-                    <input type="tel" id="editSaldoActual" name="editSaldoActual" oninput="formatearMonto(this)" required><br><br>
-                    <button type="submit">Guardar Punto</button>
-                </form>
-            </div>
-        </div>
-
-        <div id="importarModal" class="modal">
-            <div class="modal-content">
-                <span class="close" data-modal-id="importarModal">×</span>
-                <h2>Importar Datos desde Texto</h2>
-                <p>Pega aquí el texto de los datos de recaudación (ej. desde WhatsApp):</p>
-                <textarea id="importDataTextarea" rows="10" cols="50" placeholder="Pega el texto aquí..."></textarea><br><br>
-                <button id="btnProcesarImportacion">Procesar Importación</button>
-            </div>
+    </div>
+    <div id="editBalanceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal-id="editBalanceModal">×</span>
+            <h2>Editar Punto Actual</h2>
+            <form id="editBalanceForm">
+                <div style="margin-bottom: 15px;"> 
+                    <label for="editBalanceDate">Fecha del Punto:</label>
+                    <input type="date" id="editBalanceDate" name="editBalanceDate" required>
+                </div>
+                <label for="editSaldoActual">Monto del Punto:</label>
+                <input type="tel" id="editSaldoActual" name="editSaldoActual" oninput="formatearMonto(this)" required>
+                <button type="submit">Guardar Punto</button>
+            </form>
         </div>
     </div>
 
     <script>
-        // --- Bloqueo por Contraseña ---
-        const VALID_USERNAME = 'croupier'; // Puedes cambiarlo
-        const VALID_PASSWORD = '1234'; // Puedes cambiarlo
+        const VALID_USERNAME = 'croupier';
+        const VALID_PASSWORD = '1234';
 
         const loginOverlay = document.getElementById('loginOverlay');
         const loginForm = document.getElementById('loginForm');
@@ -625,20 +351,76 @@
         const passwordInput = document.getElementById('password');
         const loginMessage = document.getElementById('loginMessage');
         const mainContent = document.getElementById('mainContent');
-        const topRightBalance = document.getElementById('topRightBalance');
-
-        // ¡IMPORTANTE! Reemplaza 'URL_DE_TU_APLICACION_WEB_AQUI' con la URL de tu Google Apps Script
+        
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxna9EH5LZPTPCPws58pGro6qCrZ8_zNwvUkUHS28BYfd8CsAcD1MRcqlITbDm4lTk/exec'; 
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sideMenu = document.getElementById('sideMenu');
+
+        const setupMenu = () => {
+            sideMenu.innerHTML = '<div class="menu-header">Menú</div>'; 
+            
+            // INICIO: Orden del menú actualizado
+            const menuItems = [
+                { id: 'agregarPanel', title: 'Agregar Dato', icon: 'fa-plus-circle' },
+                { id: 'historialPanel', title: 'Historial', icon: 'fa-history' },
+                { id: 'importarPanel', title: 'Importar Datos', icon: 'fa-file-import' }
+            ];
+            // FIN: Orden del menú actualizado
+
+            menuItems.forEach(item => {
+                const section = document.getElementById(item.id);
+                if (section) {
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.innerHTML = `<i class="fas ${item.icon}" style="margin-right: 10px;"></i>${item.title}`;
+                    link.className = 'menu-link';
+                    link.dataset.target = item.id;
+                    if (section.classList.contains('active')) {
+                        link.classList.add('active-link');
+                    }
+                    sideMenu.appendChild(link);
+                }
+            });
+
+            const menuLinks = document.querySelectorAll('.menu-link');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.dataset.target;
+                    
+                    document.querySelectorAll('.content-panel').forEach(panel => panel.classList.remove('active'));
+                    document.getElementById(targetId).classList.add('active');
+
+                    menuLinks.forEach(l => l.classList.remove('active-link'));
+                    link.classList.add('active-link');
+
+                    if (window.innerWidth < 992) {
+                        sideMenu.classList.remove('open');
+                        menuToggle.classList.remove('active');
+                    }
+                });
+            });
+        };
+
+        menuToggle.addEventListener('click', () => {
+            sideMenu.classList.toggle('open');
+            menuToggle.classList.toggle('active');
+        });
 
         function checkLogin() {
             const storedLogin = sessionStorage.getItem('isLoggedIn');
             if (storedLogin === 'true') {
                 loginOverlay.style.display = 'none';
                 mainContent.style.display = 'block';
+                menuToggle.style.display = 'flex';
+                document.body.classList.add('loggedin');
                 initializeApp();
             } else {
                 loginOverlay.style.display = 'flex';
                 mainContent.style.display = 'none';
+                menuToggle.style.display = 'none';
+                document.body.classList.remove('loggedin');
             }
         }
 
@@ -649,124 +431,77 @@
 
             if (username === VALID_USERNAME && password === VALID_PASSWORD) {
                 sessionStorage.setItem('isLoggedIn', 'true');
-                loginOverlay.style.display = 'none';
-                mainContent.style.display = 'block';
-                initializeApp();
+                checkLogin();
             } else {
-                loginMessage.textContent = 'Usuario o contraseña incorrectos. Intenta de nuevo.';
+                loginMessage.textContent = 'Usuario o contraseña incorrectos.';
                 loginMessage.style.display = 'block';
             }
         });
-        // --- Fin Bloqueo por Contraseña ---
 
-
-        // Array pa' guardar los datos de recaudación (ahora será un caché local de lo que viene de Sheets)
         let datos = [];
-        // Pa' saber si la tabla está "mini" o completa
         let minimizado = true; 
-        // El índice del dato que estamos editando
-        let editIndex = -1; // Este será el índice original en el array 'datos' (0-based)
-        // Pa' controlar el orden de las fechas: 'asc' pa' las antiguas primero, 'desc' pa' las nuevas
-        let ordenFecha = 'asc'; 
-
-        // Variable para almacenar el punto inicial (fecha y monto)
+        let editIndex = -1;
+        let ordenFecha = 'desc';
         let saldoInicialGuardado = { fecha: null, monto: null };
-
-        // --- Funciones de Interacción con Google Apps Script ---
 
         async function fetchFromScript(params) {
             const url = new URL(SCRIPT_URL);
-            for (const key in params) {
-                url.searchParams.append(key, params[key]);
-            }
+            Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
             try {
-                const response = await fetch(url.toString());
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return await response.json();
             } catch (error) {
                 console.error('Error fetching data from Apps Script:', error);
-                alert('Error al conectar con el servidor de datos. Revisa la consola para más detalles.');
+                alert('Error al conectar con el servidor de datos.');
                 return { status: 'error', message: error.message };
             }
         }
 
         async function postToScript(params, data) {
             const url = new URL(SCRIPT_URL);
-            for (const key in params) {
-                url.searchParams.append(key, params[key]);
-            }
+            Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
             try {
-                const response = await fetch(url.toString(), {
+                const response = await fetch(url, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8', // Requerido por Apps Script para JSON.parse(e.postData.contents)
-                    },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(data),
                 });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return await response.json();
             } catch (error) {
                 console.error('Error posting data to Apps Script:', error);
-                alert('Error al enviar datos al servidor. Revisa la consola para más detalles.');
+                alert('Error al enviar datos al servidor.');
                 return { status: 'error', message: error.message };
             }
         }
 
-        // --- Funciones Varias (Utilidades) ---
-
-        // Abre un pop-up (modal)
         function abrirModal(id) {
             document.getElementById(id).style.display = 'block';
-            topRightBalance.style.display = 'none'; // Oculta el balance cuando se abre un modal
         }
-
-        // Cierra un pop-up (modal)
         function cerrarModal(id) {
             document.getElementById(id).style.display = 'none';
-            topRightBalance.style.display = 'flex'; // Muestra el balance cuando se cierra un modal
         }
-
-        // Formatea la fecha pa' que se vea bonita (ej. 07/07/2025)
         function formatearFecha(fecha) {
             if (!fecha) return 'N/A';
             const opciones = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Santiago' };
-            const fechaObj = new Date(fecha + 'T12:00:00'); 
+            const fechaObj = new Date(fecha + 'T12:00:00');
             return fechaObj.toLocaleDateString('es-ES', opciones);
         }
-
-        // Le pone formato de plata al número (ej. $1.234.567)
         function formatearNumero(numero) {
             if (isNaN(numero) || numero === null) return '$0';
             return `$${Math.ceil(numero).toLocaleString('es-ES').replace(/,/g, '.')}`;
         }
-
-        // Pone el formato de plata en el campo de monto mientras escribes
         function formatearMonto(input) {
             let valor = input.value.replace(/\D/g, ''); 
-            if (valor) {
-                valor = parseFloat(valor).toLocaleString('es-ES');
-                input.value = `$${valor}`;
-            } else {
-                input.value = '';
-            }
+            input.value = valor ? `$${parseFloat(valor).toLocaleString('es-ES')}` : '';
         }
 
-        // --- Funciones para el Punto Actual ---
         async function cargarSaldoInicial() {
             const response = await fetchFromScript({ action: 'getSaldo' });
-            if (response.status === 'success' && response.data) {
-                saldoInicialGuardado = { 
-                    fecha: response.data.fecha || null, 
-                    monto: response.data.monto || null 
-                };
-            } else {
-                console.error('Error al cargar saldo inicial:', response.message);
-                saldoInicialGuardado = { fecha: null, monto: null }; // Asegura un estado válido
-            }
+            saldoInicialGuardado = (response.status === 'success' && response.data) ? 
+                { fecha: response.data.fecha || null, monto: response.data.monto || null } : 
+                { fecha: null, monto: null };
             mostrarSaldoInicial();
         }
 
@@ -774,27 +509,23 @@
             const fecha = document.getElementById('editBalanceDate').value;
             let montoInput = document.getElementById('editSaldoActual').value;
             const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
-
-            if (fecha && !isNaN(monto) && monto !== null) {
+            if (fecha && !isNaN(monto)) {
                 const response = await postToScript({ action: 'updateSaldo' }, { fecha, monto });
                 if (response.status === 'success') {
-                    alert('¡Punto actual guardado con éxito!');
+                    alert('¡Punto actual guardado!');
                     cerrarModal('editBalanceModal');
-                    cargarSaldoInicial(); // Recargar el saldo inicial desde Sheets
+                    await cargarSaldoInicial();
                 } else {
-                    alert('Error al guardar el punto actual: ' + response.message);
+                    alert('Error al guardar: ' + response.message);
                 }
             } else {
-                alert('¡Pucha! Ingresa una fecha y un monto válidos para el punto actual.');
+                alert('Ingresa una fecha y un monto válidos.');
             }
         }
 
         function mostrarSaldoInicial() {
-            const displayMonto = document.getElementById('displaySaldoGuardado');
-            const displayFecha = document.getElementById('displayFechaSaldo');
-
-            displayMonto.textContent = formatearNumero(saldoInicialGuardado.monto);
-            displayFecha.textContent = formatearFecha(saldoInicialGuardado.fecha);
+            document.getElementById('displaySaldoGuardado').textContent = formatearNumero(saldoInicialGuardado.monto);
+            document.getElementById('displayFechaSaldo').textContent = formatearFecha(saldoInicialGuardado.fecha);
         }
 
         function abrirModalEditarSaldo() {
@@ -804,35 +535,31 @@
             abrirModal('editBalanceModal');
         }
 
-
-        // --- Funciones de lo que puedes hacer (Agregar, Leer, Editar, Borrar) ---
-
-        // Agrega datos nuevos a la lista
         async function agregarDatos() {
             const tipo = document.getElementById('tipo').value;
             const fecha = document.getElementById('fecha').value;
             let montoInput = document.getElementById('monto').value;
             const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
 
-            if (fecha && !isNaN(monto) && monto !== null) {
+            if (fecha && !isNaN(monto)) {
                 const response = await postToScript({ action: 'add' }, { fecha, tipo, monto });
                 if (response.status === 'success') {
-                    cerrarModal('agregarModal');
-                    document.getElementById('agregarForm').reset(); 
-                    document.getElementById('monto').value = ''; 
-                    await cargarDatosDesdeSheet(); // Recargar todos los datos
+                    document.getElementById('agregarForm').reset();
+                    document.getElementById('monto').value = '';
+                    await cargarDatosDesdeSheet();
+                    document.querySelector('.menu-link[data-target="historialPanel"]').click();
                 } else {
-                    alert('Error al agregar dato: ' + response.message);
+                    alert('Error al agregar: ' + response.message);
                 }
             } else {
-                alert('¡Pucha! Ingresa una fecha y un monto válidos, ¿ya?');
+                alert('Ingresa fecha y monto válidos.');
             }
         }
 
-        // Abre el pop-up pa' editar y carga los datos que quieres cambiar
         function abrirModalEditar(index) {
-            editIndex = index; // Guarda el índice del dato en el array 'datos'
-            const dato = datos[index];
+            const dato = datos.find(d => d.originalIndex === index);
+            if (!dato) return;
+            editIndex = index;
             document.getElementById('editarTipo').value = dato.tipo;
             document.getElementById('editarFecha').value = dato.fecha;
             document.getElementById('editarMonto').value = String(dato.monto); 
@@ -840,437 +567,265 @@
             abrirModal('editModal');
         }
 
-        // Guarda los cambios de un dato que editaste
         async function guardarEdicion() {
             const tipo = document.getElementById('editarTipo').value;
             const fecha = document.getElementById('editarFecha').value;
             let montoInput = document.getElementById('editarMonto').value;
             const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
 
-            if (fecha && !isNaN(monto) && monto !== null) {
-                // Pasamos el índice original del dato para que Apps Script sepa qué fila actualizar
-                const response = await postToScript({ action: 'update' }, { 
-                    sheetIndex: editIndex, // Este es el índice 0-based en nuestro array 'datos'
-                    fecha, 
-                    tipo, 
-                    monto 
-                });
+            if (fecha && !isNaN(monto)) {
+                const response = await postToScript({ action: 'update' }, { sheetIndex: editIndex, fecha, tipo, monto });
                 if (response.status === 'success') {
                     cerrarModal('editModal');
-                    await cargarDatosDesdeSheet(); // Recargar todos los datos
+                    await cargarDatosDesdeSheet();
                 } else {
-                    alert('Error al actualizar dato: ' + response.message);
+                    alert('Error al actualizar: ' + response.message);
                 }
             } else {
-                alert('¡Pucha! Ingresa una fecha y un monto válidos, ¿ya?');
+                alert('Ingresa fecha y monto válidos.');
             }
         }
 
-        // Borra un dato de la lista
         async function borrarDato(index) {
-            if (confirm('¿Estás seguro que quieres borrar este dato? No hay vuelta atrás, compadre.')) {
-                // Pasamos el índice original del dato para que Apps Script sepa qué fila borrar
+            if (confirm('¿Seguro que quieres borrar este dato?')) {
                 const response = await postToScript({ action: 'delete' }, { index: index });
                 if (response.status === 'success') {
-                    await cargarDatosDesdeSheet(); // Recargar todos los datos
+                    await cargarDatosDesdeSheet();
                 } else {
-                    alert('Error al borrar dato: ' + response.message);
+                    alert('Error al borrar: ' + response.message);
                 }
             }
         }
 
-        // --- Carga inicial de datos desde Google Sheets ---
         async function cargarDatosDesdeSheet() {
             const response = await fetchFromScript({ action: 'get' });
             if (response.status === 'success' && response.data) {
-                datos = response.data.map((item, index) => ({
-                    fecha: item.fecha,
-                    tipo: item.tipo,
-                    monto: item.monto,
-                    // Agregamos un 'originalIndex' para poder referenciar la fila en Google Sheets
-                    // Este índice es el 0-based index del array de datos que recibimos
-                    originalIndex: index 
-                }));
-                actualizarTabla(); // Después de cargar, actualiza la tabla
+                datos = response.data.map((item, index) => ({ ...item, originalIndex: index }));
             } else {
-                console.error('Error al cargar datos desde Sheet:', response.message);
-                datos = []; // Limpia los datos si hay un error
-                actualizarTabla();
+                console.error('Error al cargar datos:', response.message);
+                datos = [];
             }
+            filtrarTabla();
         }
 
-
-        // --- Pa' copiar los datos del día (Si no funciona una forma, prueba la otra) ---
         function copiarDatosDelDia(fecha) {
             const datosDelDia = datos.filter(dato => dato.fecha === fecha);
-
             let textoACopiar = `Datos de Recaudación del Día ${formatearFecha(fecha)}:\n`;
             let totalDia = 0;
-
             const totalesPorTipo = {};
             datosDelDia.forEach(dato => {
-                if (!totalesPorTipo[dato.tipo]) {
-                    totalesPorTipo[dato.tipo] = 0;
-                }
+                if (!totalesPorTipo[dato.tipo]) totalesPorTipo[dato.tipo] = 0;
                 totalesPorTipo[dato.tipo] += dato.monto;
                 totalDia += dato.monto;
             });
-
             for (const tipo in totalesPorTipo) {
                 textoACopiar += `- ${tipo}: ${formatearNumero(totalesPorTipo[tipo])}\n`;
             }
-
             textoACopiar += `Total del Día: ${formatearNumero(totalDia)}\n`;
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(textoACopiar)
-                    .then(() => {
-                        alert('¡Datos del día copiados al portapapeles! Revisa tu WhatsApp o donde quieras pegarlo:\n' + textoACopiar);
-                    })
-                    .catch(err => {
-                        console.error('Error al copiar con navigator.clipboard:', err);
-                        copiarTextoConFallback(textoACopiar);
-                    });
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(textoACopiar).then(() => alert('Datos copiados!')).catch(() => alert('Error al copiar.'));
             } else {
-                copiarTextoConFallback(textoACopiar);
-            }
-        }
-
-        function copiarTextoConFallback(texto) {
-            const tempTextArea = document.createElement('textarea');
-            tempTextArea.value = texto;
-            document.body.appendChild(tempTextArea);
-            tempTextArea.select();
-            try {
+                const temp = document.createElement('textarea');
+                temp.value = textoACopiar;
+                document.body.appendChild(temp);
+                temp.select();
                 document.execCommand('copy');
-                alert('¡Datos del día copiados al portapapeles! Revisa tu WhatsApp o donde quieras pegarlo:\n' + texto);
-            } catch (err) {
-                console.error('Error al copiar con document.execCommand:', err);
-                alert('¡Pucha! Hubo un error al copiar los datos. Prueba copiarlos a mano.');
-            } finally {
-                document.body.removeChild(tempTextArea);
+                document.body.removeChild(temp);
+                alert('Datos copiados!');
             }
         }
-
-        // --- Funciones pa' importar datos (NUEVAS) ---
-        function abrirModalImportar() {
-            document.getElementById('importDataTextarea').value = '';
-            abrirModal('importarModal');
-        }
-
+        
         async function procesarImportacion() {
             const texto = document.getElementById('importDataTextarea').value;
-            if (!texto) {
-                alert('¡Eh, compadre! Pega el texto de los datos en el área, po.');
-                return;
-            }
-
+            if (!texto) { alert('Pega el texto de los datos.'); return; }
             const nuevasEntradas = parsearTextoRecaudacion(texto);
-
             if (nuevasEntradas.length > 0) {
-                const fechaImportada = nuevasEntradas[0].fecha; 
-                
-                // Lógica para manejar la eliminación de datos existentes para la fecha importada
-                // Esto implicaría una llamada al script para borrar por fecha, lo cual no está implementado
-                // en el Apps Script actual. Por simplicidad, asumiremos que no hay duplicados masivos
-                // o que la importación siempre añade nuevos. Para un borrado por fecha, necesitarías
-                // una nueva función en Apps Script que reciba la fecha y elimine esas filas.
-                
-                // Para esta implementación, simplemente agregaremos los datos. Si necesitas reemplazar,
-                // la lógica sería más compleja y requeriría una función POST en el Apps Script
-                // que primero filtre y elimine por fecha antes de añadir los nuevos.
-
                 let importadosConExito = 0;
                 for (const entrada of nuevasEntradas) {
                     const response = await postToScript({ action: 'add' }, entrada);
-                    if (response.status === 'success') {
-                        importadosConExito++;
-                    } else {
-                        console.error('Error al importar dato:', entrada, response.message);
-                    }
+                    if (response.status === 'success') importadosConExito++;
                 }
-                
                 if (importadosConExito > 0) {
-                    alert(`¡Se importaron ${importadosConExito} datos nuevos para el día ${formatearFecha(fechaImportada)}! ¡Bacán!`);
-                    cerrarModal('importarModal');
-                    await cargarDatosDesdeSheet(); // Recargar todos los datos después de la importación
+                    alert(`Se importaron ${importadosConExito} datos.`);
+                    await cargarDatosDesdeSheet();
+                    document.querySelector('.menu-link[data-target="historialPanel"]').click();
                 } else {
-                    alert('No se pudo importar ningún dato válido.');
+                    alert('No se pudo importar ningún dato.');
                 }
             } else {
-                alert('No pude sacar datos válidos del texto que pegaste. Asegúrate de que el formato sea como este:\n\nDatos de Recaudación del Día DD/MM/AAAA:\n- Máquinas: $XXX.XXX\n- Mesas: $YYY.YYY\nTotal del Día: $ZZZ.ZZZ');
+                alert('No se encontraron datos válidos en el texto.');
             }
         }
 
         function parsearTextoRecaudacion(texto) {
-            const lineas = texto.split('\n').map(linea => linea.trim()).filter(linea => linea !== '');
-            const entradasEncontradas = [];
+            const lineas = texto.split('\n').map(l => l.trim()).filter(Boolean);
+            const entradas = [];
             let fechaActual = null;
-
-            const regexFecha = /Datos de Recaudación del Día (\d{2}\/\d{2}\/\d{4}):/;
-            const regexMonto = /^- (Máquinas|Mesas|Otras|Otros):\s*\$?([\d.,]+)/; 
-
+            const regexFecha = /Día (\d{2}\/\d{2}\/\d{4})/;
+            const regexMonto = /^- (Máquinas|Mesas|Otras|Otros):\s*\$?([\d.,]+)/;
             for (const linea of lineas) {
                 const matchFecha = linea.match(regexFecha);
                 if (matchFecha) {
-                    const fechaParts = matchFecha[1].split('/');
-                    fechaActual = `${fechaParts[2]}-${fechaParts[1]}-${fechaParts[0]}`;
+                    const [day, month, year] = matchFecha[1].split('/');
+                    fechaActual = `${year}-${month}-${day}`;
                     continue;
                 }
-
                 const matchMonto = linea.match(regexMonto);
                 if (matchMonto && fechaActual) {
                     const tipo = matchMonto[1];
-                    const monto = parseFloat(matchMonto[2].replace(/\./g, '').replace(/,/g, '.')); 
-                    if (!isNaN(monto)) {
-                        entradasEncontradas.push({
-                            fecha: fechaActual,
-                            tipo: tipo,
-                            monto: monto
-                        });
-                    }
+                    const monto = parseFloat(matchMonto[2].replace(/\./g, '').replace(',', '.'));
+                    if (!isNaN(monto)) entradas.push({ fecha: fechaActual, tipo, monto });
                 }
             }
-            return entradasEncontradas;
+            return entradas;
         }
-
-        // --- Funciones pa' mostrar y filtrar la tabla ---
 
         function generarTablaHTML(datosParaTabla, totalGlobal) {
             const tablaContainer = document.getElementById('tablaContainer');
             tablaContainer.innerHTML = '';
-
             const datosPorFecha = datosParaTabla.reduce((acc, dato) => {
-                if (!acc[dato.fecha]) {
-                    acc[dato.fecha] = [];
-                }
-                acc[dato.fecha].push(dato);
+                (acc[dato.fecha] = acc[dato.fecha] || []).push(dato);
                 return acc;
             }, {});
-
-            let fechasOrdenadas = Object.keys(datosPorFecha);
-            if (ordenFecha === 'asc') {
-                fechasOrdenadas.sort((a, b) => new Date(a) - new Date(b));
-            } else {
-                fechasOrdenadas.sort((a, b) => new Date(b) - new Date(a));
-            }
-
+            
+            const fechasOrdenadas = Object.keys(datosPorFecha);
+            
+            let colorIndex = 0;
+            
             fechasOrdenadas.forEach(fecha => {
-                if (minimizado && fecha !== fechasOrdenadas[0]) {
-                    return;
+                if (minimizado && fechasOrdenadas.length > 1) {
+                   const fechaVisible = ordenFecha === 'desc' ? fechasOrdenadas[0] : fechasOrdenadas[fechasOrdenadas.length - 1];
+                   if(fecha !== fechaVisible) return;
                 }
 
+                const colorClass = colorIndex % 2 === 0 ? 'fecha-par' : 'fecha-impar';
+                colorIndex++;
+
                 const tabla = document.createElement('table');
-                const thead = document.createElement('thead');
-                const tbody = document.createElement('tbody');
-                const tfoot = document.createElement('tfoot');
-
-                thead.innerHTML = `
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Tipo</th>
-                        <th>Monto Recaudado</th>
-                        <th>Acciones</th>
-                    </tr>
-                `;
-
+                tabla.classList.add(colorClass);
+                
+                tabla.innerHTML = `<thead><tr><th>Fecha</th><th>Tipo</th><th>Monto</th><th>Acciones</th></tr></thead><tbody></tbody><tfoot></tfoot>`;
+                const tbody = tabla.querySelector('tbody');
+                const tfoot = tabla.querySelector('tfoot');
                 let totalDia = 0;
-                datosPorFecha[fecha].forEach((dato) => {
-                    // Usamos dato.originalIndex para referenciar la fila correcta en Sheets
-                    const actualSheetIndex = dato.originalIndex;
-
-                    const fila = document.createElement('tr');
+                datosPorFecha[fecha].forEach(dato => {
+                    const fila = tbody.insertRow();
                     fila.innerHTML = `
                         <td data-label="Fecha">${formatearFecha(dato.fecha)}</td>
                         <td data-label="Tipo">${dato.tipo}</td>
-                        <td data-label="Monto Recaudado">${formatearNumero(dato.monto)}</td>
+                        <td data-label="Monto">${formatearNumero(dato.monto)}</td>
                         <td data-label="Acciones">
-                            <button onclick="abrirModalEditar(${actualSheetIndex})">Editar</button>
-                            <button class="button-delete" onclick="borrarDato(${actualSheetIndex})">Borrar</button>
-                        </td>
-                    `;
+                            <button onclick="abrirModalEditar(${dato.originalIndex})">Editar</button>
+                            <button class="button-delete" onclick="borrarDato(${dato.originalIndex})">Borrar</button>
+                        </td>`;
                     totalDia += dato.monto;
-                    tbody.appendChild(fila);
                 });
-
-                tfoot.innerHTML = `
-                    <tr>
-                        <td colspan="2"><strong>Total por Día:</strong></td>
-                        <td>${formatearNumero(totalDia)}</td>
-                        <td><button class="button-copy" onclick="copiarDatosDelDia('${fecha}')">Copiar Datos del Día</button></td>
-                    </tr>
-                `;
-
-                tabla.appendChild(thead);
-                tabla.appendChild(tbody);
-                tabla.appendChild(tfoot);
+                tfoot.innerHTML = `<tr><td colspan="2"><strong>Total Día:</strong></td><td>${formatearNumero(totalDia)}</td><td><button class="button-copy" onclick="copiarDatosDelDia('${fecha}')">Copiar</button></td></tr>`;
                 tablaContainer.appendChild(tabla);
             });
-
             document.getElementById('totalRecaudado').textContent = formatearNumero(totalGlobal);
         }
-
-        function actualizarTabla() {
-            // No necesitamos limpiar datos inválidos aquí, ya que el Apps Script debería manejarlo
-            
-            const totalRecaudadoGlobal = datos.reduce((acc, dato) => acc + dato.monto, 0);
-            
-            generarTablaHTML(datos, totalRecaudadoGlobal);
-            
-            const controlsContainer = document.getElementById('controlsContainer');
-            if (minimizado) {
-                controlsContainer.classList.remove('controls-expanded');
-            } else {
-                controlsContainer.classList.add('controls-expanded');
-            }
-        }
-
+        
         function minimizarTabla() {
             minimizado = !minimizado;
-            const btn = document.getElementById('btnMinimizarTabla');
-            const controlsContainer = document.getElementById('controlsContainer');
-
-            if (minimizado) {
-                btn.textContent = 'Maximizar Tabla';
-                controlsContainer.classList.remove('controls-expanded');
-            } else {
-                btn.textContent = 'Minimizar Tabla';
-                controlsContainer.classList.add('controls-expanded');
-            }
-            actualizarTabla();
+            document.getElementById('btnMinimizarTabla').textContent = minimizado ? 'Maximizar Tabla' : 'Minimizar Tabla';
+            filtrarTabla();
         }
 
         function filtrarTabla() {
             const filtroFechasInput = document.getElementById('filtroFechas').value.trim();
             const filtroFechaInicio = document.getElementById('filtroFechaInicio').value;
             const filtroFechaFin = document.getElementById('filtroFechaFin').value;
-
-            let datosFiltrados = datos; // Empieza con todos los datos
+            let datosFiltrados = [...datos]; 
 
             if (filtroFechaInicio && filtroFechaFin) {
-                datosFiltrados = datosFiltrados.filter(dato => dato.fecha >= filtroFechaInicio && dato.fecha <= filtroFechaFin);
+                datosFiltrados = datosFiltrados.filter(d => d.fecha >= filtroFechaInicio && d.fecha <= filtroFechaFin);
             } else if (filtroFechasInput) {
-                const fechasAFiltrar = filtroFechasInput.split(',').map(fecha => fecha.trim()).filter(f => f !== '');
-                datosFiltrados = datosFiltrados.filter(dato => fechasAFiltrar.includes(dato.fecha));
+                const fechas = filtroFechasInput.split(',').map(f => f.trim()).filter(Boolean);
+                datosFiltrados = datosFiltrados.filter(d => fechas.includes(d.fecha));
             } 
+            
+            datosFiltrados.sort((a, b) => {
+                const dateA = new Date(a.fecha);
+                const dateB = new Date(b.fecha);
+                return ordenFecha === 'asc' ? dateA - dateB : dateB - dateA;
+            });
             
             const totalParcial = datosFiltrados.reduce((acc, dato) => acc + dato.monto, 0);
             generarTablaHTML(datosFiltrados, totalParcial);
+            document.getElementById('controlsContainer').classList.toggle('controls-expanded', !minimizado || !!filtroFechaInicio || !!filtroFechaFin || !!filtroFechasInput);
         }
-
-        // La función filtrarPorRango ahora se unifica con filtrarTabla
-        // Ya no es necesaria como función separada si se llama desde filtrarTabla
-        /* function filtrarPorRango() { ... } */
-
+        
         function reiniciarFiltros() {
             document.getElementById('filtroFechas').value = '';
             document.getElementById('filtroFechaInicio').value = '';
             document.getElementById('filtroFechaFin').value = '';
             minimizado = true; 
             document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; 
-            ordenFecha = 'asc'; 
-            actualizarTabla(); // Mostrar todos los datos nuevamente
+            ordenFecha = 'desc'; 
+            filtrarTabla();
         }
 
         function ordenarPorFecha(orden) {
             ordenFecha = orden;
-            // Reordenar los datos locales antes de actualizar la tabla
-            datos.sort((a, b) => {
-                const dateA = new Date(a.fecha);
-                const dateB = new Date(b.fecha);
-                return orden === 'asc' ? dateA - dateB : dateB - dateA;
-            });
-            actualizarTabla();
+            filtrarTabla();
         }
 
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth' 
-            });
-        }
-
-        function scrollToData() {
-            const tableContainer = document.getElementById('tableContainerScrollTarget');
-            tableContainer.scrollIntoView({
-                behavior: 'smooth' 
-            });
-        }
-
+        function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        function scrollToData() { document.getElementById('tableContainerScrollTarget').scrollIntoView({ behavior: 'smooth' }); }
+        
         window.addEventListener('scroll', () => {
-            const scrollToTopBtn = document.getElementById('scrollToTopBtn');
-            if (window.scrollY > 200) { 
-                scrollToTopBtn.classList.add('show');
-            } else {
-                scrollToTopBtn.classList.remove('show');
-            }
+            document.getElementById('scrollToTopBtn').classList.toggle('show', window.scrollY > 200);
         });
 
-
-        // --- Lo que pasa cuando la página carga ---
         async function initializeApp() {
-            // Cargar datos y saldo inicial desde Google Sheets
+            setupMenu();
             await cargarDatosDesdeSheet();
             await cargarSaldoInicial();
-
             minimizado = true; 
             document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; 
-            actualizarTabla(); 
+            ordenarPorFecha('desc');
             
-            document.getElementById('btnAgregarDato').addEventListener('click', () => {
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                document.getElementById('fecha').value = `${year}-${month}-${day}`; 
-                abrirModal('agregarModal');
-            });
-
             document.querySelectorAll('.modal .close').forEach(button => {
                 button.addEventListener('click', (event) => {
-                    const modalId = event.target.dataset.modalId;
-                    cerrarModal(modalId);
+                    cerrarModal(event.target.dataset.modalId);
                 });
             });
-
             document.getElementById('agregarForm').addEventListener('submit', async (e) => {
                 e.preventDefault(); 
                 await agregarDatos();
             });
-
             document.getElementById('editarForm').addEventListener('submit', async (e) => {
                 e.preventDefault(); 
                 await guardarEdicion();
             });
-
-            document.getElementById('btnImportarDatos').addEventListener('click', abrirModalImportar);
-            document.getElementById('btnProcesarImportacion').addEventListener('click', async () => {
-                await procesarImportacion();
-            });
-
+            document.getElementById('btnProcesarImportacion').addEventListener('click', procesarImportacion);
             document.getElementById('btnEditBalance').addEventListener('click', abrirModalEditarSaldo);
             document.getElementById('editBalanceForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 await guardarSaldoInicialDesdeModal();
             });
-
             document.getElementById('btnMinimizarTabla').addEventListener('click', minimizarTabla);
-            // Eventos para filtros ahora llaman directamente a filtrarTabla
             document.getElementById('filtroFechas').addEventListener('input', filtrarTabla);
             document.getElementById('filtroFechaInicio').addEventListener('change', filtrarTabla); 
             document.getElementById('filtroFechaFin').addEventListener('change', filtrarTabla); 
             document.getElementById('btnReiniciarFiltros').addEventListener('click', reiniciarFiltros);
-
             document.getElementById('btnOrdenarFechaAsc').addEventListener('click', () => ordenarPorFecha('asc'));
             document.getElementById('btnOrdenarFechaDesc').addEventListener('click', () => ordenarPorFecha('desc'));
-
             document.getElementById('scrollToTopBtn').addEventListener('click', scrollToTop);
             document.getElementById('scrollToDataBtn').addEventListener('click', scrollToData);
+            
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById('fecha').value = `${year}-${month}-${day}`; 
         }
 
         document.addEventListener('DOMContentLoaded', checkLogin);
     </script>
 </body>
 </html>
->
-</html>
+
+
