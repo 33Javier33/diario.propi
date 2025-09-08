@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario de Recaudación</title>
-    <!-- INICIO: Enlaces para PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#007bff">
-    <!-- FIN: Enlaces para PWA -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
@@ -82,8 +80,27 @@
         #mainContent { display: none; padding: 0 15px; }
         h2, h3 { text-align: center; color: var(--text-primary); }
         h2 { margin-top: 20px; }
-        .form-container, .table-container { background-color: var(--bg-content); padding: 20px; margin: 20px auto; border-radius: 8px; box-shadow: 0 0 10px var(--shadow-color); max-width: 400px; }
+        .form-container, .table-container { background-color: var(--bg-content); padding: 20px; margin: 20px auto; border-radius: 8px; box-shadow: 0 0 10px var(--shadow-color); max-width: 800px; }
         
+        /* Estilos para el panel de ayuda */
+        #ayudaPanel .form-container { max-width: 800px; }
+        #ayudaPanel h3 { text-align: left; margin-top: 25px; border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; }
+        #ayudaPanel p { line-height: 1.6; }
+        #ayudaPanel ol, #ayudaPanel ul { padding-left: 25px; }
+        #ayudaPanel li { margin-bottom: 10px; }
+        #ayudaPanel strong { color: var(--primary-color); }
+        #ayudaPanel i { color: var(--secondary-color); margin-right: 5px; }
+        #ayudaPanel .note { background-color: var(--bg-main); border-left: 4px solid var(--primary-color); padding: 10px; margin: 15px 0; border-radius: 4px; }
+        #ayudaPanel .formula {
+            text-align: center;
+            font-size: 1.1em;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: var(--bg-main);
+            border-radius: 4px;
+        }
+
+
         .balance-info-container {
             position: relative;
             background-color: var(--bg-main);
@@ -110,10 +127,11 @@
         
         .controls-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px auto; max-width: 900px; padding: 0 20px; }
         .main-buttons-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; margin-bottom: 10px; }
-        .control-group, #btnReiniciarFiltros { display: none; }
-        .controls-expanded .control-group, .controls-expanded #btnReiniciarFiltros { display: block; }
+        .control-group, #btnReiniciarFiltros, .data-management-group { display: none; }
+        .controls-expanded .control-group, .controls-expanded #btnReiniciarFiltros, .controls-expanded .data-management-group { display: block; }
+        .data-management-group { display:flex; flex-wrap:wrap; gap: 8px; justify-content: center; width:100%; margin-top:10px; }
         label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-secondary); }
-        input[type="date"], input[type="tel"], input[type="text"], select, .modal-content textarea { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; background-color: var(--bg-content); color: var(--text-primary); }
+        input[type="date"], input[type="tel"], input[type="text"], select, .modal-content textarea, input[type="file"] { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; background-color: var(--bg-content); color: var(--text-primary); }
         button { padding: 8px 12px; background-color: var(--secondary-color); border: none; border-radius: 4px; color: white; font-size: 14px; cursor: pointer; transition: background-color 0.3s ease; white-space: nowrap; }
         button:hover { background-color: #218838; }
         .button-delete { background-color: #dc3545; }
@@ -126,6 +144,10 @@
         .button-to-data:hover { background-color: #5a6268; }
         .button-to-data i { font-size: 16px; margin-right: 5px; }
         .button-to-data:not(:has(span)) i { margin-right: 0; }
+        .button-danger { background-color: #c82333; }
+        .button-danger:hover { background-color: #a71d2a; }
+        .button-warning { background-color: #e0a800; color: #333; }
+        .button-warning:hover { background-color: #c49200; }
         
         .fab-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
         .fab { background-color: #030406c5; color: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 2px 10px var(--shadow-color); cursor: pointer; transition: all 0.3s ease; }
@@ -201,18 +223,16 @@
             
             <section id="historialPanel" class="content-panel">
                 <h2>Datos Recaudados</h2>
-                <!-- INICIO: Contenedor de Balance para Historial -->
                 <div class="balance-info-container">
                     <div class="balance-display" id="historialBalanceDisplay">
-                        Punto Actual: <span id="displaySaldoGuardadoHistorial"></span> 
+                        Valor del Punto: <span id="displaySaldoGuardadoHistorial"></span> 
                         (<span id="displayFechaSaldoHistorial"></span>)
-                        <button class="edit-balance-btn" id="btnEditBalanceHistorial" title="Editar Punto Actual">
+                        <button class="edit-balance-btn" id="btnEditBalanceHistorial" title="Editar Valor del Punto">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
                     </div>
                     <h3>Total Recaudado: <span id="totalRecaudadoHistorial"></span></h3>
                 </div>
-                <!-- FIN: Contenedor de Balance para Historial -->
                 <div class="controls-container" id="controlsContainer">
                     <div class="main-buttons-group">
                         <button id="btnMinimizarTabla">Maximizar Tabla</button> 
@@ -221,18 +241,18 @@
                         <button id="scrollToDataBtn" class="button-to-data" title="Ir a los datos">
                             <i class="fas fa-chart-bar"></i> <span>Ir al Historial</span>
                         </button>
-                        <!-- INICIO: Nuevos botones de gestión de datos -->
-                        <button id="btnReiniciarMes" class="button-delete">Reiniciar Mes</button>
-                        <button id="btnExportarJSON" class="button-copy">Exportar JSON</button>
-                        <button id="btnImportarJSON" class="button-reset">Importar JSON</button>
-                        <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
-                        <!-- FIN: Nuevos botones de gestión de datos -->
                     </div>
                     <div class="control-group">
                         <label for="filtroFechas">Filtrar por fechas (AAAA-MM-DD, AAAA-MM-DD):</label>
                         <input type="text" id="filtroFechas" placeholder="Ej: 2023-01-01, 2023-01-05">
                     </div>
                     <button id="btnReiniciarFiltros" class="button-reset">Reiniciar Filtros</button>
+                    <div class="data-management-group">
+                        <button id="btnReiniciarMes" class="button-danger">Reiniciar Mes</button>
+                        <button id="btnExportarJson" class="button-reset">Exportar JSON</button>
+                        <button id="btnImportarJsonTrigger" class="button-warning">Importar JSON</button>
+                        <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
+                    </div>
                 </div>
                 <div class="table-container" id="tableContainerScrollTarget">
                     <div id="tablaContainer"></div>
@@ -240,12 +260,12 @@
             </section>
 
             <section id="agregarPanel" class="content-panel active">
-                <div class="form-container">
+                <div class="form-container" style="max-width: 400px;">
                     <div class="balance-info-container">
                          <div class="balance-display" id="agregarBalanceDisplay">
-                            Punto Actual: <span id="displaySaldoGuardadoAgregar"></span> 
+                            Valor del Punto: <span id="displaySaldoGuardadoAgregar"></span> 
                             (<span id="displayFechaSaldoAgregar"></span>)
-                            <button class="edit-balance-btn" id="btnEditBalanceAgregar" title="Editar Punto Actual">
+                            <button class="edit-balance-btn" id="btnEditBalanceAgregar" title="Editar Valor del Punto">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
                         </div>
@@ -271,7 +291,7 @@
             </section>
 
             <section id="importarPanel" class="content-panel">
-                 <div class="form-container">
+                 <div class="form-container" style="max-width: 400px;">
                     <h2>Importar Datos desde Texto</h2>
                     <p>Pega aquí el texto de los datos de recaudación (ej. desde WhatsApp):</p>
                     <textarea id="importDataTextarea" rows="10" placeholder="Pega el texto aquí..."></textarea>
@@ -279,6 +299,67 @@
                 </div>
             </section>
 
+            <section id="ayudaPanel" class="content-panel">
+                <div class="form-container">
+                    <h2>Guía de Uso de la Aplicación</h2>
+                    <p style="text-align: center;">Sigue estos pasos para llevar un registro ordenado de tu recaudación.</p>
+            
+                    <hr style="margin: 20px 0;">
+            
+                    <h3><i class="fas fa-plus-circle"></i>Paso 1: Agrega tus Recaudaciones</h3>
+                    <p>El primer paso es registrar todo el dinero que entra. Esto formará la base para todos los cálculos.</p>
+                    <ol>
+                        <li>Ve a la pestaña <strong>"Agregar Dato"</strong>.</li>
+                        <li>Completa el formulario con el tipo (Máquinas, Mesas, etc.), la fecha y el monto.</li>
+                        <li>Haz clic en "Agregar". Repite esto para cada ingreso que tengas en el día.</li>
+                    </ol>
+                    
+                    <h3><i class="fas fa-calculator"></i>Paso 2: Calcula y Guarda el "Valor del Punto"</h3>
+                    <p>El "Valor del Punto" (o "Punto Actual") es una métrica <strong>informativa</strong> que te dice cuánto dinero representa un solo punto de puntaje. Este valor lo calculas tú por fuera y lo guardas aquí como referencia.</p>
+                    
+                    <div class="note">
+                        <strong>¿Cómo se calcula el Valor del Punto?</strong>
+                        <p>Divides el dinero total que recaudaste en un período (un día, un mes) por la suma total de los puntajes de todas las personas en ese mismo período.</p>
+                        
+                        <div class="formula">
+                            <strong>Valor del Punto = (Total Recaudado) / (Suma de Puntajes)</strong>
+                        </div>
+
+                        <strong>Ejemplo Práctico (Cálculo de un día):</strong>
+                        <ul>
+                            <li>Recaudación total del día: <strong>$350.000</strong></li>
+                            <li>Suma de puntajes de todos los jugadores: <strong>790 puntos</strong></li>
+                            <li>Cálculo: $350.000 / 790 = <strong>$443</strong></li>
+                        </ul>
+                        <p>En este ejemplo, el <strong>Valor del Punto</strong> para ese día es de $443.</p>
+                    </div>
+
+                    <p><strong>Para guardar este valor en la app:</strong></p>
+                    <ol>
+                        <li>Haz el cálculo por tu cuenta como se explicó arriba.</li>
+                        <li>En la app, busca la sección <strong>"Valor del Punto"</strong> y haz clic en el lápiz <i class="fas fa-pencil-alt" style="color: var(--primary-color);"></i>.</li>
+                        <li>Ingresa la <strong>Fecha</strong> a la que corresponde el cálculo.</li>
+                        <li>Ingresa el <strong>Monto</strong>, que sería el resultado de tu cálculo (ej. $443).</li>
+                        <li>Haz clic en "Guardar Punto". Este dato se mostrará como referencia y <strong>no cambiará el "Total Recaudado"</strong>.</li>
+                    </ol>
+            
+                    <h3><i class="fas fa-history"></i>Paso 3: Revisa y Gestiona tu Historial</h3>
+                    <p>En la pestaña <strong>"Historial"</strong> podrás ver todos tus registros y administrarlos fácilmente:</p>
+                    <ul>
+                        <li><i class="fas fa-sort"></i> Ordena los registros por fecha (del más nuevo al más antiguo y viceversa).</li>
+                        <li><i class="fas fa-copy" style="color: #ffc107;"></i> Copia un resumen del día para compartirlo.</li>
+                        <li><i class="fas fa-edit"></i> Edita o borra cualquier registro si te equivocaste.</li>
+                    </ul>
+            
+                    <h3><i class="fas fa-cogs"></i>Gestión de Datos (Avanzado)</h3>
+                    <p>En el historial, al maximizar la vista, encontrarás herramientas para un control total:</p>
+                    <ul>
+                        <li><i class="fas fa-file-export" style="color: #007bff;"></i> <strong>Exportar JSON:</strong> Crea una copia de seguridad de todos tus datos.</li>
+                        <li><i class="fas fa-file-import" style="color: #ffc107;"></i> <strong>Importar JSON:</strong> Restaura tus datos desde una copia de seguridad.</li>
+                        <li><i class="fas fa-trash-alt" style="color: #dc3545;"></i> <strong>Reiniciar Mes:</strong> Borra todos los registros. <strong>¡Úsalo con mucho cuidado!</strong></li>
+                    </ul>
+                </div>
+            </section>
             <div class="fab-container">
                 <button id="themeToggle" class="fab theme-toggle" title="Cambiar Tema">
                     <i class="fas fa-moon"></i>
@@ -317,13 +398,13 @@
     <div id="editBalanceModal" class="modal">
         <div class="modal-content">
             <span class="close" data-modal-id="editBalanceModal">×</span>
-            <h2>Editar Punto Actual</h2>
+            <h2>Editar Valor del Punto</h2>
             <form id="editBalanceForm">
                 <div style="margin-bottom: 15px;"> 
-                    <label for="editBalanceDate">Fecha del Punto:</label>
+                    <label for="editBalanceDate">Fecha del Cálculo:</label>
                     <input type="date" id="editBalanceDate" name="editBalanceDate" required>
                 </div>
-                <label for="editSaldoActual">Monto del Punto:</label>
+                <label for="editSaldoActual">Monto del Valor del Punto:</label>
                 <input type="tel" id="editSaldoActual" name="editSaldoActual" oninput="formatearMonto(this)" required>
                 <button type="submit">Guardar Punto</button>
             </form>
@@ -362,7 +443,8 @@
             const menuItems = [
                 { id: 'agregarPanel', title: 'Agregar Dato', icon: 'fa-plus-circle' },
                 { id: 'historialPanel', title: 'Historial', icon: 'fa-history' },
-                { id: 'importarPanel', title: 'Importar Datos', icon: 'fa-file-import' }
+                { id: 'importarPanel', title: 'Importar Texto', icon: 'fa-file-import' },
+                { id: 'ayudaPanel', title: 'Ayuda', icon: 'fa-question-circle' }
             ];
 
             menuItems.forEach(item => {
@@ -477,7 +559,7 @@
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(data),
+                    body: data ? JSON.stringify(data) : null,
                 });
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return await response.json();
@@ -510,7 +592,7 @@
             saldoInicialGuardado = (response.status === 'success' && response.data) ? 
                 { fecha: response.data.fecha || null, monto: response.data.monto || null } : 
                 { fecha: null, monto: null };
-            mostrarSaldoInicial();
+            actualizarPantalla();
         }
 
         async function guardarSaldoInicialDesdeModal() {
@@ -520,7 +602,7 @@
             if (fecha && !isNaN(monto)) {
                 const response = await postToScript({ action: 'updateSaldo' }, { fecha, monto });
                 if (response.status === 'success') {
-                    alert('¡Punto actual guardado!');
+                    alert('¡Valor del punto guardado!');
                     cerrarModal('editBalanceModal');
                     await cargarSaldoInicial();
                 } else {
@@ -531,13 +613,22 @@
             }
         }
 
-        function mostrarSaldoInicial() {
-            // Actualizar en ambas secciones
+        function actualizarPantalla() {
+            // El "Valor del Punto" (saldoInicialGuardado) es solo informativo.
+            // El "Total Recaudado" es la suma de todos los registros en `datos`.
+            const totalRecaudado = datos.reduce((acc, dato) => acc + dato.monto, 0);
+
+            // Actualiza la visualización del Valor del Punto
             document.getElementById('displaySaldoGuardadoAgregar').textContent = formatearNumero(saldoInicialGuardado.monto);
             document.getElementById('displayFechaSaldoAgregar').textContent = formatearFecha(saldoInicialGuardado.fecha);
             document.getElementById('displaySaldoGuardadoHistorial').textContent = formatearNumero(saldoInicialGuardado.monto);
             document.getElementById('displayFechaSaldoHistorial').textContent = formatearFecha(saldoInicialGuardado.fecha);
+            
+            // Actualiza la visualización del Total Recaudado
+            document.getElementById('totalRecaudadoAgregar').textContent = formatearNumero(totalRecaudado);
+            document.getElementById('totalRecaudadoHistorial').textContent = formatearNumero(totalRecaudado);
         }
+
 
         function abrirModalEditarSaldo() {
             document.getElementById('editBalanceDate').value = saldoInicialGuardado.fecha || '';
@@ -608,94 +699,86 @@
             }
         }
         
-        // --- INICIO: Nuevas funciones de gestión de datos ---
         async function reiniciarMes() {
-            const confirmacion = prompt("Esta acción borrará TODOS los datos de forma permanente. Para confirmar, escribe 'BORRAR'.");
+            const confirmacion = prompt("Esta acción borrará TODOS los datos de forma permanente.\nPara confirmar, escribe BORRAR en mayúsculas:");
             if (confirmacion === 'BORRAR') {
-                // NOTA: Esto requiere una acción 'clearAll' en tu Google Apps Script que borre todo el contenido de la hoja de datos.
-                const response = await postToScript({ action: 'clearAll' }, {});
+                const response = await postToScript({ action: 'clearAll' });
                 if (response.status === 'success') {
-                    alert('Todos los datos han sido borrados.');
-                    datos = []; // Limpiar datos locales
-                    filtrarTabla(); // Volver a renderizar la tabla vacía
+                    alert("Todos los datos han sido borrados.");
+                    datos = [];
+                    saldoInicialGuardado = { fecha: null, monto: null };
+                    actualizarPantalla();
+                    filtrarTabla();
                 } else {
-                    alert('Error al reiniciar el mes: ' + (response.message || 'La función "clearAll" podría no estar implementada en el script.'));
+                    alert('Error al reiniciar: ' + response.message);
                 }
             } else {
-                alert('Acción cancelada.');
+                alert("Reinicio cancelado.");
             }
         }
 
-        function exportarDatosJSON() {
-            if (datos.length === 0) {
-                alert('No hay datos para exportar.');
-                return;
-            }
+        function exportarJson() {
             const dataToExport = {
-                balance: saldoInicialGuardado,
-                records: datos
+                saldoInicialGuardado,
+                datos
             };
             const jsonString = JSON.stringify(dataToExport, null, 2);
             const blob = new Blob([jsonString], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
+            const fecha = new Date().toISOString().slice(0, 10);
             a.href = url;
-            const today = new Date().toISOString().slice(0, 10);
-            a.download = `recaudacion_backup_${today}.json`;
+            a.download = `recaudacion_backup_${fecha}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            alert('Datos exportados con éxito.');
+            alert("Datos exportados correctamente.");
         }
 
-        function importarDatosJSON(event) {
+        function importarJson(event) {
             const file = event.target.files[0];
-            if (!file) return;
-
+            if (!file) {
+                alert("Importación cancelada.");
+                return;
+            }
             const reader = new FileReader();
             reader.onload = async (e) => {
                 try {
                     const importedData = JSON.parse(e.target.result);
-                    if (!importedData.records || !Array.isArray(importedData.records) || !importedData.balance) {
-                       throw new Error('El archivo JSON no tiene el formato correcto.');
+                    if (!importedData.datos || !importedData.saldoInicialGuardado) {
+                        throw new Error("El archivo JSON no tiene el formato correcto.");
                     }
                     
-                    const confirmacion = prompt("Esto reemplazará TODOS los datos actuales con los del archivo. Para confirmar, escribe 'IMPORTAR'.");
+                    const confirmacion = prompt("Esto reemplazará TODOS los datos actuales con los del archivo.\nPara confirmar, escribe IMPORTAR en mayúsculas:");
                     if (confirmacion !== 'IMPORTAR') {
-                        alert('Importación cancelada.');
+                        alert("Importación cancelada.");
                         return;
                     }
 
-                    // 1. Borrar datos actuales en el servidor (requiere la misma acción 'clearAll')
-                    const clearResponse = await postToScript({ action: 'clearAll' }, {});
-                     if (clearResponse.status !== 'success') {
-                        alert('Error al limpiar los datos antiguos antes de importar: ' + (clearResponse.message || 'La función "clearAll" podría no estar implementada.'));
-                        return;
+                    const clearResponse = await postToScript({ action: 'clearAll' });
+                    if (clearResponse.status !== 'success') {
+                        throw new Error('No se pudieron borrar los datos antiguos: ' + clearResponse.message);
                     }
 
-                    // 2. Restaurar el saldo/punto inicial
-                    await postToScript({ action: 'updateSaldo' }, importedData.balance);
+                    await postToScript({ action: 'updateSaldo' }, importedData.saldoInicialGuardado);
 
-                    // 3. Añadir cada registro nuevo
-                    for (const record of importedData.records) {
-                        await postToScript({ action: 'add' }, { fecha: record.fecha, tipo: record.tipo, monto: record.monto });
+                    for (const dato of importedData.datos) {
+                        await postToScript({ action: 'add' }, dato);
                     }
-                    
-                    alert('Datos importados con éxito. La página se actualizará.');
+
+                    alert("¡Importación completada con éxito!");
                     await cargarDatosDesdeSheet();
                     await cargarSaldoInicial();
 
                 } catch (error) {
-                    alert('Error al importar el archivo: ' + error.message);
+                    alert("Error al importar el archivo: " + error.message);
                 } finally {
-                    // Limpiar el input para poder seleccionar el mismo archivo de nuevo
-                    event.target.value = '';
+                    document.getElementById('jsonFileInput').value = '';
                 }
             };
             reader.readAsText(file);
         }
-        // --- FIN: Nuevas funciones de gestión de datos ---
 
         async function cargarDatosDesdeSheet() {
             const response = await fetchFromScript({ action: 'get' });
@@ -706,6 +789,7 @@
                 datos = [];
             }
             filtrarTabla();
+            actualizarPantalla();
         }
 
         function copiarDatosDelDia(fecha) {
@@ -748,6 +832,7 @@
                 }
                 if (importadosConExito > 0) {
                     alert(`Se importaron ${importadosConExito} datos.`);
+                    document.getElementById('importDataTextarea').value = '';
                     await cargarDatosDesdeSheet();
                     document.querySelector('.menu-link[data-target="historialPanel"]').click();
                 } else {
@@ -773,7 +858,8 @@
                 }
                 const matchMonto = linea.match(regexMonto);
                 if (matchMonto && fechaActual) {
-                    const tipo = matchMonto[1];
+                    let tipo = matchMonto[1];
+                    if (tipo === 'Otros') tipo = 'Otras'; // Normalizar
                     const monto = parseFloat(matchMonto[2].replace(/\./g, '').replace(',', '.'));
                     if (!isNaN(monto)) entradas.push({ fecha: fechaActual, tipo, monto });
                 }
@@ -781,15 +867,9 @@
             return entradas;
         }
 
-        function generarTablaHTML(datosParaTabla, totalGlobal) {
+        function generarTablaHTML(datosParaTabla) {
             const tablaContainer = document.getElementById('tablaContainer');
             tablaContainer.innerHTML = '';
-            if (datosParaTabla.length === 0) {
-                tablaContainer.innerHTML = '<p style="text-align: center; padding: 20px;">No hay datos para mostrar.</p>';
-                document.getElementById('totalRecaudadoAgregar').textContent = formatearNumero(0);
-                document.getElementById('totalRecaudadoHistorial').textContent = formatearNumero(0);
-                return;
-            }
             const datosPorFecha = datosParaTabla.reduce((acc, dato) => {
                 (acc[dato.fecha] = acc[dato.fecha] || []).push(dato);
                 return acc;
@@ -828,14 +908,10 @@
                         </td>`;
                     totalDia += dato.monto;
                 });
-                // --- CÓDIGO RESTAURADO A SU VERSIÓN ORIGINAL ---
                 tfoot.innerHTML = `<tr><td colspan="2"><strong>Total Día:</strong></td><td>${formatearNumero(totalDia)}</td><td><button class="button-copy" onclick="copiarDatosDelDia('${fecha}')">Copiar</button></td></tr>`;
                 
                 tablaContainer.appendChild(tabla);
             });
-            // Actualizar en ambas secciones
-            document.getElementById('totalRecaudadoAgregar').textContent = formatearNumero(totalGlobal);
-            document.getElementById('totalRecaudadoHistorial').textContent = formatearNumero(totalGlobal);
         }
         
         function minimizarTabla() {
@@ -859,8 +935,7 @@
                 return ordenFecha === 'asc' ? dateA - dateB : dateB - dateA;
             });
             
-            const totalParcial = datosFiltrados.reduce((acc, dato) => acc + dato.monto, 0);
-            generarTablaHTML(datosFiltrados, totalParcial);
+            generarTablaHTML(datosFiltrados);
             document.getElementById('controlsContainer').classList.toggle('controls-expanded', !minimizado || !!filtroFechasInput);
         }
         
@@ -900,24 +975,14 @@
                     cerrarModal(event.target.dataset.modalId);
                 });
             });
-            document.getElementById('agregarForm').addEventListener('submit', async (e) => {
-                e.preventDefault(); 
-                await agregarDatos();
-            });
-            document.getElementById('editarForm').addEventListener('submit', async (e) => {
-                e.preventDefault(); 
-                await guardarEdicion();
-            });
+            document.getElementById('agregarForm').addEventListener('submit', async (e) => { e.preventDefault(); await agregarDatos(); });
+            document.getElementById('editarForm').addEventListener('submit', async (e) => { e.preventDefault(); await guardarEdicion(); });
             document.getElementById('btnProcesarImportacion').addEventListener('click', procesarImportacion);
             
-            // Asignar evento a ambos botones de editar balance
             document.getElementById('btnEditBalanceAgregar').addEventListener('click', abrirModalEditarSaldo);
             document.getElementById('btnEditBalanceHistorial').addEventListener('click', abrirModalEditarSaldo);
+            document.getElementById('editBalanceForm').addEventListener('submit', async (e) => { e.preventDefault(); await guardarSaldoInicialDesdeModal(); });
 
-            document.getElementById('editBalanceForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await guardarSaldoInicialDesdeModal();
-            });
             document.getElementById('btnMinimizarTabla').addEventListener('click', minimizarTabla);
             document.getElementById('filtroFechas').addEventListener('input', filtrarTabla);
             document.getElementById('btnReiniciarFiltros').addEventListener('click', reiniciarFiltros);
@@ -925,12 +990,11 @@
             document.getElementById('btnOrdenarFechaDesc').addEventListener('click', () => ordenarPorFecha('desc'));
             document.getElementById('scrollToTopBtn').addEventListener('click', scrollToTop);
             document.getElementById('scrollToDataBtn').addEventListener('click', scrollToData);
-            
-            // Event listeners para los nuevos botones
+
             document.getElementById('btnReiniciarMes').addEventListener('click', reiniciarMes);
-            document.getElementById('btnExportarJSON').addEventListener('click', exportarDatosJSON);
-            document.getElementById('btnImportarJSON').addEventListener('click', () => document.getElementById('jsonFileInput').click());
-            document.getElementById('jsonFileInput').addEventListener('change', importarDatosJSON);
+            document.getElementById('btnExportarJson').addEventListener('click', exportarJson);
+            document.getElementById('btnImportarJsonTrigger').addEventListener('click', () => document.getElementById('jsonFileInput').click());
+            document.getElementById('jsonFileInput').addEventListener('change', importarJson);
 
             const today = new Date();
             const year = today.getFullYear();
@@ -943,4 +1007,3 @@
     </script>
 </body>
 </html>
-
