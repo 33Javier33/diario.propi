@@ -221,6 +221,12 @@
                         <button id="scrollToDataBtn" class="button-to-data" title="Ir a los datos">
                             <i class="fas fa-chart-bar"></i> <span>Ir al Historial</span>
                         </button>
+                        <!-- INICIO: Nuevos botones de gestión de datos -->
+                        <button id="btnReiniciarMes" class="button-delete">Reiniciar Mes</button>
+                        <button id="btnExportarJSON" class="button-copy">Exportar JSON</button>
+                        <button id="btnImportarJSON" class="button-reset">Importar JSON</button>
+                        <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
+                        <!-- FIN: Nuevos botones de gestión de datos -->
                     </div>
                     <div class="control-group">
                         <label for="filtroFechas">Filtrar por fechas (AAAA-MM-DD, AAAA-MM-DD):</label>
@@ -601,6 +607,95 @@
                 }
             }
         }
+        
+        // --- INICIO: Nuevas funciones de gestión de datos ---
+        async function reiniciarMes() {
+            const confirmacion = prompt("Esta acción borrará TODOS los datos de forma permanente. Para confirmar, escribe 'BORRAR'.");
+            if (confirmacion === 'BORRAR') {
+                // NOTA: Esto requiere una acción 'clearAll' en tu Google Apps Script que borre todo el contenido de la hoja de datos.
+                const response = await postToScript({ action: 'clearAll' }, {});
+                if (response.status === 'success') {
+                    alert('Todos los datos han sido borrados.');
+                    datos = []; // Limpiar datos locales
+                    filtrarTabla(); // Volver a renderizar la tabla vacía
+                } else {
+                    alert('Error al reiniciar el mes: ' + (response.message || 'La función "clearAll" podría no estar implementada en el script.'));
+                }
+            } else {
+                alert('Acción cancelada.');
+            }
+        }
+
+        function exportarDatosJSON() {
+            if (datos.length === 0) {
+                alert('No hay datos para exportar.');
+                return;
+            }
+            const dataToExport = {
+                balance: saldoInicialGuardado,
+                records: datos
+            };
+            const jsonString = JSON.stringify(dataToExport, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const today = new Date().toISOString().slice(0, 10);
+            a.download = `recaudacion_backup_${today}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('Datos exportados con éxito.');
+        }
+
+        function importarDatosJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (!importedData.records || !Array.isArray(importedData.records) || !importedData.balance) {
+                       throw new Error('El archivo JSON no tiene el formato correcto.');
+                    }
+                    
+                    const confirmacion = prompt("Esto reemplazará TODOS los datos actuales con los del archivo. Para confirmar, escribe 'IMPORTAR'.");
+                    if (confirmacion !== 'IMPORTAR') {
+                        alert('Importación cancelada.');
+                        return;
+                    }
+
+                    // 1. Borrar datos actuales en el servidor (requiere la misma acción 'clearAll')
+                    const clearResponse = await postToScript({ action: 'clearAll' }, {});
+                     if (clearResponse.status !== 'success') {
+                        alert('Error al limpiar los datos antiguos antes de importar: ' + (clearResponse.message || 'La función "clearAll" podría no estar implementada.'));
+                        return;
+                    }
+
+                    // 2. Restaurar el saldo/punto inicial
+                    await postToScript({ action: 'updateSaldo' }, importedData.balance);
+
+                    // 3. Añadir cada registro nuevo
+                    for (const record of importedData.records) {
+                        await postToScript({ action: 'add' }, { fecha: record.fecha, tipo: record.tipo, monto: record.monto });
+                    }
+                    
+                    alert('Datos importados con éxito. La página se actualizará.');
+                    await cargarDatosDesdeSheet();
+                    await cargarSaldoInicial();
+
+                } catch (error) {
+                    alert('Error al importar el archivo: ' + error.message);
+                } finally {
+                    // Limpiar el input para poder seleccionar el mismo archivo de nuevo
+                    event.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+        // --- FIN: Nuevas funciones de gestión de datos ---
 
         async function cargarDatosDesdeSheet() {
             const response = await fetchFromScript({ action: 'get' });
@@ -689,6 +784,12 @@
         function generarTablaHTML(datosParaTabla, totalGlobal) {
             const tablaContainer = document.getElementById('tablaContainer');
             tablaContainer.innerHTML = '';
+            if (datosParaTabla.length === 0) {
+                tablaContainer.innerHTML = '<p style="text-align: center; padding: 20px;">No hay datos para mostrar.</p>';
+                document.getElementById('totalRecaudadoAgregar').textContent = formatearNumero(0);
+                document.getElementById('totalRecaudadoHistorial').textContent = formatearNumero(0);
+                return;
+            }
             const datosPorFecha = datosParaTabla.reduce((acc, dato) => {
                 (acc[dato.fecha] = acc[dato.fecha] || []).push(dato);
                 return acc;
@@ -825,6 +926,12 @@
             document.getElementById('scrollToTopBtn').addEventListener('click', scrollToTop);
             document.getElementById('scrollToDataBtn').addEventListener('click', scrollToData);
             
+            // Event listeners para los nuevos botones
+            document.getElementById('btnReiniciarMes').addEventListener('click', reiniciarMes);
+            document.getElementById('btnExportarJSON').addEventListener('click', exportarDatosJSON);
+            document.getElementById('btnImportarJSON').addEventListener('click', () => document.getElementById('jsonFileInput').click());
+            document.getElementById('jsonFileInput').addEventListener('change', importarDatosJSON);
+
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -836,5 +943,4 @@
     </script>
 </body>
 </html>
-
 
