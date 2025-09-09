@@ -310,6 +310,16 @@
                         <li><strong>Administrador:</strong> Puede editar y borrar cualquier registro.</li>
                         <li><strong>Invitado:</strong> Solo puede 'Corregir' los datos que él mismo agregó durante la sesión actual. No puede borrar nada.</li>
                     </ul>
+                    <h3><i class="fas fa-calculator"></i>Paso 3: El Valor del Punto</h3>
+                    <p>El "Valor del Punto" que ves en la parte superior es un dato de referencia que debes calcular e ingresar manualmente. No afecta ningún otro cálculo en la aplicación.</p>
+                    <p>Para calcularlo, usa la siguiente fórmula:</p>
+                    <div class="formula">
+                        <strong>Valor del Punto = Total Recaudado / Cantidad Total de Puntos</strong>
+                    </div>
+                    <div class="note">
+                        <p><strong>Importante:</strong> La división se hace por la cantidad de <strong>puntos</strong>, no por la cantidad de mesas.</p>
+                    </div>
+                    <p>Una vez que tengas el resultado, haz clic en el ícono del lápiz <i class="fas fa-pencil-alt" style="color: var(--primary-color);"></i> para guardarlo junto con la fecha del cálculo. <strong>Tanto Administradores como Invitados pueden registrar este valor.</strong></p>
                 </div>
             </section>
             
@@ -438,9 +448,8 @@
             logoutLink.id = 'logoutBtn';
             logoutLink.innerHTML = `<i class="fas fa-sign-out-alt" style="margin-right: 10px;"></i>Cerrar Sesión`;
             
-            // Se añade la funcionalidad directamente al crear el botón
             logoutLink.addEventListener('click', (event) => {
-                event.preventDefault(); // Evita que la página salte
+                event.preventDefault(); 
                 logout();
             });
 
@@ -501,10 +510,10 @@
 
         function applyUserPermissions() {
             const isGuest = currentUserRole === 'guest';
+            // Permisos para Administrador vs Invitado
             document.getElementById('btnReiniciarMes').style.display = isGuest ? 'none' : '';
             document.getElementById('btnImportarJsonTrigger').style.display = isGuest ? 'none' : '';
-            document.getElementById('btnEditBalanceHistorial').style.display = isGuest ? 'none' : '';
-            document.getElementById('btnEditBalanceAgregar').style.display = isGuest ? 'none' : '';
+            // El invitado ahora SÍ PUEDE editar el valor del punto, por lo que no se ocultan los botones.
         }
 
         const themeToggle = document.getElementById('themeToggle');
@@ -961,8 +970,6 @@
             ordenarPorFecha('desc');
             
             // --- Event Listeners ---
-            
-            // Event listener mejorado para todos los botones de cierre 'x' en las modales
             document.querySelectorAll('.modal .close').forEach(button => {
                 button.addEventListener('click', (event) => {
                     const modal = event.target.closest('.modal');
@@ -972,7 +979,6 @@
                 });
             });
 
-            // Cerrar la modal si se hace clic en el fondo
             window.addEventListener('click', (event) => {
                 if (event.target.classList.contains('modal')) {
                     cerrarModal(event.target.id);
@@ -1032,4 +1038,5 @@
     </script>
 </body>
 </html>
+
 
