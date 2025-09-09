@@ -62,6 +62,9 @@
         .side-menu .menu-header { color: white; font-size: 1.4em; font-weight: 700; text-align: center; padding: 20px 10px; border-bottom: 1px solid #4a627a; }
         .side-menu a { color: white; text-decoration: none; padding: 15px 20px; display: block; font-size: 1.0em; transition: background-color 0.2s ease, padding-left 0.2s ease; border-bottom: 1px solid #3e5268; }
         .side-menu a:hover, .side-menu a.active-link { background-color: var(--primary-color); padding-left: 25px; }
+        #logoutBtn { margin-top: auto; background-color: #c82333; border-bottom: none;}
+        #logoutBtn:hover { background-color: #a71d2a; }
+
         .main-container { transition: margin-left 0.3s ease; width: 100%; }
         .content-panel { display: none; }
         .content-panel.active { display: block; animation: fadeIn 0.5s ease; }
@@ -72,18 +75,27 @@
         #loginBox { background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); width: 90%; max-width: 350px; text-align: center; }
         #loginBox h2 { margin-bottom: 25px; color: #333; }
         #loginBox label { display: block; margin-bottom: 10px; text-align: left; font-weight: bold; color: #555; }
-        #loginBox input[type="text"], #loginBox input[type="password"] { width: calc(100% - 22px); padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
-        #loginBox button { width: 100%; padding: 12px; background-color: #007bff; border: none; border-radius: 4px; color: white; font-size: 18px; cursor: pointer; transition: background-color 0.3s ease; }
+        #loginBox input[type="text"], #loginBox input[type="password"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        #loginBox button { width: 100%; padding: 12px; background-color: #007bff; border: none; border-radius: 4px; color: white; font-size: 18px; cursor: pointer; transition: background-color 0.3s ease; margin-top: 10px;}
         #loginBox button:hover { background-color: #0056b3; }
+        .guest-button { background-color: #6c757d !important; }
+        .guest-button:hover { background-color: #5a6268 !important; }
         #loginMessage { color: red; margin-top: 15px; font-weight: bold; }
+
+        .password-wrapper { position: relative; display: flex; align-items: center; }
+        .password-wrapper input { width: 100%; padding-right: 40px; }
+        .password-wrapper i { position: absolute; right: 10px; cursor: pointer; color: #888; }
         
         #mainContent { display: none; padding: 0 15px; }
         h2, h3 { text-align: center; color: var(--text-primary); }
         h2 { margin-top: 20px; }
         .form-container, .table-container { background-color: var(--bg-content); padding: 20px; margin: 20px auto; border-radius: 8px; box-shadow: 0 0 10px var(--shadow-color); max-width: 800px; }
         
-        /* Estilos para el panel de ayuda */
-        #ayudaPanel .form-container { max-width: 800px; }
+        #ayudaPanel { position: fixed; top: 0; right: 0; width: 380px; max-width: 90%; height: 100%; background-color: var(--bg-content); z-index: 1050; transform: translateX(100%); transition: transform 0.3s ease-in-out; overflow-y: auto; box-shadow: -5px 0 15px rgba(0,0,0,0.2); display: block !important; animation: none; }
+        #ayudaPanel.open { transform: translateX(0); }
+        #ayudaPanel .form-container { margin-top: 0; padding-top: 50px; box-shadow: none; }
+        .close-ayuda { position: absolute; top: 15px; right: 25px; font-size: 30px; font-weight: bold; color: #aaa; cursor: pointer; line-height: 1; }
+        .close-ayuda:hover { color: var(--text-primary); }
         #ayudaPanel h3 { text-align: left; margin-top: 25px; border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; }
         #ayudaPanel p { line-height: 1.6; }
         #ayudaPanel ol, #ayudaPanel ul { padding-left: 25px; }
@@ -91,36 +103,10 @@
         #ayudaPanel strong { color: var(--primary-color); }
         #ayudaPanel i { color: var(--secondary-color); margin-right: 5px; }
         #ayudaPanel .note { background-color: var(--bg-main); border-left: 4px solid var(--primary-color); padding: 10px; margin: 15px 0; border-radius: 4px; }
-        #ayudaPanel .formula {
-            text-align: center;
-            font-size: 1.1em;
-            margin: 15px 0;
-            padding: 10px;
-            background-color: var(--bg-main);
-            border-radius: 4px;
-        }
+        #ayudaPanel .formula { text-align: center; font-size: 1.1em; margin: 15px 0; padding: 10px; background-color: var(--bg-main); border-radius: 4px; }
 
-
-        .balance-info-container {
-            position: relative;
-            background-color: var(--bg-main);
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px var(--shadow-color);
-            margin: 0 auto 15px auto;
-            max-width: 400px;
-        }
-
-        .balance-display {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            color: var(--text-primary);
-            white-space: nowrap;
-            width: auto;
-        }
+        .balance-info-container { position: relative; background-color: var(--bg-main); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px var(--shadow-color); margin: 0 auto 15px auto; max-width: 400px; }
+        .balance-display { display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-primary); white-space: nowrap; width: auto; }
         .balance-display .edit-balance-btn { background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 14px; margin-left: 8px; padding: 0; transition: color 0.2s ease; }
         .balance-display .edit-balance-btn:hover { color: #0056b3; }
         .balance-display .edit-balance-btn i { pointer-events: none; }
@@ -204,10 +190,17 @@
                 <label for="username">Usuario:</label>
                 <input type="text" id="username" required autocomplete="username">
                 <label for="password">Contraseña:</label>
-                <input type="password" id="password" required autocomplete="current-password">
+                <div class="password-wrapper">
+                    <input type="password" id="password" required autocomplete="current-password">
+                    <i class="fas fa-eye" id="togglePassword"></i>
+                </div>
                 <button type="submit">Entrar</button>
+                <button type="button" id="guestLoginBtn" class="guest-button">Entrar como Invitado</button>
                 <p id="loginMessage" style="display: none;"></p>
             </form>
+            <p style="font-size: 12px; color: #666; margin-top: 15px;">
+                El usuario y la contraseña deben ser solicitados al administrador.
+            </p>
         </div>
     </div>
 
@@ -220,7 +213,6 @@
         </button>
 
         <div id="mainContent">
-            
             <section id="historialPanel" class="content-panel">
                 <h2>Datos Recaudados</h2>
                 <div class="balance-info-container">
@@ -301,66 +293,30 @@
 
             <section id="ayudaPanel" class="content-panel">
                 <div class="form-container">
-                    <h2>Guía de Uso de la Aplicación</h2>
-                    <p style="text-align: center;">Sigue estos pasos para llevar un registro ordenado de tu recaudación.</p>
-            
+                    <span class="close-ayuda">&times;</span>
+                    <h2>Guía de Uso</h2>
+                    <p style="text-align: center;">Sigue estos pasos para llevar un registro ordenado.</p>
                     <hr style="margin: 20px 0;">
-            
                     <h3><i class="fas fa-plus-circle"></i>Paso 1: Agrega tus Recaudaciones</h3>
-                    <p>El primer paso es registrar todo el dinero que entra. Esto formará la base para todos los cálculos.</p>
+                    <p>El primer paso es registrar todo el dinero que entra.</p>
                     <ol>
                         <li>Ve a la pestaña <strong>"Agregar Dato"</strong>.</li>
-                        <li>Completa el formulario con el tipo (Máquinas, Mesas, etc.), la fecha y el monto.</li>
-                        <li>Haz clic en "Agregar". Repite esto para cada ingreso que tengas en el día.</li>
+                        <li>Completa el formulario con el tipo, la fecha y el monto.</li>
+                        <li>Haz clic en "Agregar".</li>
                     </ol>
-                    
-                    <h3><i class="fas fa-calculator"></i>Paso 2: Calcula y Guarda el "Valor del Punto"</h3>
-                    <p>El "Valor del Punto" (o "Punto Actual") es una métrica <strong>informativa</strong> que te dice cuánto dinero representa un solo punto de puntaje. Este valor lo calculas tú por fuera y lo guardas aquí como referencia.</p>
-                    
-                    <div class="note">
-                        <strong>¿Cómo se calcula el Valor del Punto?</strong>
-                        <p>Divides el dinero total que recaudaste en un período (un día, un mes) por la suma total de los puntajes de todas las personas en ese mismo período.</p>
-                        
-                        <div class="formula">
-                            <strong>Valor del Punto = (Total Recaudado) / (Suma de Puntajes)</strong>
-                        </div>
-
-                        <strong>Ejemplo Práctico (Cálculo de un día):</strong>
-                        <ul>
-                            <li>Recaudación total del día: <strong>$350.000</strong></li>
-                            <li>Suma de puntajes de todos los jugadores: <strong>790 puntos</strong></li>
-                            <li>Cálculo: $350.000 / 790 = <strong>$443</strong></li>
-                        </ul>
-                        <p>En este ejemplo, el <strong>Valor del Punto</strong> para ese día es de $443.</p>
-                    </div>
-
-                    <p><strong>Para guardar este valor en la app:</strong></p>
-                    <ol>
-                        <li>Haz el cálculo por tu cuenta como se explicó arriba.</li>
-                        <li>En la app, busca la sección <strong>"Valor del Punto"</strong> y haz clic en el lápiz <i class="fas fa-pencil-alt" style="color: var(--primary-color);"></i>.</li>
-                        <li>Ingresa la <strong>Fecha</strong> a la que corresponde el cálculo.</li>
-                        <li>Ingresa el <strong>Monto</strong>, que sería el resultado de tu cálculo (ej. $443).</li>
-                        <li>Haz clic en "Guardar Punto". Este dato se mostrará como referencia y <strong>no cambiará el "Total Recaudado"</strong>.</li>
-                    </ol>
-            
-                    <h3><i class="fas fa-history"></i>Paso 3: Revisa y Gestiona tu Historial</h3>
-                    <p>En la pestaña <strong>"Historial"</strong> podrás ver todos tus registros y administrarlos fácilmente:</p>
+                    <h3><i class="fas fa-history"></i>Paso 2: Revisa y Gestiona tu Historial</h3>
+                    <p>En la pestaña <strong>"Historial"</strong> podrás ver y administrar tus registros.</p>
                     <ul>
-                        <li><i class="fas fa-sort"></i> Ordena los registros por fecha (del más nuevo al más antiguo y viceversa).</li>
-                        <li><i class="fas fa-copy" style="color: #ffc107;"></i> Copia un resumen del día para compartirlo.</li>
-                        <li><i class="fas fa-edit"></i> Edita o borra cualquier registro si te equivocaste.</li>
-                    </ul>
-            
-                    <h3><i class="fas fa-cogs"></i>Gestión de Datos (Avanzado)</h3>
-                    <p>En el historial, al maximizar la vista, encontrarás herramientas para un control total:</p>
-                    <ul>
-                        <li><i class="fas fa-file-export" style="color: #007bff;"></i> <strong>Exportar JSON:</strong> Crea una copia de seguridad de todos tus datos.</li>
-                        <li><i class="fas fa-file-import" style="color: #ffc107;"></i> <strong>Importar JSON:</strong> Restaura tus datos desde una copia de seguridad.</li>
-                        <li><i class="fas fa-trash-alt" style="color: #dc3545;"></i> <strong>Reiniciar Mes:</strong> Borra todos los registros. <strong>¡Úsalo con mucho cuidado!</strong></li>
+                        <li><strong>Administrador:</strong> Puede editar y borrar cualquier registro.</li>
+                        <li><strong>Invitado:</strong> Solo puede 'Corregir' los datos que él mismo agregó durante la sesión actual. No puede borrar nada.</li>
                     </ul>
                 </div>
             </section>
+            
             <div class="fab-container">
+                <button id="ayudaFabBtn" class="fab" title="Ayuda">
+                    <i class="fas fa-question-circle"></i>
+                </button>
                 <button id="themeToggle" class="fab theme-toggle" title="Cambiar Tema">
                     <i class="fas fa-moon"></i>
                 </button>
@@ -372,13 +328,12 @@
             <footer>
                 <p>CarlosPN Interactive®</p>
             </footer>
-
         </div>
     </div> 
 
     <div id="editModal" class="modal">
         <div class="modal-content">
-            <span class="close" data-modal-id="editModal">×</span>
+            <span class="close">×</span>
             <h2>Editar Datos</h2>
             <form id="editarForm">
                 <label for="editarTipo">Tipo:</label>
@@ -397,7 +352,7 @@
     </div>
     <div id="editBalanceModal" class="modal">
         <div class="modal-content">
-            <span class="close" data-modal-id="editBalanceModal">×</span>
+            <span class="close">×</span>
             <h2>Editar Valor del Punto</h2>
             <form id="editBalanceForm">
                 <div style="margin-bottom: 15px;"> 
@@ -408,6 +363,26 @@
                 <input type="tel" id="editSaldoActual" name="editSaldoActual" oninput="formatearMonto(this)" required>
                 <button type="submit">Guardar Punto</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div id="alertModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close">×</span>
+            <p id="alertMessage" style="text-align: center; margin-top: 20px; font-size: 1.1em;"></p>
+            <button id="alertOkBtn" class="button-reset" style="display: block; margin: 20px auto 0 auto; min-width: 100px;">OK</button>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <p id="confirmMessage" style="text-align: center; margin: 20px 0; font-size: 1.1em; white-space: pre-wrap;"></p>
+            <div style="display: flex; justify-content: center; gap: 20px;">
+                <button id="confirmOkBtn" style="min-width: 100px;">Confirmar</button>
+                <button id="confirmCancelBtn" class="button-delete" style="min-width: 100px;">Cancelar</button>
+            </div>
         </div>
     </div>
 
@@ -422,14 +397,17 @@
                 });
             });
         }
-
+        
         const VALID_USERNAME = 'croupier';
         const VALID_PASSWORD = '1234';
+        let currentUserRole = null;
 
         const loginOverlay = document.getElementById('loginOverlay');
         const loginForm = document.getElementById('loginForm');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const guestLoginBtn = document.getElementById('guestLoginBtn');
         const loginMessage = document.getElementById('loginMessage');
         const mainContent = document.getElementById('mainContent');
         
@@ -443,38 +421,32 @@
             const menuItems = [
                 { id: 'agregarPanel', title: 'Agregar Dato', icon: 'fa-plus-circle' },
                 { id: 'historialPanel', title: 'Historial', icon: 'fa-history' },
-                { id: 'importarPanel', title: 'Importar Texto', icon: 'fa-file-import' },
-                { id: 'ayudaPanel', title: 'Ayuda', icon: 'fa-question-circle' }
+                { id: 'importarPanel', title: 'Importar Texto', icon: 'fa-file-import' }
             ];
 
             menuItems.forEach(item => {
-                const section = document.getElementById(item.id);
-                if (section) {
-                    const link = document.createElement('a');
-                    link.href = '#';
-                    link.innerHTML = `<i class="fas ${item.icon}" style="margin-right: 10px;"></i>${item.title}`;
-                    link.className = 'menu-link';
-                    link.dataset.target = item.id;
-                    if (section.classList.contains('active')) { link.classList.add('active-link'); }
-                    sideMenu.appendChild(link);
-                }
+                const link = document.createElement('a');
+                link.href = '#';
+                link.innerHTML = `<i class="fas ${item.icon}" style="margin-right: 10px;"></i>${item.title}`;
+                link.className = 'menu-link';
+                link.dataset.target = item.id;
+                sideMenu.appendChild(link);
             });
 
-            document.querySelectorAll('.menu-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const targetId = link.dataset.target;
-                    document.querySelectorAll('.content-panel').forEach(panel => panel.classList.remove('active'));
-                    document.getElementById(targetId).classList.add('active');
-                    document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active-link'));
-                    link.classList.add('active-link');
-                    if (window.innerWidth < 992) {
-                        sideMenu.classList.remove('open');
-                        menuToggle.classList.remove('active');
-                    }
-                });
+            const logoutLink = document.createElement('a');
+            logoutLink.href = '#';
+            logoutLink.id = 'logoutBtn';
+            logoutLink.innerHTML = `<i class="fas fa-sign-out-alt" style="margin-right: 10px;"></i>Cerrar Sesión`;
+            
+            // Se añade la funcionalidad directamente al crear el botón
+            logoutLink.addEventListener('click', (event) => {
+                event.preventDefault(); // Evita que la página salte
+                logout();
             });
+
+            sideMenu.appendChild(logoutLink);
         };
+
 
         menuToggle.addEventListener('click', () => {
             sideMenu.classList.toggle('open');
@@ -482,33 +454,58 @@
         });
 
         function checkLogin() {
-            const storedLogin = sessionStorage.getItem('isLoggedIn');
-            if (storedLogin === 'true') {
+            const storedRole = sessionStorage.getItem('userRole');
+            if (storedRole === 'admin' || storedRole === 'guest') {
+                currentUserRole = storedRole;
                 loginOverlay.style.display = 'none';
                 mainContent.style.display = 'block';
                 menuToggle.style.display = 'flex';
                 document.body.classList.add('loggedin');
                 initializeApp();
             } else {
+                currentUserRole = null;
                 loginOverlay.style.display = 'flex';
-                mainContent.style.display = 'none';
-                menuToggle.style.display = 'none';
-                document.body.classList.remove('loggedin');
             }
         }
-
+        
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const username = usernameInput.value;
             const password = passwordInput.value;
             if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('userRole', 'admin');
                 checkLogin();
             } else {
                 loginMessage.textContent = 'Usuario o contraseña incorrectos.';
                 loginMessage.style.display = 'block';
             }
         });
+
+        guestLoginBtn.addEventListener('click', () => {
+            sessionStorage.setItem('userRole', 'guest');
+            sessionStorage.setItem('guestAddedEntries', JSON.stringify([]));
+            checkLogin();
+        });
+
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        function logout() {
+            sessionStorage.removeItem('userRole');
+            sessionStorage.removeItem('guestAddedEntries');
+            location.reload();
+        }
+
+        function applyUserPermissions() {
+            const isGuest = currentUserRole === 'guest';
+            document.getElementById('btnReiniciarMes').style.display = isGuest ? 'none' : '';
+            document.getElementById('btnImportarJsonTrigger').style.display = isGuest ? 'none' : '';
+            document.getElementById('btnEditBalanceHistorial').style.display = isGuest ? 'none' : '';
+            document.getElementById('btnEditBalanceAgregar').style.display = isGuest ? 'none' : '';
+        }
 
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = themeToggle.querySelector('i');
@@ -526,8 +523,7 @@
         }
 
         themeToggle.addEventListener('click', () => {
-            const currentTheme = localStorage.getItem('theme') || 'light';
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            const newTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
             localStorage.setItem('theme', newTheme);
             applyTheme(newTheme);
         });
@@ -547,7 +543,7 @@
                 return await response.json();
             } catch (error) {
                 console.error('Error fetching data from Apps Script:', error);
-                alert('Error al conectar con el servidor de datos.');
+                showAlert('Error al conectar con el servidor de datos.');
                 return { status: 'error', message: error.message };
             }
         }
@@ -565,13 +561,39 @@
                 return await response.json();
             } catch (error) {
                 console.error('Error posting data to Apps Script:', error);
-                alert('Error al enviar datos al servidor.');
+                showAlert('Error al enviar datos al servidor.');
                 return { status: 'error', message: error.message };
             }
         }
 
         function abrirModal(id) { document.getElementById(id).style.display = 'block'; }
         function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+        
+        const alertModal = document.getElementById('alertModal');
+        const alertMessage = document.getElementById('alertMessage');
+        const alertOkBtn = document.getElementById('alertOkBtn');
+        function showAlert(message) {
+            alertMessage.textContent = message;
+            abrirModal('alertModal');
+        }
+        alertOkBtn.addEventListener('click', () => cerrarModal('alertModal'));
+
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const confirmOkBtn = document.getElementById('confirmOkBtn');
+        const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+        let confirmCallback = null;
+        function showConfirm(message, onConfirm) {
+            confirmMessage.textContent = message;
+            confirmCallback = onConfirm;
+            abrirModal('confirmModal');
+        }
+        confirmOkBtn.addEventListener('click', () => {
+            cerrarModal('confirmModal');
+            if (confirmCallback) confirmCallback();
+        });
+        confirmCancelBtn.addEventListener('click', () => cerrarModal('confirmModal'));
+
         function formatearFecha(fecha) {
             if (!fecha) return 'N/A';
             const opciones = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Santiago' };
@@ -602,33 +624,26 @@
             if (fecha && !isNaN(monto)) {
                 const response = await postToScript({ action: 'updateSaldo' }, { fecha, monto });
                 if (response.status === 'success') {
-                    alert('¡Valor del punto guardado!');
+                    showAlert('¡Valor del punto guardado!');
                     cerrarModal('editBalanceModal');
                     await cargarSaldoInicial();
                 } else {
-                    alert('Error al guardar: ' + response.message);
+                    showAlert('Error al guardar: ' + response.message);
                 }
             } else {
-                alert('Ingresa una fecha y un monto válidos.');
+                showAlert('Ingresa una fecha y un monto válidos.');
             }
         }
 
         function actualizarPantalla() {
-            // El "Valor del Punto" (saldoInicialGuardado) es solo informativo.
-            // El "Total Recaudado" es la suma de todos los registros en `datos`.
             const totalRecaudado = datos.reduce((acc, dato) => acc + dato.monto, 0);
-
-            // Actualiza la visualización del Valor del Punto
             document.getElementById('displaySaldoGuardadoAgregar').textContent = formatearNumero(saldoInicialGuardado.monto);
             document.getElementById('displayFechaSaldoAgregar').textContent = formatearFecha(saldoInicialGuardado.fecha);
             document.getElementById('displaySaldoGuardadoHistorial').textContent = formatearNumero(saldoInicialGuardado.monto);
             document.getElementById('displayFechaSaldoHistorial').textContent = formatearFecha(saldoInicialGuardado.fecha);
-            
-            // Actualiza la visualización del Total Recaudado
             document.getElementById('totalRecaudadoAgregar').textContent = formatearNumero(totalRecaudado);
             document.getElementById('totalRecaudadoHistorial').textContent = formatearNumero(totalRecaudado);
         }
-
 
         function abrirModalEditarSaldo() {
             document.getElementById('editBalanceDate').value = saldoInicialGuardado.fecha || '';
@@ -638,23 +653,41 @@
         }
 
         async function agregarDatos() {
-            const tipo = document.getElementById('tipo').value;
-            const fecha = document.getElementById('fecha').value;
-            let montoInput = document.getElementById('monto').value;
-            const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
+            const performAdd = async () => {
+                const maxIndexBeforeAdd = datos.length > 0 ? Math.max(...datos.map(d => d.originalIndex)) : -1;
+                const tipo = document.getElementById('tipo').value;
+                const fecha = document.getElementById('fecha').value;
+                let montoInput = document.getElementById('monto').value;
+                const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
 
-            if (fecha && !isNaN(monto)) {
-                const response = await postToScript({ action: 'add' }, { fecha, tipo, monto });
-                if (response.status === 'success') {
-                    document.getElementById('agregarForm').reset();
-                    document.getElementById('monto').value = '';
-                    await cargarDatosDesdeSheet();
-                    document.querySelector('.menu-link[data-target="historialPanel"]').click();
+                if (fecha && !isNaN(monto)) {
+                    const response = await postToScript({ action: 'add' }, { fecha, tipo, monto });
+                    if (response.status === 'success') {
+                        document.getElementById('agregarForm').reset();
+                        document.getElementById('monto').value = '';
+                        await cargarDatosDesdeSheet();
+
+                        if (currentUserRole === 'guest') {
+                            const newEntry = datos.find(d => d.originalIndex > maxIndexBeforeAdd);
+                            if (newEntry) {
+                                const guestEntries = JSON.parse(sessionStorage.getItem('guestAddedEntries') || '[]');
+                                guestEntries.push(newEntry.originalIndex);
+                                sessionStorage.setItem('guestAddedEntries', JSON.stringify(guestEntries));
+                            }
+                        }
+                        document.querySelector('.menu-link[data-target="historialPanel"]').click();
+                    } else {
+                        showAlert('Error al agregar: ' + response.message);
+                    }
                 } else {
-                    alert('Error al agregar: ' + response.message);
+                    showAlert('Ingresa fecha y monto válidos.');
                 }
+            };
+
+            if (currentUserRole === 'guest') {
+                showConfirm("Estás agregando un dato como invitado. Podrás corregirlo solo durante esta sesión.\n\n¿Deseas continuar?", performAdd);
             } else {
-                alert('Ingresa fecha y monto válidos.');
+                await performAdd();
             }
         }
 
@@ -681,47 +714,41 @@
                     cerrarModal('editModal');
                     await cargarDatosDesdeSheet();
                 } else {
-                    alert('Error al actualizar: ' + response.message);
+                    showAlert('Error al actualizar: ' + response.message);
                 }
             } else {
-                alert('Ingresa fecha y monto válidos.');
+                showAlert('Ingresa fecha y monto válidos.');
             }
         }
 
         async function borrarDato(index) {
-            if (confirm('¿Seguro que quieres borrar este dato?')) {
+            showConfirm('¿Seguro que quieres borrar este dato? Esta acción es permanente.', async () => {
                 const response = await postToScript({ action: 'delete' }, { index: index });
                 if (response.status === 'success') {
                     await cargarDatosDesdeSheet();
                 } else {
-                    alert('Error al borrar: ' + response.message);
+                    showAlert('Error al borrar: ' + response.message);
                 }
-            }
+            });
         }
         
         async function reiniciarMes() {
-            const confirmacion = prompt("Esta acción borrará TODOS los datos de forma permanente.\nPara confirmar, escribe BORRAR en mayúsculas:");
-            if (confirmacion === 'BORRAR') {
+            showConfirm("Esta acción borrará TODOS los datos de forma permanente. ¿Estás seguro?", async () => {
                 const response = await postToScript({ action: 'clearAll' });
                 if (response.status === 'success') {
-                    alert("Todos los datos han sido borrados.");
+                    showAlert("Todos los datos han sido borrados.");
                     datos = [];
                     saldoInicialGuardado = { fecha: null, monto: null };
                     actualizarPantalla();
                     filtrarTabla();
                 } else {
-                    alert('Error al reiniciar: ' + response.message);
+                    showAlert('Error al reiniciar: ' + response.message);
                 }
-            } else {
-                alert("Reinicio cancelado.");
-            }
+            });
         }
 
         function exportarJson() {
-            const dataToExport = {
-                saldoInicialGuardado,
-                datos
-            };
+            const dataToExport = { saldoInicialGuardado, datos };
             const jsonString = JSON.stringify(dataToExport, null, 2);
             const blob = new Blob([jsonString], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -733,46 +760,32 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            alert("Datos exportados correctamente.");
+            showAlert("Datos exportados correctamente.");
         }
 
         function importarJson(event) {
             const file = event.target.files[0];
-            if (!file) {
-                alert("Importación cancelada.");
-                return;
-            }
+            if (!file) { return; }
             const reader = new FileReader();
             reader.onload = async (e) => {
                 try {
                     const importedData = JSON.parse(e.target.result);
-                    if (!importedData.datos || !importedData.saldoInicialGuardado) {
-                        throw new Error("El archivo JSON no tiene el formato correcto.");
-                    }
+                    if (!importedData.datos || !importedData.saldoInicialGuardado) throw new Error("Formato de archivo incorrecto.");
                     
-                    const confirmacion = prompt("Esto reemplazará TODOS los datos actuales con los del archivo.\nPara confirmar, escribe IMPORTAR en mayúsculas:");
-                    if (confirmacion !== 'IMPORTAR') {
-                        alert("Importación cancelada.");
-                        return;
-                    }
-
-                    const clearResponse = await postToScript({ action: 'clearAll' });
-                    if (clearResponse.status !== 'success') {
-                        throw new Error('No se pudieron borrar los datos antiguos: ' + clearResponse.message);
-                    }
-
-                    await postToScript({ action: 'updateSaldo' }, importedData.saldoInicialGuardado);
-
-                    for (const dato of importedData.datos) {
-                        await postToScript({ action: 'add' }, dato);
-                    }
-
-                    alert("¡Importación completada con éxito!");
-                    await cargarDatosDesdeSheet();
-                    await cargarSaldoInicial();
+                    showConfirm("Esto reemplazará TODOS los datos actuales. ¿Estás seguro de continuar?", async () => {
+                        const clearResponse = await postToScript({ action: 'clearAll' });
+                        if (clearResponse.status !== 'success') throw new Error('No se pudieron borrar los datos antiguos: ' + clearResponse.message);
+                        
+                        await postToScript({ action: 'updateSaldo' }, importedData.saldoInicialGuardado);
+                        for (const dato of importedData.datos) { await postToScript({ action: 'add' }, dato); }
+                        
+                        showAlert("¡Importación completada con éxito!");
+                        await cargarDatosDesdeSheet();
+                        await cargarSaldoInicial();
+                    });
 
                 } catch (error) {
-                    alert("Error al importar el archivo: " + error.message);
+                    showAlert("Error al importar el archivo: " + error.message);
                 } finally {
                     document.getElementById('jsonFileInput').value = '';
                 }
@@ -802,27 +815,14 @@
                 totalesPorTipo[dato.tipo] += dato.monto;
                 totalDia += dato.monto;
             });
-            for (const tipo in totalesPorTipo) {
-                textoACopiar += `- ${tipo}: ${formatearNumero(totalesPorTipo[tipo])}\n`;
-            }
+            for (const tipo in totalesPorTipo) { textoACopiar += `- ${tipo}: ${formatearNumero(totalesPorTipo[tipo])}\n`; }
             textoACopiar += `Total del Día: ${formatearNumero(totalDia)}\n`;
-            
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(textoACopiar).then(() => alert('Datos copiados!')).catch(() => alert('Error al copiar.'));
-            } else {
-                const temp = document.createElement('textarea');
-                temp.value = textoACopiar;
-                document.body.appendChild(temp);
-                temp.select();
-                document.execCommand('copy');
-                document.body.removeChild(temp);
-                alert('Datos copiados!');
-            }
+            navigator.clipboard.writeText(textoACopiar).then(() => showAlert('Datos copiados!')).catch(() => showAlert('Error al copiar.'));
         }
         
         async function procesarImportacion() {
             const texto = document.getElementById('importDataTextarea').value;
-            if (!texto) { alert('Pega el texto de los datos.'); return; }
+            if (!texto) { showAlert('Pega el texto de los datos.'); return; }
             const nuevasEntradas = parsearTextoRecaudacion(texto);
             if (nuevasEntradas.length > 0) {
                 let importadosConExito = 0;
@@ -831,15 +831,15 @@
                     if (response.status === 'success') importadosConExito++;
                 }
                 if (importadosConExito > 0) {
-                    alert(`Se importaron ${importadosConExito} datos.`);
+                    showAlert(`Se importaron ${importadosConExito} datos.`);
                     document.getElementById('importDataTextarea').value = '';
                     await cargarDatosDesdeSheet();
                     document.querySelector('.menu-link[data-target="historialPanel"]').click();
                 } else {
-                    alert('No se pudo importar ningún dato.');
+                    showAlert('No se pudo importar ningún dato.');
                 }
             } else {
-                alert('No se encontraron datos válidos en el texto.');
+                showAlert('No se encontraron datos válidos en el texto.');
             }
         }
 
@@ -874,42 +874,40 @@
                 (acc[dato.fecha] = acc[dato.fecha] || []).push(dato);
                 return acc;
             }, {});
-            
-            const fechasOrdenadas = Object.keys(datosPorFecha);
-            fechasOrdenadas.sort((a,b) => ordenFecha === 'asc' ? new Date(a) - new Date(b) : new Date(b) - new Date(a));
+            const fechasOrdenadas = Object.keys(datosPorFecha).sort((a,b) => ordenFecha === 'asc' ? new Date(a) - new Date(b) : new Date(b) - new Date(a));
             
             let colorIndex = 0;
-            
             fechasOrdenadas.forEach(fecha => {
-                if (minimizado && fechasOrdenadas.length > 1) {
-                   const fechaVisible = ordenFecha === 'desc' ? fechasOrdenadas[0] : fechasOrdenadas[fechasOrdenadas.length - 1];
-                   if(fecha !== fechaVisible) return;
+                if (minimizado && fechasOrdenadas.length > 1 && fecha !== (ordenFecha === 'desc' ? fechasOrdenadas[0] : fechasOrdenadas[fechasOrdenadas.length - 1])) {
+                   return;
                 }
-
                 const colorClass = colorIndex % 2 === 0 ? 'fecha-par' : 'fecha-impar';
                 colorIndex++;
-
                 const tabla = document.createElement('table');
                 tabla.classList.add(colorClass);
-                
                 tabla.innerHTML = `<thead><tr><th>Fecha</th><th>Tipo</th><th>Monto</th><th>Acciones</th></tr></thead><tbody></tbody><tfoot></tfoot>`;
                 const tbody = tabla.querySelector('tbody');
                 const tfoot = tabla.querySelector('tfoot');
                 let totalDia = 0;
                 datosPorFecha[fecha].forEach(dato => {
                     const fila = tbody.insertRow();
-                    fila.innerHTML = `
-                        <td data-label="Fecha">${formatearFecha(dato.fecha)}</td>
-                        <td data-label="Tipo">${dato.tipo}</td>
-                        <td data-label="Monto">${formatearNumero(dato.monto)}</td>
-                        <td data-label="Acciones">
-                            <button onclick="abrirModalEditar(${dato.originalIndex})">Editar</button>
-                            <button class="button-delete" onclick="borrarDato(${dato.originalIndex})">Borrar</button>
-                        </td>`;
+                    let accionesHTML = '';
+                    const guestEntries = JSON.parse(sessionStorage.getItem('guestAddedEntries') || '[]');
+                    const canEdit = (currentUserRole === 'admin') || (currentUserRole === 'guest' && guestEntries.includes(dato.originalIndex));
+
+                    if (canEdit) {
+                        const buttonText = currentUserRole === 'guest' ? 'Corregir' : 'Editar';
+                        accionesHTML += `<button onclick="abrirModalEditar(${dato.originalIndex})">${buttonText}</button>`;
+                    }
+
+                    if (currentUserRole === 'admin') {
+                        accionesHTML += `<button class="button-delete" onclick="borrarDato(${dato.originalIndex})">Borrar</button>`;
+                    }
+
+                    fila.innerHTML = `<td data-label="Fecha">${formatearFecha(dato.fecha)}</td><td data-label="Tipo">${dato.tipo}</td><td data-label="Monto">${formatearNumero(dato.monto)}</td><td data-label="Acciones">${accionesHTML}</td>`;
                     totalDia += dato.monto;
                 });
                 tfoot.innerHTML = `<tr><td colspan="2"><strong>Total Día:</strong></td><td>${formatearNumero(totalDia)}</td><td><button class="button-copy" onclick="copiarDatosDelDia('${fecha}')">Copiar</button></td></tr>`;
-                
                 tablaContainer.appendChild(tabla);
             });
         }
@@ -923,20 +921,12 @@
         function filtrarTabla() {
             const filtroFechasInput = document.getElementById('filtroFechas').value.trim();
             let datosFiltrados = [...datos]; 
-
             if (filtroFechasInput) {
                 const fechas = filtroFechasInput.split(',').map(f => f.trim()).filter(Boolean);
                 datosFiltrados = datosFiltrados.filter(d => fechas.includes(d.fecha));
             } 
-            
-            datosFiltrados.sort((a, b) => {
-                const dateA = new Date(a.fecha);
-                const dateB = new Date(b.fecha);
-                return ordenFecha === 'asc' ? dateA - dateB : dateB - dateA;
-            });
-            
-            generarTablaHTML(datosFiltrados);
             document.getElementById('controlsContainer').classList.toggle('controls-expanded', !minimizado || !!filtroFechasInput);
+            generarTablaHTML(datosFiltrados);
         }
         
         function reiniciarFiltros() {
@@ -961,27 +951,41 @@
 
         async function initializeApp() {
             setupMenu();
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            applyTheme(savedTheme);
-
+            applyUserPermissions(); 
+            applyTheme(localStorage.getItem('theme') || 'light');
+            
             await cargarDatosDesdeSheet();
             await cargarSaldoInicial();
             minimizado = true; 
             document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; 
             ordenarPorFecha('desc');
             
+            // --- Event Listeners ---
+            
+            // Event listener mejorado para todos los botones de cierre 'x' en las modales
             document.querySelectorAll('.modal .close').forEach(button => {
                 button.addEventListener('click', (event) => {
-                    cerrarModal(event.target.dataset.modalId);
+                    const modal = event.target.closest('.modal');
+                    if (modal) {
+                        cerrarModal(modal.id);
+                    }
                 });
             });
-            document.getElementById('agregarForm').addEventListener('submit', async (e) => { e.preventDefault(); await agregarDatos(); });
-            document.getElementById('editarForm').addEventListener('submit', async (e) => { e.preventDefault(); await guardarEdicion(); });
+
+            // Cerrar la modal si se hace clic en el fondo
+            window.addEventListener('click', (event) => {
+                if (event.target.classList.contains('modal')) {
+                    cerrarModal(event.target.id);
+                }
+            });
+
+            document.getElementById('agregarForm').addEventListener('submit', (e) => { e.preventDefault(); agregarDatos(); });
+            document.getElementById('editarForm').addEventListener('submit', (e) => { e.preventDefault(); guardarEdicion(); });
             document.getElementById('btnProcesarImportacion').addEventListener('click', procesarImportacion);
             
             document.getElementById('btnEditBalanceAgregar').addEventListener('click', abrirModalEditarSaldo);
             document.getElementById('btnEditBalanceHistorial').addEventListener('click', abrirModalEditarSaldo);
-            document.getElementById('editBalanceForm').addEventListener('submit', async (e) => { e.preventDefault(); await guardarSaldoInicialDesdeModal(); });
+            document.getElementById('editBalanceForm').addEventListener('submit', (e) => { e.preventDefault(); guardarSaldoInicialDesdeModal(); });
 
             document.getElementById('btnMinimizarTabla').addEventListener('click', minimizarTabla);
             document.getElementById('filtroFechas').addEventListener('input', filtrarTabla);
@@ -996,6 +1000,27 @@
             document.getElementById('btnImportarJsonTrigger').addEventListener('click', () => document.getElementById('jsonFileInput').click());
             document.getElementById('jsonFileInput').addEventListener('change', importarJson);
 
+            const ayudaPanel = document.getElementById('ayudaPanel');
+            const ayudaFabBtn = document.getElementById('ayudaFabBtn');
+            const closeAyudaBtn = document.querySelector('.close-ayuda');
+            ayudaFabBtn.addEventListener('click', () => ayudaPanel.classList.add('open'));
+            closeAyudaBtn.addEventListener('click', () => ayudaPanel.classList.remove('open'));
+            
+            document.querySelectorAll('.menu-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+                    document.getElementById(link.dataset.target).classList.add('active');
+                    document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active-link'));
+                    link.classList.add('active-link');
+                    if (window.innerWidth < 992) {
+                        sideMenu.classList.remove('open');
+                        menuToggle.classList.remove('active');
+                    }
+                });
+            });
+            document.querySelector('.menu-link[data-target="agregarPanel"]').classList.add('active-link');
+            
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -1007,3 +1032,4 @@
     </script>
 </body>
 </html>
+
