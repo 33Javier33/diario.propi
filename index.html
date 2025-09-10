@@ -89,7 +89,8 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @media (min-width: 992px) { body.loggedin { margin-left: var(--menu-width); } .menu-toggle { display: none; } .side-menu { transform: translateX(0); } }
         
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 2000; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        #loginOverlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         #loginBox { background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); width: 90%; max-width: 350px; text-align: center; }
         #loginBox h2 { margin-bottom: 25px; color: #333; }
         #loginBox label { display: block; margin-bottom: 10px; text-align: left; font-weight: bold; color: #555; }
@@ -648,14 +649,16 @@
             if (storedRole === 'admin' || storedRole === 'guest') {
                 currentUserRole = storedRole;
                 lastSeenKey = `lastSeenNoteTimestamp_${currentUserRole}`; 
-                loginOverlay.style.display = 'none';
+                
+                loginOverlay.classList.add('hidden');
                 mainContent.style.display = 'block';
                 menuToggle.style.display = 'flex';
                 document.body.classList.add('loggedin');
+                
                 initializeApp();
             } else {
-                currentUserRole = null;
-                loginOverlay.style.display = 'flex';
+                loginOverlay.classList.remove('hidden');
+                mainContent.style.display = 'none';
             }
         }
         
@@ -687,8 +690,7 @@
         function logout() {
             if (notesUpdateInterval) clearInterval(notesUpdateInterval);
             if (dataUpdateInterval) clearInterval(dataUpdateInterval);
-            sessionStorage.removeItem('userRole');
-            sessionStorage.removeItem('guestAddedEntries');
+            sessionStorage.clear();
             location.reload();
         }
 
@@ -1002,7 +1004,6 @@
                 if (response.status === 'success' && response.data) {
                     const newDataString = JSON.stringify(response.data);
                     
-                    // Solo actualiza la UI si los datos han cambiado realmente.
                     if (newDataString !== lastDataHash) {
                         lastDataHash = newDataString;
                         datos = response.data.map((item, index) => ({ ...item, originalIndex: index }));
@@ -1057,7 +1058,6 @@
             const response = await fetchFromScript({ action: 'getNotes' });
             if (response.status === 'success' && response.data) {
                 const newDataString = JSON.stringify(response.data);
-                // Solo actualiza la UI si las notas han cambiado realmente.
                 if(newDataString !== lastNotesHash) {
                     lastNotesHash = newDataString;
                     notes = response.data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
@@ -1283,46 +1283,25 @@
         });
 
         async function initializeApp() {
+            // --- 1. DIBUJO INSTANTÁNEO DE LA UI ---
             setupMenu();
             applyUserPermissions(); 
             applyTheme(localStorage.getItem('theme') || 'light');
             
-            // Dibuja la UI inmediatamente con la tabla vacía.
-            filtrarTabla(); 
-            
-            // Cargas de datos en segundo plano
-            await Promise.all([
-                cargarDatosDesdeSheet(true), // Muestra el spinner sobre la tabla ya visible
-                cargarSaldoInicial(),
-                cargarNotas()
-            ]);
-            
-            minimizado = true; 
-            document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; 
-            ordenarPorFecha('desc');
-            
-            if (notesUpdateInterval) clearInterval(notesUpdateInterval);
-            notesUpdateInterval = setInterval(cargarNotas, 15 * 1000);
-
-            if (dataUpdateInterval) clearInterval(dataUpdateInterval);
-            dataUpdateInterval = setInterval(() => cargarDatosDesdeSheet(false), 15 * 1000); // Chequeo silencioso
-            
+            // Configurar todos los listeners de eventos
             document.querySelectorAll('.modal .close').forEach(button => {
                 button.onclick = (event) => cerrarModal(event.target.closest('.modal').id);
             });
             window.onclick = (event) => {
                 if (event.target.classList.contains('modal')) cerrarModal(event.target.id);
             };
-
             document.getElementById('agregarForm').onsubmit = (e) => { e.preventDefault(); agregarDatos(); };
             document.getElementById('editarForm').onsubmit = (e) => { e.preventDefault(); guardarEdicion(); };
             document.getElementById('btnProcesarImportacion').onclick = procesarImportacion;
             document.getElementById('btnAgregarNota').onclick = agregarNota;
-            
             document.getElementById('btnEditBalanceAgregar').onclick = abrirModalEditarSaldo;
             document.getElementById('btnEditBalanceHistorial').onclick = abrirModalEditarSaldo;
             document.getElementById('editBalanceForm').onsubmit = (e) => { e.preventDefault(); guardarSaldoInicialDesdeModal(); };
-
             document.getElementById('btnMinimizarTabla').onclick = minimizarTabla;
             document.getElementById('filtroFechas').oninput = filtrarTabla;
             document.getElementById('btnReiniciarFiltros').onclick = reiniciarFiltros;
@@ -1333,18 +1312,15 @@
             document.getElementById('notesFabBtn').onclick = () => {
                 document.querySelector('.menu-link[data-target="notasPanel"]').click();
             };
-
             document.getElementById('btnReiniciarMes').onclick = reiniciarMes;
             document.getElementById('btnExportarJson').onclick = exportarJson;
             document.getElementById('btnImportarJsonTrigger').onclick = () => document.getElementById('jsonFileInput').click();
             document.getElementById('jsonFileInput').onchange = importarJson;
-
             const ayudaPanel = document.getElementById('ayudaPanel');
             const ayudaFabBtn = document.getElementById('ayudaFabBtn');
             const closeAyudaBtn = document.querySelector('.close-ayuda');
             ayudaFabBtn.onclick = () => ayudaPanel.classList.add('open');
             closeAyudaBtn.onclick = () => ayudaPanel.classList.remove('open');
-            
             document.querySelectorAll('.menu-link').forEach(link => {
                 link.onclick = (e) => {
                     e.preventDefault();
@@ -1353,43 +1329,43 @@
                     document.getElementById(targetId).classList.add('active');
                     document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active-link'));
                     link.classList.add('active-link');
-                    
                     sessionStorage.setItem('activeTab', targetId);
-
-                    if (targetId === 'notasPanel') {
-                        markNotesAsRead();
-                    }
-
+                    if (targetId === 'notasPanel') markNotesAsRead();
                     if (window.innerWidth < 992) {
                         sideMenu.classList.remove('open');
                         menuToggle.classList.remove('active');
                     }
                 };
             });
-            
+
+            // Activar la pestaña correcta
             const savedTabId = sessionStorage.getItem('activeTab') || 'agregarPanel';
-            const panelToActivate = document.getElementById(savedTabId);
-            const linkToActivate = document.querySelector(`.menu-link[data-target="${savedTabId}"]`);
+            document.querySelector(`.menu-link[data-target="${savedTabId}"]`).click();
 
-            document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
-            
-            if (panelToActivate) {
-                panelToActivate.classList.add('active');
-            } else {
-                document.getElementById('agregarPanel').classList.add('active');
-            }
-
-            if (linkToActivate) {
-                linkToActivate.classList.add('active-link');
-            } else {
-                document.querySelector('.menu-link[data-target="agregarPanel"]').classList.add('active-link');
-            }
-            
+            // Dibujar la tabla vacía
+            filtrarTabla(); 
+            minimizado = true; 
+            document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; 
+            ordenarPorFecha('desc');
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             document.getElementById('fecha').value = `${year}-${month}-${day}`; 
+
+            // --- 2. CARGA DE DATOS EN SEGUNDO PLANO ---
+            await Promise.all([
+                cargarDatosDesdeSheet(true),
+                cargarSaldoInicial(),
+                cargarNotas()
+            ]);
+            
+            // --- 3. INICIAR ACTUALIZACIONES PERIÓDICAS ---
+            if (notesUpdateInterval) clearInterval(notesUpdateInterval);
+            notesUpdateInterval = setInterval(cargarNotas, 15 * 1000);
+
+            if (dataUpdateInterval) clearInterval(dataUpdateInterval);
+            dataUpdateInterval = setInterval(() => cargarDatosDesdeSheet(false), 15 * 1000);
         }
 
         document.addEventListener('DOMContentLoaded', checkLogin);
