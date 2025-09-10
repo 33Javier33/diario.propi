@@ -127,11 +127,17 @@
             z-index: 10;
             border-radius: 8px;
             transition: opacity 0.3s ease, visibility 0.3s ease;
-            opacity: 1;
-            visibility: visible;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
         }
         body.dark-mode .loader-wrapper {
             background-color: rgba(30, 30, 30, 0.8);
+        }
+        .loader-wrapper.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
         }
         .loader {
             border: 5px solid var(--bg-main);
@@ -149,11 +155,6 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-        .loader-wrapper.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
         }
 
         #ayudaPanel { position: fixed; top: 0; right: 0; width: 380px; max-width: 90%; height: 100%; background-color: var(--bg-content); z-index: 1050; transform: translateX(100%); transition: transform 0.3s ease-in-out; overflow-y: auto; box-shadow: -5px 0 15px rgba(0,0,0,0.2); display: block !important; animation: none; }
@@ -719,7 +720,9 @@
         });
 
         let datos = [];
+        let lastDataHash = ''; // Para detectar cambios reales en los datos
         let notes = [];
+        let lastNotesHash = ''; // Para detectar cambios reales en las notas
         let minimizado = true; 
         let editIndex = -1;
         let ordenFecha = 'desc';
@@ -734,7 +737,6 @@
                 return await response.json();
             } catch (error) {
                 console.error('Error fetching data from Apps Script:', error);
-                // No show alert for silent updates
                 return { status: 'error', message: error.message };
             }
         }
@@ -935,6 +937,7 @@
                 if (response.status === 'success') {
                     showAlert("Todos los datos han sido borrados.");
                     datos = [];
+                    lastDataHash = '';
                     saldoInicialGuardado = { fecha: null, monto: null };
                     actualizarPantalla();
                     filtrarTabla();
@@ -992,35 +995,30 @@
 
         async function cargarDatosDesdeSheet(showLoadingIndicator = false) {
             const loader = document.getElementById('tableLoader');
-            const tablaContainer = document.getElementById('tablaContainer');
-
-            if (showLoadingIndicator) {
-                loader.classList.remove('hidden');
-                tablaContainer.style.visibility = 'hidden';
-            }
+            if (showLoadingIndicator) loader.classList.add('show');
 
             try {
                 const response = await fetchFromScript({ action: 'get' });
                 if (response.status === 'success' && response.data) {
-                    const newData = response.data.map((item, index) => ({ ...item, originalIndex: index }));
-                    // Evita redibujar si los datos no han cambiado
-                    if (JSON.stringify(datos) !== JSON.stringify(newData)) {
-                        datos = newData;
+                    const newDataString = JSON.stringify(response.data);
+                    
+                    // Solo actualiza la UI si los datos han cambiado realmente.
+                    if (newDataString !== lastDataHash) {
+                        lastDataHash = newDataString;
+                        datos = response.data.map((item, index) => ({ ...item, originalIndex: index }));
                         filtrarTabla();
+                        actualizarPantalla();
                     }
                 } else if (response.status !== 'error') {
                     console.error('Error al cargar datos:', response.message);
                     datos = [];
+                    lastDataHash = '[]';
                     filtrarTabla();
                 }
-                actualizarPantalla();
             } catch (error) {
                 console.error("Fallo al cargar datos desde la hoja:", error);
             } finally {
-                if (showLoadingIndicator) {
-                    loader.classList.add('hidden');
-                    tablaContainer.style.visibility = 'visible';
-                }
+                if (showLoadingIndicator) loader.classList.remove('show');
             }
         }
 
@@ -1058,8 +1056,13 @@
         async function cargarNotas() {
             const response = await fetchFromScript({ action: 'getNotes' });
             if (response.status === 'success' && response.data) {
-                notes = response.data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-                renderizarNotas(notes);
+                const newDataString = JSON.stringify(response.data);
+                // Solo actualiza la UI si las notas han cambiado realmente.
+                if(newDataString !== lastNotesHash) {
+                    lastNotesHash = newDataString;
+                    notes = response.data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+                    renderizarNotas(notes);
+                }
                 checkUnreadNotes();
             } else if (response.status !== 'error') {
                 console.error('Error al cargar notas:', response.message);
@@ -1201,6 +1204,11 @@
             }, {});
             const fechasOrdenadas = Object.keys(datosPorFecha).sort((a,b) => ordenFecha === 'asc' ? new Date(a) - new Date(b) : new Date(b) - new Date(a));
             
+            if (fechasOrdenadas.length === 0) {
+                tablaContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--text-secondary);">No hay datos para mostrar.</p>';
+                return;
+            }
+
             let colorIndex = 0;
             fechasOrdenadas.forEach(fecha => {
                 if (minimizado && fechasOrdenadas.length > 1 && fecha !== (ordenFecha === 'desc' ? fechasOrdenadas[0] : fechasOrdenadas[fechasOrdenadas.length - 1])) {
@@ -1279,10 +1287,15 @@
             applyUserPermissions(); 
             applyTheme(localStorage.getItem('theme') || 'light');
             
-            // Cargas iniciales
-            await cargarDatosDesdeSheet(true); // Carga inicial con indicador
-            await cargarSaldoInicial();
-            await cargarNotas();
+            // Dibuja la UI inmediatamente con la tabla vacía.
+            filtrarTabla(); 
+            
+            // Cargas de datos en segundo plano
+            await Promise.all([
+                cargarDatosDesdeSheet(true), // Muestra el spinner sobre la tabla ya visible
+                cargarSaldoInicial(),
+                cargarNotas()
+            ]);
             
             minimizado = true; 
             document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; 
@@ -1292,7 +1305,7 @@
             notesUpdateInterval = setInterval(cargarNotas, 15 * 1000);
 
             if (dataUpdateInterval) clearInterval(dataUpdateInterval);
-            dataUpdateInterval = setInterval(() => cargarDatosDesdeSheet(false), 15 * 1000); // Actualización en segundo plano sin indicador
+            dataUpdateInterval = setInterval(() => cargarDatosDesdeSheet(false), 15 * 1000); // Chequeo silencioso
             
             document.querySelectorAll('.modal .close').forEach(button => {
                 button.onclick = (event) => cerrarModal(event.target.closest('.modal').id);
