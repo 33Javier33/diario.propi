@@ -59,12 +59,13 @@
         .menu-toggle.active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
         .menu-toggle.active span:nth-child(2) { opacity: 0; }
         .menu-toggle.active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-        .side-menu { position: fixed; top: 0; left: 0; width: var(--menu-width); height: 100%; background-color: #2c3e50; z-index: 1001; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; padding-top: 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
+        .side-menu { position: fixed; top: 0; left: 0; width: var(--menu-width); height: 100vh; background-color: #2c3e50; z-index: 1001; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
         .side-menu.open { transform: translateX(0); }
-        .side-menu .menu-header { color: white; font-size: 1.4em; font-weight: 700; text-align: center; padding: 20px 10px; border-bottom: 1px solid #4a627a; }
+        .menu-header { color: white; font-size: 1.4em; font-weight: 700; text-align: center; padding: 20px 10px; border-bottom: 1px solid #4a627a; flex-shrink: 0; }
+        .menu-links-container { flex-grow: 1; overflow-y: auto; }
         .side-menu a { color: white; text-decoration: none; padding: 15px 20px; display: block; font-size: 1.0em; transition: background-color 0.2s ease, padding-left 0.2s ease; border-bottom: 1px solid #3e5268; }
         .side-menu a:hover, .side-menu a.active-link { background-color: var(--primary-color); padding-left: 25px; }
-        #logoutBtn { margin-top: auto; background-color: #c82333; border-bottom: none;}
+        #logoutBtn { background-color: #c82333; border-bottom: none; border-top: 1px solid #4a627a; }
         #logoutBtn:hover { background-color: #a71d2a; }
 
         .unread-indicator {
@@ -415,6 +416,20 @@
                         <p><strong>Importante:</strong> La división se hace por la cantidad de <strong>puntos</strong>, no por la cantidad de mesas.</p>
                     </div>
                     <p>Una vez que tengas el resultado, haz clic en el ícono del lápiz <i class="fas fa-pencil-alt" style="color: var(--primary-color);"></i> para guardarlo junto con la fecha del cálculo. <strong>Tanto Administradores como Invitados pueden registrar este valor.</strong></p>
+                    
+                    <h3><i class="fas fa-sticky-note"></i>Paso 4: Bloc de Notas y Notificaciones</h3>
+                    <p>La sección de <strong>"Notas"</strong> sirve como un tablero de comunicación entre el Administrador y el Invitado.</p>
+                    <ul>
+                        <li><strong>Crear una nota:</strong> Simplemente escribe en el cuadro de texto y haz clic en "Guardar Nota".</li>
+                        <li><strong>Notificaciones:</strong> Si hay una nota nueva que no has leído (escrita por el otro usuario), verás dos indicadores:
+                            <ul>
+                                <li>Un <strong>punto rojo</strong> junto a "Notas" en el menú lateral.</li>
+                                <li>Un <strong>icono de nota parpadeante</strong> <i class="fas fa-sticky-note" style="color: #ffc107;"></i> en la esquina inferior derecha.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Marcar como Leídas:</strong> Para que las notificaciones desaparezcan, solo tienes que <strong>hacer clic en la pestaña "Notas"</strong>. Las notas no leídas aparecerán resaltadas con un fondo amarillo, y al verlas, volverán a su color normal y los avisos se quitarán.</li>
+                        <li><strong>Borrar Notas:</strong> El Administrador puede borrar cualquier nota (incluidas las suyas). El Invitado solo puede borrar las notas que él mismo ha creado.</li>
+                    </ul>
                 </div>
             </section>
             
@@ -509,7 +524,10 @@
         const VALID_USERNAME = 'croupier';
         const VALID_PASSWORD = '1234';
         let currentUserRole = null;
-        let lastSeenKey = ''; // Clave para localStorage específica del usuario
+        let lastSeenKey = '';
+        let notesUpdateInterval = null;
+        let dataUpdateInterval = null;
+
 
         const loginOverlay = document.getElementById('loginOverlay');
         const loginForm = document.getElementById('loginForm');
@@ -527,6 +545,10 @@
 
         const setupMenu = () => {
             sideMenu.innerHTML = '<div class="menu-header">Menú</div>'; 
+            
+            const linksContainer = document.createElement('div');
+            linksContainer.className = 'menu-links-container';
+
             const menuItems = [
                 { id: 'agregarPanel', title: 'Agregar Dato', icon: 'fa-plus-circle' },
                 { id: 'historialPanel', title: 'Historial', icon: 'fa-history' },
@@ -546,9 +568,9 @@
                 }
                 
                 link.innerHTML = `<i class="fas ${item.icon}" style="margin-right: 10px;"></i>${item.title} ${indicatorHTML}`;
-                sideMenu.appendChild(link);
+                linksContainer.appendChild(link);
             });
-
+            
             const logoutLink = document.createElement('a');
             logoutLink.href = '#';
             logoutLink.id = 'logoutBtn';
@@ -559,7 +581,8 @@
                 logout();
             });
 
-            sideMenu.appendChild(logoutLink);
+            linksContainer.appendChild(logoutLink);
+            sideMenu.appendChild(linksContainer);
         };
 
 
@@ -572,7 +595,7 @@
             const storedRole = sessionStorage.getItem('userRole');
             if (storedRole === 'admin' || storedRole === 'guest') {
                 currentUserRole = storedRole;
-                lastSeenKey = `lastSeenNoteTimestamp_${currentUserRole}`; // Define la clave específica del usuario
+                lastSeenKey = `lastSeenNoteTimestamp_${currentUserRole}`; 
                 loginOverlay.style.display = 'none';
                 mainContent.style.display = 'block';
                 menuToggle.style.display = 'flex';
@@ -610,6 +633,8 @@
         });
 
         function logout() {
+            if (notesUpdateInterval) clearInterval(notesUpdateInterval);
+            if (dataUpdateInterval) clearInterval(dataUpdateInterval);
             sessionStorage.removeItem('userRole');
             sessionStorage.removeItem('guestAddedEntries');
             location.reload();
@@ -658,7 +683,7 @@
                 return await response.json();
             } catch (error) {
                 console.error('Error fetching data from Apps Script:', error);
-                showAlert('Error al conectar con el servidor de datos.');
+                // No show alert for silent updates
                 return { status: 'error', message: error.message };
             }
         }
@@ -731,7 +756,8 @@
 
         async function cargarSaldoInicial() {
             const response = await fetchFromScript({ action: 'getSaldo' });
-            saldoInicialGuardado = (response.status === 'success' && response.data) ? 
+            if(response.status !== 'success') return;
+            saldoInicialGuardado = response.data ? 
                 { fecha: response.data.fecha || null, monto: response.data.monto || null } : 
                 { fecha: null, monto: null };
             actualizarPantalla();
@@ -917,7 +943,7 @@
             const response = await fetchFromScript({ action: 'get' });
             if (response.status === 'success' && response.data) {
                 datos = response.data.map((item, index) => ({ ...item, originalIndex: index }));
-            } else {
+            } else if (response.status !== 'error') { // Avoid logging network errors as data errors
                 console.error('Error al cargar datos:', response.message);
                 datos = [];
             }
@@ -925,44 +951,35 @@
             actualizarPantalla();
         }
 
-        function checkUnreadNotes(latestNotes) {
+        function checkUnreadNotes() {
             const lastSeenTimestamp = localStorage.getItem(lastSeenKey) || 0;
             const menuIndicator = document.getElementById('notes-indicator');
             const fabIndicator = document.getElementById('notesFabBtn');
             let hasUnread = false;
+            
+            const unreadNotes = notes.filter(note => {
+                return note.autor !== currentUserRole && new Date(note.fecha).getTime() > lastSeenTimestamp;
+            });
 
-            if (latestNotes.length > 0) {
-                const latestNoteTimestamp = new Date(latestNotes[0].fecha).getTime();
-                if (latestNoteTimestamp > lastSeenTimestamp) {
-                    hasUnread = true;
-                }
+            if (unreadNotes.length > 0) {
+                hasUnread = true;
             }
             
-            if (hasUnread) {
-                menuIndicator.classList.add('show');
-                fabIndicator.style.display = 'flex';
-                fabIndicator.classList.add('pulsing');
-            } else {
-                menuIndicator.classList.remove('show');
-                fabIndicator.style.display = 'none';
-                fabIndicator.classList.remove('pulsing');
-            }
+            menuIndicator.classList.toggle('show', hasUnread);
+            fabIndicator.style.display = hasUnread ? 'flex' : 'none';
+            fabIndicator.classList.toggle('pulsing', hasUnread);
         }
 
         function markNotesAsRead() {
-            if (notes.length > 0) {
-                const latestNoteTimestamp = new Date(notes[0].fecha).getTime();
+            const notesFromOthers = notes.filter(note => note.autor !== currentUserRole);
+            if (notesFromOthers.length > 0) {
+                const latestNoteTimestamp = new Date(notesFromOthers[0].fecha).getTime();
                 localStorage.setItem(lastSeenKey, latestNoteTimestamp);
+            } else {
+                 localStorage.setItem(lastSeenKey, new Date().getTime());
             }
-            document.getElementById('notes-indicator').classList.remove('show');
-            const fabIndicator = document.getElementById('notesFabBtn');
-            fabIndicator.style.display = 'none';
-            fabIndicator.classList.remove('pulsing');
-            
-            // Quita el resaltado de las notas en pantalla
-            document.querySelectorAll('.note-unread').forEach(card => {
-                card.classList.remove('note-unread');
-            });
+            checkUnreadNotes();
+            renderizarNotas(notes);
         }
 
         async function cargarNotas() {
@@ -970,8 +987,8 @@
             if (response.status === 'success' && response.data) {
                 notes = response.data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
                 renderizarNotas(notes);
-                checkUnreadNotes(notes);
-            } else {
+                checkUnreadNotes();
+            } else if (response.status !== 'error') {
                 console.error('Error al cargar notas:', response.message);
                 document.getElementById('notes-container').innerHTML = '<p>No se pudieron cargar las notas.</p>';
             }
@@ -991,7 +1008,7 @@
                 noteCard.className = 'note-card';
                 
                 const noteTimestamp = new Date(nota.fecha).getTime();
-                if (noteTimestamp > lastSeenTimestamp) {
+                if (nota.autor !== currentUserRole && noteTimestamp > lastSeenTimestamp) {
                     noteCard.classList.add('note-unread');
                 }
                 
@@ -1023,7 +1040,6 @@
 
             if (response.status === 'success') {
                 mensajeInput.value = '';
-                localStorage.setItem(lastSeenKey, new Date().getTime());
                 await cargarNotas();
             } else {
                 showAlert('Error al guardar la nota: ' + response.message);
@@ -1190,63 +1206,61 @@
             applyUserPermissions(); 
             applyTheme(localStorage.getItem('theme') || 'light');
             
+            // Cargas iniciales
             await cargarDatosDesdeSheet();
             await cargarSaldoInicial();
             await cargarNotas();
+            
             minimizado = true; 
             document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; 
             ordenarPorFecha('desc');
             
-            // --- Event Listeners ---
-            document.querySelectorAll('.modal .close').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const modal = event.target.closest('.modal');
-                    if (modal) {
-                        cerrarModal(modal.id);
-                    }
-                });
-            });
+            if (notesUpdateInterval) clearInterval(notesUpdateInterval);
+            notesUpdateInterval = setInterval(cargarNotas, 15 * 1000);
 
-            window.addEventListener('click', (event) => {
-                if (event.target.classList.contains('modal')) {
-                    cerrarModal(event.target.id);
-                }
-            });
-
-            document.getElementById('agregarForm').addEventListener('submit', (e) => { e.preventDefault(); agregarDatos(); });
-            document.getElementById('editarForm').addEventListener('submit', (e) => { e.preventDefault(); guardarEdicion(); });
-            document.getElementById('btnProcesarImportacion').addEventListener('click', procesarImportacion);
-            document.getElementById('btnAgregarNota').addEventListener('click', agregarNota);
+            if (dataUpdateInterval) clearInterval(dataUpdateInterval);
+            dataUpdateInterval = setInterval(cargarDatosDesdeSheet, 15 * 1000);
             
-            document.getElementById('btnEditBalanceAgregar').addEventListener('click', abrirModalEditarSaldo);
-            document.getElementById('btnEditBalanceHistorial').addEventListener('click', abrirModalEditarSaldo);
-            document.getElementById('editBalanceForm').addEventListener('submit', (e) => { e.preventDefault(); guardarSaldoInicialDesdeModal(); });
-
-            document.getElementById('btnMinimizarTabla').addEventListener('click', minimizarTabla);
-            document.getElementById('filtroFechas').addEventListener('input', filtrarTabla);
-            document.getElementById('btnReiniciarFiltros').addEventListener('click', reiniciarFiltros);
-            document.getElementById('btnOrdenarFechaAsc').addEventListener('click', () => ordenarPorFecha('asc'));
-            document.getElementById('btnOrdenarFechaDesc').addEventListener('click', () => ordenarPorFecha('desc'));
-            document.getElementById('scrollToTopBtn').addEventListener('click', scrollToTop);
-            document.getElementById('scrollToDataBtn').addEventListener('click', scrollToData);
-            document.getElementById('notesFabBtn').addEventListener('click', () => {
-                document.querySelector('.menu-link[data-target="notasPanel"]').click();
+            document.querySelectorAll('.modal .close').forEach(button => {
+                button.onclick = (event) => cerrarModal(event.target.closest('.modal').id);
             });
+            window.onclick = (event) => {
+                if (event.target.classList.contains('modal')) cerrarModal(event.target.id);
+            };
 
+            document.getElementById('agregarForm').onsubmit = (e) => { e.preventDefault(); agregarDatos(); };
+            document.getElementById('editarForm').onsubmit = (e) => { e.preventDefault(); guardarEdicion(); };
+            document.getElementById('btnProcesarImportacion').onclick = procesarImportacion;
+            document.getElementById('btnAgregarNota').onclick = agregarNota;
+            
+            document.getElementById('btnEditBalanceAgregar').onclick = abrirModalEditarSaldo;
+            document.getElementById('btnEditBalanceHistorial').onclick = abrirModalEditarSaldo;
+            document.getElementById('editBalanceForm').onsubmit = (e) => { e.preventDefault(); guardarSaldoInicialDesdeModal(); };
 
-            document.getElementById('btnReiniciarMes').addEventListener('click', reiniciarMes);
-            document.getElementById('btnExportarJson').addEventListener('click', exportarJson);
-            document.getElementById('btnImportarJsonTrigger').addEventListener('click', () => document.getElementById('jsonFileInput').click());
-            document.getElementById('jsonFileInput').addEventListener('change', importarJson);
+            document.getElementById('btnMinimizarTabla').onclick = minimizarTabla;
+            document.getElementById('filtroFechas').oninput = filtrarTabla;
+            document.getElementById('btnReiniciarFiltros').onclick = reiniciarFiltros;
+            document.getElementById('btnOrdenarFechaAsc').onclick = () => ordenarPorFecha('asc');
+            document.getElementById('btnOrdenarFechaDesc').onclick = () => ordenarPorFecha('desc');
+            document.getElementById('scrollToTopBtn').onclick = scrollToTop;
+            document.getElementById('scrollToDataBtn').onclick = scrollToData;
+            document.getElementById('notesFabBtn').onclick = () => {
+                document.querySelector('.menu-link[data-target="notasPanel"]').click();
+            };
+
+            document.getElementById('btnReiniciarMes').onclick = reiniciarMes;
+            document.getElementById('btnExportarJson').onclick = exportarJson;
+            document.getElementById('btnImportarJsonTrigger').onclick = () => document.getElementById('jsonFileInput').click();
+            document.getElementById('jsonFileInput').onchange = importarJson;
 
             const ayudaPanel = document.getElementById('ayudaPanel');
             const ayudaFabBtn = document.getElementById('ayudaFabBtn');
             const closeAyudaBtn = document.querySelector('.close-ayuda');
-            ayudaFabBtn.addEventListener('click', () => ayudaPanel.classList.add('open'));
-            closeAyudaBtn.addEventListener('click', () => ayudaPanel.classList.remove('open'));
+            ayudaFabBtn.onclick = () => ayudaPanel.classList.add('open');
+            closeAyudaBtn.onclick = () => ayudaPanel.classList.remove('open');
             
             document.querySelectorAll('.menu-link').forEach(link => {
-                link.addEventListener('click', (e) => {
+                link.onclick = (e) => {
                     e.preventDefault();
                     document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
                     document.getElementById(link.dataset.target).classList.add('active');
@@ -1261,7 +1275,7 @@
                         sideMenu.classList.remove('open');
                         menuToggle.classList.remove('active');
                     }
-                });
+                };
             });
             document.querySelector('.menu-link[data-target="agregarPanel"]').classList.add('active-link');
             
