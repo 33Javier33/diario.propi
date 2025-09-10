@@ -335,7 +335,7 @@
                 </div>
             </section>
 
-            <section id="agregarPanel" class="content-panel active">
+            <section id="agregarPanel" class="content-panel">
                 <div class="form-container" style="max-width: 400px;">
                     <div class="balance-info-container">
                          <div class="balance-display" id="agregarBalanceDisplay">
@@ -1262,12 +1262,16 @@
             document.querySelectorAll('.menu-link').forEach(link => {
                 link.onclick = (e) => {
                     e.preventDefault();
+                    const targetId = link.dataset.target;
                     document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
-                    document.getElementById(link.dataset.target).classList.add('active');
+                    document.getElementById(targetId).classList.add('active');
                     document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active-link'));
                     link.classList.add('active-link');
                     
-                    if (link.dataset.target === 'notasPanel') {
+                    // Guarda la pestaña activa en sessionStorage
+                    sessionStorage.setItem('activeTab', targetId);
+
+                    if (targetId === 'notasPanel') {
                         markNotesAsRead();
                     }
 
@@ -1277,7 +1281,28 @@
                     }
                 };
             });
-            document.querySelector('.menu-link[data-target="agregarPanel"]').classList.add('active-link');
+            
+            // Al cargar, establece la pestaña activa desde sessionStorage o usa 'agregarPanel' como predeterminada
+            const savedTabId = sessionStorage.getItem('activeTab') || 'agregarPanel';
+            const panelToActivate = document.getElementById(savedTabId);
+            const linkToActivate = document.querySelector(`.menu-link[data-target="${savedTabId}"]`);
+
+            // Asegúrate de que todos los paneles están inactivos antes de activar el correcto
+            document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+            
+            if (panelToActivate) {
+                panelToActivate.classList.add('active');
+            } else {
+                // Si por alguna razón el panel guardado no existe, vuelve al predeterminado
+                document.getElementById('agregarPanel').classList.add('active');
+            }
+
+            if (linkToActivate) {
+                linkToActivate.classList.add('active-link');
+            } else {
+                 // Si el enlace guardado no existe, vuelve al predeterminado
+                document.querySelector('.menu-link[data-target="agregarPanel"]').classList.add('active-link');
+            }
             
             const today = new Date();
             const year = today.getFullYear();
@@ -1290,5 +1315,4 @@
     </script>
 </body>
 </html>
-
 
