@@ -109,6 +109,53 @@
         h2 { margin-top: 20px; }
         .form-container, .table-container { background-color: var(--bg-content); padding: 20px; margin: 20px auto; border-radius: 8px; box-shadow: 0 0 10px var(--shadow-color); max-width: 800px; }
         
+        .table-container {
+            position: relative;
+            min-height: 200px;
+        }
+        .loader-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border-radius: 8px;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            opacity: 1;
+            visibility: visible;
+        }
+        body.dark-mode .loader-wrapper {
+            background-color: rgba(30, 30, 30, 0.8);
+        }
+        .loader {
+            border: 5px solid var(--bg-main);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        .loader-wrapper p {
+            margin-top: 15px;
+            font-weight: bold;
+            color: var(--text-secondary);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loader-wrapper.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
         #ayudaPanel { position: fixed; top: 0; right: 0; width: 380px; max-width: 90%; height: 100%; background-color: var(--bg-content); z-index: 1050; transform: translateX(100%); transition: transform 0.3s ease-in-out; overflow-y: auto; box-shadow: -5px 0 15px rgba(0,0,0,0.2); display: block !important; animation: none; }
         #ayudaPanel.open { transform: translateX(0); }
         #ayudaPanel .form-container { margin-top: 0; padding-top: 50px; box-shadow: none; }
@@ -331,6 +378,10 @@
                     </div>
                 </div>
                 <div class="table-container" id="tableContainerScrollTarget">
+                    <div class="loader-wrapper" id="tableLoader">
+                        <div class="loader"></div>
+                        <p>Cargando datos...</p>
+                    </div>
                     <div id="tablaContainer"></div>
                 </div>
             </section>
@@ -811,7 +862,7 @@
                     if (response.status === 'success') {
                         document.getElementById('agregarForm').reset();
                         document.getElementById('monto').value = '';
-                        await cargarDatosDesdeSheet();
+                        await cargarDatosDesdeSheet(true);
 
                         if (currentUserRole === 'guest') {
                             const newEntry = datos.find(d => d.originalIndex > maxIndexBeforeAdd);
@@ -858,7 +909,7 @@
                 const response = await postToScript({ action: 'update' }, { sheetIndex: editIndex, fecha, tipo, monto });
                 if (response.status === 'success') {
                     cerrarModal('editModal');
-                    await cargarDatosDesdeSheet();
+                    await cargarDatosDesdeSheet(true);
                 } else {
                     showAlert('Error al actualizar: ' + response.message);
                 }
@@ -871,7 +922,7 @@
             showConfirm('¿Seguro que quieres borrar este dato? Esta acción es permanente.', async () => {
                 const response = await postToScript({ action: 'delete' }, { index: index });
                 if (response.status === 'success') {
-                    await cargarDatosDesdeSheet();
+                    await cargarDatosDesdeSheet(true);
                 } else {
                     showAlert('Error al borrar: ' + response.message);
                 }
@@ -926,7 +977,7 @@
                         for (const dato of importedData.datos) { await postToScript({ action: 'add' }, dato); }
                         
                         showAlert("¡Importación completada con éxito!");
-                        await cargarDatosDesdeSheet();
+                        await cargarDatosDesdeSheet(true);
                         await cargarSaldoInicial();
                     });
 
@@ -939,16 +990,38 @@
             reader.readAsText(file);
         }
 
-        async function cargarDatosDesdeSheet() {
-            const response = await fetchFromScript({ action: 'get' });
-            if (response.status === 'success' && response.data) {
-                datos = response.data.map((item, index) => ({ ...item, originalIndex: index }));
-            } else if (response.status !== 'error') { // Avoid logging network errors as data errors
-                console.error('Error al cargar datos:', response.message);
-                datos = [];
+        async function cargarDatosDesdeSheet(showLoadingIndicator = false) {
+            const loader = document.getElementById('tableLoader');
+            const tablaContainer = document.getElementById('tablaContainer');
+
+            if (showLoadingIndicator) {
+                loader.classList.remove('hidden');
+                tablaContainer.style.visibility = 'hidden';
             }
-            filtrarTabla();
-            actualizarPantalla();
+
+            try {
+                const response = await fetchFromScript({ action: 'get' });
+                if (response.status === 'success' && response.data) {
+                    const newData = response.data.map((item, index) => ({ ...item, originalIndex: index }));
+                    // Evita redibujar si los datos no han cambiado
+                    if (JSON.stringify(datos) !== JSON.stringify(newData)) {
+                        datos = newData;
+                        filtrarTabla();
+                    }
+                } else if (response.status !== 'error') {
+                    console.error('Error al cargar datos:', response.message);
+                    datos = [];
+                    filtrarTabla();
+                }
+                actualizarPantalla();
+            } catch (error) {
+                console.error("Fallo al cargar datos desde la hoja:", error);
+            } finally {
+                if (showLoadingIndicator) {
+                    loader.classList.add('hidden');
+                    tablaContainer.style.visibility = 'visible';
+                }
+            }
         }
 
         function checkUnreadNotes() {
@@ -1085,7 +1158,7 @@
                 if (importadosConExito > 0) {
                     showAlert(`Se importaron ${importadosConExito} datos.`);
                     document.getElementById('importDataTextarea').value = '';
-                    await cargarDatosDesdeSheet();
+                    await cargarDatosDesdeSheet(true);
                     document.querySelector('.menu-link[data-target="historialPanel"]').click();
                 } else {
                     showAlert('No se pudo importar ningún dato.');
@@ -1207,7 +1280,7 @@
             applyTheme(localStorage.getItem('theme') || 'light');
             
             // Cargas iniciales
-            await cargarDatosDesdeSheet();
+            await cargarDatosDesdeSheet(true); // Carga inicial con indicador
             await cargarSaldoInicial();
             await cargarNotas();
             
@@ -1219,7 +1292,7 @@
             notesUpdateInterval = setInterval(cargarNotas, 15 * 1000);
 
             if (dataUpdateInterval) clearInterval(dataUpdateInterval);
-            dataUpdateInterval = setInterval(cargarDatosDesdeSheet, 15 * 1000);
+            dataUpdateInterval = setInterval(() => cargarDatosDesdeSheet(false), 15 * 1000); // Actualización en segundo plano sin indicador
             
             document.querySelectorAll('.modal .close').forEach(button => {
                 button.onclick = (event) => cerrarModal(event.target.closest('.modal').id);
@@ -1268,7 +1341,6 @@
                     document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active-link'));
                     link.classList.add('active-link');
                     
-                    // Guarda la pestaña activa en sessionStorage
                     sessionStorage.setItem('activeTab', targetId);
 
                     if (targetId === 'notasPanel') {
@@ -1282,25 +1354,21 @@
                 };
             });
             
-            // Al cargar, establece la pestaña activa desde sessionStorage o usa 'agregarPanel' como predeterminada
             const savedTabId = sessionStorage.getItem('activeTab') || 'agregarPanel';
             const panelToActivate = document.getElementById(savedTabId);
             const linkToActivate = document.querySelector(`.menu-link[data-target="${savedTabId}"]`);
 
-            // Asegúrate de que todos los paneles están inactivos antes de activar el correcto
             document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
             
             if (panelToActivate) {
                 panelToActivate.classList.add('active');
             } else {
-                // Si por alguna razón el panel guardado no existe, vuelve al predeterminado
                 document.getElementById('agregarPanel').classList.add('active');
             }
 
             if (linkToActivate) {
                 linkToActivate.classList.add('active-link');
             } else {
-                 // Si el enlace guardado no existe, vuelve al predeterminado
                 document.querySelector('.menu-link[data-target="agregarPanel"]').classList.add('active-link');
             }
             
@@ -1315,4 +1383,5 @@
     </script>
 </body>
 </html>
+
 
