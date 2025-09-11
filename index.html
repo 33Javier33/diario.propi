@@ -110,48 +110,45 @@
         h2 { margin-top: 20px; }
         .form-container, .table-container { background-color: var(--bg-content); padding: 20px; margin: 20px auto; border-radius: 8px; box-shadow: 0 0 10px var(--shadow-color); max-width: 800px; }
         
-        .table-container {
-            position: relative;
-            min-height: 200px;
-        }
-        .loader-wrapper {
-            position: absolute;
+        /* --- Global Loader Styles --- */
+        #globalLoaderOverlay {
+            position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.8);
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 10;
-            border-radius: 8px;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 3000;
             opacity: 0;
             visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
             pointer-events: none;
         }
-        body.dark-mode .loader-wrapper {
-            background-color: rgba(30, 30, 30, 0.8);
-        }
-        .loader-wrapper.show {
+        #globalLoaderOverlay.show {
             opacity: 1;
             visibility: visible;
             pointer-events: auto;
         }
+        .loader-content {
+            text-align: center;
+            color: white;
+        }
         .loader {
-            border: 5px solid var(--bg-main);
-            border-top: 5px solid var(--primary-color);
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid #ffffff;
             border-radius: 50%;
             width: 50px;
             height: 50px;
             animation: spin 1s linear infinite;
+            margin: 0 auto;
         }
-        .loader-wrapper p {
+        .loader-content p {
             margin-top: 15px;
             font-weight: bold;
-            color: var(--text-secondary);
+            font-size: 1.1em;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -316,6 +313,13 @@
     </style>
 </head>
 <body>
+    <div id="globalLoaderOverlay">
+        <div class="loader-content">
+            <div class="loader"></div>
+            <p id="globalLoaderMessage">Procesando...</p>
+        </div>
+    </div>
+    
     <div id="loginOverlay">
         <div id="loginBox">
             <h2>Acceso Requerido</h2>
@@ -380,10 +384,6 @@
                     </div>
                 </div>
                 <div class="table-container" id="tableContainerScrollTarget">
-                    <div class="loader-wrapper" id="tableLoader">
-                        <div class="loader"></div>
-                        <p>Cargando datos...</p>
-                    </div>
                     <div id="tablaContainer"></div>
                 </div>
             </section>
@@ -590,11 +590,23 @@
         const guestLoginBtn = document.getElementById('guestLoginBtn');
         const loginMessage = document.getElementById('loginMessage');
         const mainContent = document.getElementById('mainContent');
+        const globalLoader = document.getElementById('globalLoaderOverlay');
+        const globalLoaderMessage = document.getElementById('globalLoaderMessage');
         
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhKQTp9kER_H87XLekd3d69u5PK5ZpfpGzKdAtYcfKM0qTUuF5apPvB2UNYSyS2-FR/exec'; 
 
         const menuToggle = document.getElementById('menuToggle');
         const sideMenu = document.getElementById('sideMenu');
+        const mainContainer = document.getElementById('mainContainer');
+
+        function showGlobalLoader(message = 'Procesando...') {
+            globalLoaderMessage.textContent = message;
+            globalLoader.classList.add('show');
+        }
+
+        function hideGlobalLoader() {
+            globalLoader.classList.remove('show');
+        }
 
         const setupMenu = () => {
             sideMenu.innerHTML = '<div class="menu-header">Menú</div>'; 
@@ -639,7 +651,10 @@
         };
 
 
-        menuToggle.addEventListener('click', () => {
+        menuToggle.addEventListener('click', (event) => {
+            // --- CORRECCIÓN ---
+            // Detenemos la propagación del evento para que no llegue al mainContainer
+            event.stopPropagation();
             sideMenu.classList.toggle('open');
             menuToggle.classList.toggle('active');
         });
@@ -823,13 +838,18 @@
             let montoInput = document.getElementById('editSaldoActual').value;
             const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
             if (fecha && !isNaN(monto)) {
-                const response = await postToScript({ action: 'updateSaldo' }, { fecha, monto });
-                if (response.status === 'success') {
-                    showAlert('¡Valor del punto guardado!');
-                    cerrarModal('editBalanceModal');
-                    await cargarSaldoInicial();
-                } else {
-                    showAlert('Error al guardar: ' + response.message);
+                showGlobalLoader('Guardando valor del punto...');
+                try {
+                    const response = await postToScript({ action: 'updateSaldo' }, { fecha, monto });
+                    if (response.status === 'success') {
+                        showAlert('¡Valor del punto guardado!');
+                        cerrarModal('editBalanceModal');
+                        await cargarSaldoInicial();
+                    } else {
+                        showAlert('Error al guardar: ' + response.message);
+                    }
+                } finally {
+                    hideGlobalLoader();
                 }
             } else {
                 showAlert('Ingresa una fecha y un monto válidos.');
@@ -862,23 +882,28 @@
                 const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
 
                 if (fecha && !isNaN(monto)) {
-                    const response = await postToScript({ action: 'add' }, { fecha, tipo, monto });
-                    if (response.status === 'success') {
-                        document.getElementById('agregarForm').reset();
-                        document.getElementById('monto').value = '';
-                        await cargarDatosDesdeSheet(true);
+                    showGlobalLoader('Agregando registro...');
+                    try {
+                        const response = await postToScript({ action: 'add' }, { fecha, tipo, monto });
+                        if (response.status === 'success') {
+                            document.getElementById('agregarForm').reset();
+                            document.getElementById('monto').value = '';
+                            await cargarDatosDesdeSheet(false); // No mostrar loader aquí, ya está globalmente
 
-                        if (currentUserRole === 'guest') {
-                            const newEntry = datos.find(d => d.originalIndex > maxIndexBeforeAdd);
-                            if (newEntry) {
-                                const guestEntries = JSON.parse(sessionStorage.getItem('guestAddedEntries') || '[]');
-                                guestEntries.push(newEntry.originalIndex);
-                                sessionStorage.setItem('guestAddedEntries', JSON.stringify(guestEntries));
+                            if (currentUserRole === 'guest') {
+                                const newEntry = datos.find(d => d.originalIndex > maxIndexBeforeAdd);
+                                if (newEntry) {
+                                    const guestEntries = JSON.parse(sessionStorage.getItem('guestAddedEntries') || '[]');
+                                    guestEntries.push(newEntry.originalIndex);
+                                    sessionStorage.setItem('guestAddedEntries', JSON.stringify(guestEntries));
+                                }
                             }
+                            document.querySelector('.menu-link[data-target="historialPanel"]').click();
+                        } else {
+                            showAlert('Error al agregar: ' + response.message);
                         }
-                        document.querySelector('.menu-link[data-target="historialPanel"]').click();
-                    } else {
-                        showAlert('Error al agregar: ' + response.message);
+                    } finally {
+                        hideGlobalLoader();
                     }
                 } else {
                     showAlert('Ingresa fecha y monto válidos.');
@@ -910,12 +935,17 @@
             const monto = parseFloat(montoInput.replace(/\./g, '').replace('$', ''));
 
             if (fecha && !isNaN(monto)) {
-                const response = await postToScript({ action: 'update' }, { sheetIndex: editIndex, fecha, tipo, monto });
-                if (response.status === 'success') {
-                    cerrarModal('editModal');
-                    await cargarDatosDesdeSheet(true);
-                } else {
-                    showAlert('Error al actualizar: ' + response.message);
+                showGlobalLoader('Actualizando registro...');
+                try {
+                    const response = await postToScript({ action: 'update' }, { sheetIndex: editIndex, fecha, tipo, monto });
+                    if (response.status === 'success') {
+                        cerrarModal('editModal');
+                        await cargarDatosDesdeSheet(false);
+                    } else {
+                        showAlert('Error al actualizar: ' + response.message);
+                    }
+                } finally {
+                    hideGlobalLoader();
                 }
             } else {
                 showAlert('Ingresa fecha y monto válidos.');
@@ -924,27 +954,37 @@
 
         async function borrarDato(index) {
             showConfirm('¿Seguro que quieres borrar este dato? Esta acción es permanente.', async () => {
-                const response = await postToScript({ action: 'delete' }, { index: index });
-                if (response.status === 'success') {
-                    await cargarDatosDesdeSheet(true);
-                } else {
-                    showAlert('Error al borrar: ' + response.message);
+                showGlobalLoader('Borrando registro...');
+                try {
+                    const response = await postToScript({ action: 'delete' }, { index: index });
+                    if (response.status === 'success') {
+                        await cargarDatosDesdeSheet(false);
+                    } else {
+                        showAlert('Error al borrar: ' + response.message);
+                    }
+                } finally {
+                    hideGlobalLoader();
                 }
             });
         }
         
         async function reiniciarMes() {
             showConfirm("Esta acción borrará TODOS los datos de forma permanente. ¿Estás seguro?", async () => {
-                const response = await postToScript({ action: 'clearAll' });
-                if (response.status === 'success') {
-                    showAlert("Todos los datos han sido borrados.");
-                    datos = [];
-                    lastDataHash = '';
-                    saldoInicialGuardado = { fecha: null, monto: null };
-                    actualizarPantalla();
-                    filtrarTabla();
-                } else {
-                    showAlert('Error al reiniciar: ' + response.message);
+                showGlobalLoader('Reiniciando el mes...');
+                try {
+                    const response = await postToScript({ action: 'clearAll' });
+                    if (response.status === 'success') {
+                        showAlert("Todos los datos han sido borrados.");
+                        datos = [];
+                        lastDataHash = '';
+                        saldoInicialGuardado = { fecha: null, monto: null };
+                        actualizarPantalla();
+                        filtrarTabla();
+                    } else {
+                        showAlert('Error al reiniciar: ' + response.message);
+                    }
+                } finally {
+                    hideGlobalLoader();
                 }
             });
         }
@@ -975,19 +1015,26 @@
                     if (!importedData.datos || !importedData.saldoInicialGuardado) throw new Error("Formato de archivo incorrecto.");
                     
                     showConfirm("Esto reemplazará TODOS los datos actuales. ¿Estás seguro de continuar?", async () => {
-                        const clearResponse = await postToScript({ action: 'clearAll' });
-                        if (clearResponse.status !== 'success') throw new Error('No se pudieron borrar los datos antiguos: ' + clearResponse.message);
-                        
-                        await postToScript({ action: 'updateSaldo' }, importedData.saldoInicialGuardado);
-                        for (const dato of importedData.datos) { await postToScript({ action: 'add' }, dato); }
-                        
-                        showAlert("¡Importación completada con éxito!");
-                        await cargarDatosDesdeSheet(true);
-                        await cargarSaldoInicial();
+                        showGlobalLoader('Importando datos...');
+                        try {
+                            const clearResponse = await postToScript({ action: 'clearAll' });
+                            if (clearResponse.status !== 'success') throw new Error('No se pudieron borrar los datos antiguos: ' + clearResponse.message);
+                            
+                            await postToScript({ action: 'updateSaldo' }, importedData.saldoInicialGuardado);
+                            for (const dato of importedData.datos) { await postToScript({ action: 'add' }, dato); }
+                            
+                            showAlert("¡Importación completada con éxito!");
+                            await cargarDatosDesdeSheet(false);
+                            await cargarSaldoInicial();
+                        } catch (error) {
+                            showAlert("Error durante la importación: " + error.message);
+                        } finally {
+                            hideGlobalLoader();
+                        }
                     });
 
                 } catch (error) {
-                    showAlert("Error al importar el archivo: " + error.message);
+                    showAlert("Error al leer el archivo: " + error.message);
                 } finally {
                     document.getElementById('jsonFileInput').value = '';
                 }
@@ -996,9 +1043,7 @@
         }
 
         async function cargarDatosDesdeSheet(showLoadingIndicator = false) {
-            const loader = document.getElementById('tableLoader');
-            if (showLoadingIndicator) loader.classList.add('show');
-
+            if (showLoadingIndicator) showGlobalLoader('Cargando datos...');
             try {
                 const response = await fetchFromScript({ action: 'get' });
                 if (response.status === 'success' && response.data) {
@@ -1019,7 +1064,7 @@
             } catch (error) {
                 console.error("Fallo al cargar datos desde la hoja:", error);
             } finally {
-                if (showLoadingIndicator) loader.classList.remove('show');
+                if (showLoadingIndicator) hideGlobalLoader();
             }
         }
 
@@ -1112,23 +1157,32 @@
                 return;
             }
             const autor = currentUserRole;
-            const response = await postToScript({ action: 'addNote' }, { autor, mensaje });
-
-            if (response.status === 'success') {
-                mensajeInput.value = '';
-                await cargarNotas();
-            } else {
-                showAlert('Error al guardar la nota: ' + response.message);
+            showGlobalLoader('Guardando nota...');
+            try {
+                const response = await postToScript({ action: 'addNote' }, { autor, mensaje });
+                if (response.status === 'success') {
+                    mensajeInput.value = '';
+                    await cargarNotas();
+                } else {
+                    showAlert('Error al guardar la nota: ' + response.message);
+                }
+            } finally {
+                hideGlobalLoader();
             }
         }
 
         async function borrarNota(index) {
             showConfirm('¿Estás seguro de que quieres borrar esta nota permanentemente?', async () => {
-                const response = await postToScript({ action: 'deleteNote', index: index });
-                if (response.status === 'success') {
-                    await cargarNotas();
-                } else {
-                    showAlert('Error al borrar la nota: ' + response.message);
+                showGlobalLoader('Borrando nota...');
+                try {
+                    const response = await postToScript({ action: 'deleteNote', index: index });
+                    if (response.status === 'success') {
+                        await cargarNotas();
+                    } else {
+                        showAlert('Error al borrar la nota: ' + response.message);
+                    }
+                } finally {
+                    hideGlobalLoader();
                 }
             });
         }
@@ -1154,17 +1208,22 @@
             const nuevasEntradas = parsearTextoRecaudacion(texto);
             if (nuevasEntradas.length > 0) {
                 let importadosConExito = 0;
-                for (const entrada of nuevasEntradas) {
-                    const response = await postToScript({ action: 'add' }, entrada);
-                    if (response.status === 'success') importadosConExito++;
-                }
-                if (importadosConExito > 0) {
-                    showAlert(`Se importaron ${importadosConExito} datos.`);
-                    document.getElementById('importDataTextarea').value = '';
-                    await cargarDatosDesdeSheet(true);
-                    document.querySelector('.menu-link[data-target="historialPanel"]').click();
-                } else {
-                    showAlert('No se pudo importar ningún dato.');
+                showGlobalLoader('Importando desde texto...');
+                try {
+                    for (const entrada of nuevasEntradas) {
+                        const response = await postToScript({ action: 'add' }, entrada);
+                        if (response.status === 'success') importadosConExito++;
+                    }
+                    if (importadosConExito > 0) {
+                        showAlert(`Se importaron ${importadosConExito} datos.`);
+                        document.getElementById('importDataTextarea').value = '';
+                        await cargarDatosDesdeSheet(false);
+                        document.querySelector('.menu-link[data-target="historialPanel"]').click();
+                    } else {
+                        showAlert('No se pudo importar ningún dato.');
+                    }
+                } finally {
+                    hideGlobalLoader();
                 }
             } else {
                 showAlert('No se encontraron datos válidos en el texto.');
@@ -1288,6 +1347,14 @@
             applyUserPermissions(); 
             applyTheme(localStorage.getItem('theme') || 'light');
             
+            // Event listener para cerrar el menú al hacer clic fuera
+            mainContainer.addEventListener('click', () => {
+                if (sideMenu.classList.contains('open') && window.innerWidth < 992) {
+                    sideMenu.classList.remove('open');
+                    menuToggle.classList.remove('active');
+                }
+            });
+
             // Configurar todos los listeners de eventos
             document.querySelectorAll('.modal .close').forEach(button => {
                 button.onclick = (event) => cerrarModal(event.target.closest('.modal').id);
@@ -1354,11 +1421,16 @@
             document.getElementById('fecha').value = `${year}-${month}-${day}`; 
 
             // --- 2. CARGA DE DATOS EN SEGUNDO PLANO ---
-            await Promise.all([
-                cargarDatosDesdeSheet(true),
-                cargarSaldoInicial(),
-                cargarNotas()
-            ]);
+            showGlobalLoader('Cargando datos iniciales...');
+            try {
+                await Promise.all([
+                    cargarDatosDesdeSheet(false), // El loader global ya está activo
+                    cargarSaldoInicial(),
+                    cargarNotas()
+                ]);
+            } finally {
+                hideGlobalLoader();
+            }
             
             // --- 3. INICIAR ACTUALIZACIONES PERIÓDICAS ---
             if (notesUpdateInterval) clearInterval(notesUpdateInterval);
