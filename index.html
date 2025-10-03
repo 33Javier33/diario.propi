@@ -836,6 +836,16 @@
             });
             resetInactivityTimer();
 
+            // --- CORRECCIÓN: Cierre de sesión inmediato al cambiar de pestaña ---
+            document.addEventListener('visibilitychange', () => {
+              // Si la pestaña se oculta y hay un usuario con sesión iniciada
+              if (document.hidden && currentUserRole) {
+                console.log("La pestaña ya no está visible. Cerrando sesión por seguridad.");
+                logout();
+              }
+            });
+            // --- FIN DE LA CORRECCIÓN ---
+
             if (dataUpdateInterval) clearInterval(dataUpdateInterval);
             dataUpdateInterval = setInterval(() => {
                 console.log("Buscando nuevos datos y notas silenciosamente...");
