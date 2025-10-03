@@ -312,6 +312,21 @@
         let debounceTimer;
         let notesUpdateInterval = null;
         let dataUpdateInterval = null;
+        
+        let inactivityTimer;
+        const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
+
+        function logout() {
+            if (notesUpdateInterval) clearInterval(notesUpdateInterval);
+            if (dataUpdateInterval) clearInterval(dataUpdateInterval);
+            sessionStorage.clear();
+            location.reload();
+        }
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(logout, INACTIVITY_TIMEOUT);
+        }
 
         const mainContent = document.getElementById('mainContent');
         const loginOverlay = document.getElementById('loginOverlay');
@@ -348,7 +363,6 @@
             input.value = valor ? parseInt(valor, 10).toLocaleString('es-ES') : '';
         };
 
-        // --- INICIO: FUNCIONES DE COMUNICACIÓN CON REINTENTOS AUTOMÁTICOS ---
         async function fetchFromScript(params, retries = 2, delay = 1500) {
             const url = new URL(SCRIPT_URL);
             url.searchParams.append('v', new Date().getTime());
@@ -397,7 +411,6 @@
                 }
             }
         }
-        // --- FIN: FUNCIONES DE COMUNICACIÓN ---
         
         const setupMenu = () => {
             sideMenu.innerHTML = `<div class="menu-header">Menú</div><div class="menu-links-container"></div>`;
@@ -497,8 +510,11 @@
                 container.innerHTML = '<p>Aún no hay notas.</p>';
                 return;
             }
+            
+            // Ordenar notas antes de renderizar
+            const notasOrdenadas = notes.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-            const notesHtml = notes.map(nota => {
+            const notesHtml = notasOrdenadas.map(nota => {
                 let deleteBtn = '';
                 const autor = nota.autor ? nota.autor.trim().toLowerCase() : '';
                 const puedeBorrar = (currentUserRole === 'admin') || (currentUserRole === 'guest' && autor === 'guest');
@@ -530,9 +546,8 @@
                     fetchFromScript({ action: 'getDivisores' })
                 ]);
                 
-                // Solo actualiza si la carga fue exitosa
                 if (loadedDatos.status === 'success') datos = loadedDatos.data || [];
-                if (loadedNotas.status === 'success') notes = (loadedNotas.data || []).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+                if (loadedNotas.status === 'success') notes = loadedNotas.data || [];
                 if (loadedSaldo.status === 'success') saldoInicialGuardado = loadedSaldo.data || { fecha: null, monto: null };
                 if (loadedDivisores.status === 'success') divisores = loadedDivisores.data || {};
                 
@@ -542,7 +557,7 @@
                 checkUnreadNotes();
             } catch(error) {
                 console.error("Falla en la carga inicial de datos:", error);
-                showAlert("No se pudieron cargar los datos iniciales. Revisa la conexión.");
+                // No mostramos alerta aquí porque la función fetch ya lo hace
             } finally {
                 if(showLoader) hideGlobalLoader();
             }
@@ -557,8 +572,10 @@
         };
 
         const markNotesAsRead = () => {
-            const lastNoteFromOther = notes.find(n => n.autor !== currentUserRole);
-            if (lastNoteFromOther) localStorage.setItem(lastSeenKey, new Date(lastNoteFromOther.fecha).getTime());
+            const lastNoteFromOther = notes.filter(n => n.autor !== currentUserRole).sort((a,b) => new Date(b.fecha) - new Date(a.fecha))[0];
+            if (lastNoteFromOther) {
+                localStorage.setItem(lastSeenKey, new Date(lastNoteFromOther.fecha).getTime());
+            }
             renderizarNotas();
             checkUnreadNotes();
         };
@@ -599,7 +616,7 @@
                     return;
                 }
 
-                if (target.id === 'logoutBtn') { sessionStorage.clear(); location.reload(); }
+                if (target.id === 'logoutBtn') { logout(); }
                 if (target.matches('.menu-link')) {
                     document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
                     document.getElementById(target.dataset.target).classList.add('active');
@@ -813,13 +830,18 @@
                 linkToActivate.click();
             }
             
-            // --- INICIO: VERIFICACIÓN DE ACTUALIZACIÓN AUTOMÁTICA ---
-            if (notesUpdateInterval) clearInterval(notesUpdateInterval);
-            notesUpdateInterval = setInterval(() => {
-                console.log("Buscando nuevas notas silenciosamente...");
-                cargarDatosIniciales(false);
-            }, 15000); // 15000 milisegundos = 15 segundos
-            // --- FIN: VERIFICACIÓN DE ACTUALIZACIÓN AUTOMÁTICA ---
+            const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+            activityEvents.forEach(event => {
+                window.addEventListener(event, resetInactivityTimer, true);
+            });
+            resetInactivityTimer();
+
+            if (dataUpdateInterval) clearInterval(dataUpdateInterval);
+            dataUpdateInterval = setInterval(() => {
+                console.log("Buscando nuevos datos y notas silenciosamente...");
+                fetchFromScript({ action: 'get' }).then(res => { if(res.status === 'success') datos = res.data; renderizarTabla(); actualizarUI(); });
+                fetchFromScript({ action: 'getNotes' }).then(res => { if(res.status === 'success') notes = res.data; renderizarNotas(); checkUnreadNotes(); });
+            }, 15000);
         };
 
         const setupLoginListeners = () => {
