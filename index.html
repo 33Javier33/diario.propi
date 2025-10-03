@@ -310,6 +310,8 @@
         let ordenFecha = 'desc';
         let editIndex = -1;
         let debounceTimer;
+        let notesUpdateInterval = null;
+        let dataUpdateInterval = null;
 
         const mainContent = document.getElementById('mainContent');
         const loginOverlay = document.getElementById('loginOverlay');
@@ -548,7 +550,11 @@
 
         const setupAppEventListeners = () => {
             menuToggle.onclick = (e) => { e.stopPropagation(); sideMenu.classList.toggle('open'); };
-            document.querySelector('.main-container').onclick = () => sideMenu.classList.remove('open');
+            document.querySelector('.main-container').onclick = () => {
+                if (sideMenu.classList.contains('open')) {
+                    sideMenu.classList.remove('open');
+                }
+            };
             document.querySelectorAll('.modal .close, #alertOkBtn').forEach(el => el.onclick = (e) => hideModal(e.target.closest('.modal').id));
             window.onclick = (e) => { if (e.target.classList.contains('modal')) hideModal(e.target.id); };
             
@@ -721,6 +727,26 @@
             };
             document.getElementById('scrollToTopBtn').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
             window.onscroll = () => document.getElementById('scrollToTopBtn').classList.toggle('show', window.scrollY > 200);
+            
+            document.getElementById('notesFabBtn').onclick = () => {
+                const targetId = 'notasPanel';
+                const link = document.querySelector(`.menu-link[data-target="${targetId}"]`);
+                if (!link) return;
+
+                document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
+
+                document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active-link'));
+                link.classList.add('active-link');
+
+                sessionStorage.setItem('activeTab', targetId);
+                markNotesAsRead();
+
+                if (window.innerWidth < 992) {
+                    sideMenu.classList.remove('open');
+                }
+            };
+            
             document.getElementById('btnProcesarImportacion').onclick = async () => {
                  const texto = document.getElementById('importDataTextarea').value;
                 if (!texto) { showAlert('Pega el texto de los datos.'); return; }
@@ -771,6 +797,9 @@
             if (linkToActivate) {
                 linkToActivate.click();
             }
+            
+            if (notesUpdateInterval) clearInterval(notesUpdateInterval);
+            notesUpdateInterval = setInterval(() => cargarDatosIniciales(false), 15000);
         };
 
         const setupLoginListeners = () => {
