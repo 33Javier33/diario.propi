@@ -348,7 +348,8 @@
             input.value = valor ? parseInt(valor, 10).toLocaleString('es-ES') : '';
         };
 
-        async function fetchFromScript(params) {
+        // --- INICIO: FUNCIONES DE COMUNICACIÓN CON REINTENTOS AUTOMÁTICOS ---
+        async function fetchFromScript(params, retries = 2, delay = 1500) {
             const url = new URL(SCRIPT_URL);
             url.searchParams.append('v', new Date().getTime());
             Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
@@ -359,13 +360,19 @@
                 if (result.status === 'error') throw new Error(result.message);
                 return result;
             } catch (error) {
-                console.error(`Error en fetchFromScript (GET) con acción "${params.action}":`, error);
-                showAlert(`Error de Conexión: ${error.message}.`);
-                return { status: 'error', message: error.message };
+                if (retries > 0) {
+                    console.warn(`Falló la conexión, reintentando en ${delay / 1000}s... (${retries} intentos restantes)`);
+                    await new Promise(res => setTimeout(res, delay));
+                    return fetchFromScript(params, retries - 1, delay);
+                } else {
+                    console.error(`Error final en fetchFromScript (GET) con acción "${params.action}":`, error);
+                    showAlert(`Error de Conexión persistente: ${error.message}.`);
+                    return { status: 'error', message: error.message };
+                }
             }
         }
 
-        async function postToScript(data) {
+        async function postToScript(data, retries = 2, delay = 1500) {
             const url = new URL(SCRIPT_URL);
             try {
                 const response = await fetch(url, {
@@ -379,11 +386,18 @@
                 if (result.status === 'error') throw new Error(result.message);
                 return result;
             } catch (error) {
-                console.error(`Error en postToScript (POST) con acción "${data.action}":`, error);
-                showAlert(`Error al enviar datos: ${error.message}.`);
-                return { status: 'error', message: error.message };
+                if (retries > 0) {
+                    console.warn(`Falló el envío de datos, reintentando en ${delay / 1000}s... (${retries} intentos restantes)`);
+                    await new Promise(res => setTimeout(res, delay));
+                    return postToScript(data, retries - 1, delay);
+                } else {
+                    console.error(`Error final en postToScript (POST) con acción "${data.action}":`, error);
+                    showAlert(`Error persistente al enviar datos: ${error.message}.`);
+                    return { status: 'error', message: error.message };
+                }
             }
         }
+        // --- FIN: FUNCIONES DE COMUNICACIÓN ---
         
         const setupMenu = () => {
             sideMenu.innerHTML = `<div class="menu-header">Menú</div><div class="menu-links-container"></div>`;
@@ -516,10 +530,11 @@
                     fetchFromScript({ action: 'getDivisores' })
                 ]);
                 
-                datos = loadedDatos.data || [];
-                notes = (loadedNotas.data || []).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-                saldoInicialGuardado = loadedSaldo.data || { fecha: null, monto: null };
-                divisores = loadedDivisores.data || {};
+                // Solo actualiza si la carga fue exitosa
+                if (loadedDatos.status === 'success') datos = loadedDatos.data || [];
+                if (loadedNotas.status === 'success') notes = (loadedNotas.data || []).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+                if (loadedSaldo.status === 'success') saldoInicialGuardado = loadedSaldo.data || { fecha: null, monto: null };
+                if (loadedDivisores.status === 'success') divisores = loadedDivisores.data || {};
                 
                 actualizarUI();
                 renderizarTabla();
@@ -798,8 +813,13 @@
                 linkToActivate.click();
             }
             
+            // --- INICIO: VERIFICACIÓN DE ACTUALIZACIÓN AUTOMÁTICA ---
             if (notesUpdateInterval) clearInterval(notesUpdateInterval);
-            notesUpdateInterval = setInterval(() => cargarDatosIniciales(false), 15000);
+            notesUpdateInterval = setInterval(() => {
+                console.log("Buscando nuevas notas silenciosamente...");
+                cargarDatosIniciales(false);
+            }, 15000); // 15000 milisegundos = 15 segundos
+            // --- FIN: VERIFICACIÓN DE ACTUALIZACIÓN AUTOMÁTICA ---
         };
 
         const setupLoginListeners = () => {
