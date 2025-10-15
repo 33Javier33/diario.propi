@@ -298,7 +298,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const VALID_USERNAME = 'croupier';
         const VALID_PASSWORD = '1234';
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdiAMbUy2nTuXvvIuF_-KF-ed0s7jxXvh4X2T5u88jl9FSZdrDkNVgVNc7akhpIwCX/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz_kCb4aEe437zHGbRqnjCibw1NtAqfCbTNmsVPn9jaZOPBFaZ6-FwmiTLqVxq39X1P/exec';
 
         let currentUserRole = null;
         let lastSeenKey = '';
@@ -312,6 +312,7 @@
         let debounceTimer;
         let notesUpdateInterval = null;
         let dataUpdateInterval = null;
+        let allowAutoLogout = true;
         
         let inactivityTimer;
         const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
@@ -511,7 +512,6 @@
                 return;
             }
             
-            // Ordenar notas antes de renderizar
             const notasOrdenadas = notes.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
             const notesHtml = notasOrdenadas.map(nota => {
@@ -557,7 +557,6 @@
                 checkUnreadNotes();
             } catch(error) {
                 console.error("Falla en la carga inicial de datos:", error);
-                // No mostramos alerta aquí porque la función fetch ya lo hace
             } finally {
                 if(showLoader) hideGlobalLoader();
             }
@@ -594,6 +593,13 @@
             document.getElementById('ayudaFabBtn').onclick = () => ayudaPanel.classList.add('open');
             const closeAyudaBtn = document.querySelector('#ayudaPanel .close-ayuda');
             if(closeAyudaBtn) closeAyudaBtn.onclick = () => ayudaPanel.classList.remove('open');
+
+            window.addEventListener('focus', () => {
+                if (!allowAutoLogout) {
+                    allowAutoLogout = true;
+                    console.log("Ventana enfocada. Cierre de sesión automático por cambio de visibilidad reactivado.");
+                }
+            });
 
             document.addEventListener('click', async (e) => {
                 const target = e.target.closest('button, a');
@@ -683,7 +689,100 @@
                         hideGlobalLoader();
                     });
                 }
+                if (target.id === 'btnExportarJson') {
+                    try {
+                        const dataToExport = {
+                            recaudaciones: datos,
+                            notas: notes,
+                            divisores: divisores,
+                            valorPunto: saldoInicialGuardado
+                        };
+                        const jsonString = JSON.stringify(dataToExport, null, 2);
+                        const blob = new Blob([jsonString], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        const fecha = new Date().toISOString().slice(0, 10);
+                        a.download = `recaudacion_backup_${fecha}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        showAlert('Copia de seguridad generada.');
+                    } catch (error) {
+                        console.error("Error al exportar JSON:", error);
+                        showAlert('No se pudo generar la copia de seguridad.');
+                    }
+                }
+                if (target.id === 'btnImportarJsonTrigger') {
+                    allowAutoLogout = false;
+                    console.log("Cierre de sesión automático desactivado para importar archivo.");
+                    document.getElementById('jsonFileInput').click();
+                }
             });
+
+            document.getElementById('jsonFileInput').onchange = (event) => {
+                const file = event.target.files[0];
+                if (!file) {
+                    return; 
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const content = e.target.result;
+                        if (!content) throw new Error("El archivo de respaldo está vacío.");
+
+                        const rawImportedData = JSON.parse(content);
+                        if (!rawImportedData || typeof rawImportedData !== 'object') {
+                            throw new Error("El archivo de respaldo no es un objeto JSON válido.");
+                        }
+
+                        // --- NEW COMPATIBILITY LOGIC ---
+                        const dataToImport = {
+                            recaudaciones: rawImportedData.recaudaciones || rawImportedData.datos,
+                            valorPunto: rawImportedData.valorPunto || rawImportedData.saldoInicialGuardado,
+                            notas: rawImportedData.notes,
+                            divisores: rawImportedData.divisores
+                        };
+
+                        // --- NEW VALIDATION ---
+                        if (!Array.isArray(dataToImport.recaudaciones) || !Array.isArray(dataToImport.notas) || typeof dataToImport.divisores !== 'object' || typeof dataToImport.valorPunto !== 'object') {
+                            throw new Error('El archivo de respaldo tiene un formato incorrecto o faltan datos esenciales.');
+                        }
+                        
+                        const confirmMessage = '¡ADVERTENCIA!\n\nEsto reemplazará TODOS los datos actuales con el contenido del archivo. Esta acción no se puede deshacer.\n\n¿Estás seguro de que quieres continuar?';
+                        
+                        showConfirm(confirmMessage, async () => {
+                            showGlobalLoader('Importando datos...');
+                            const response = await postToScript({
+                                action: 'importAll',
+                                data: dataToImport
+                            });
+
+                            if (response.status === 'success') {
+                                await cargarDatosIniciales(true);
+                                showAlert('Datos restaurados correctamente desde la copia de seguridad.');
+                            } else {
+                                const errorMessage = response.message || 'Error desconocido del servidor.';
+                                console.error("Error en la importación:", errorMessage);
+                                showAlert(`No se pudieron importar los datos: ${errorMessage}`);
+                            }
+                            hideGlobalLoader();
+                        });
+
+                    } catch (error) {
+                        showAlert(`Error al procesar el archivo: ${error.message}`);
+                    } finally {
+                        event.target.value = '';
+                    }
+                };
+                reader.onerror = () => {
+                    showAlert('Error: No se pudo leer el archivo seleccionado.');
+                    event.target.value = '';
+                };
+                reader.readAsText(file);
+            };
 
             document.addEventListener('input', e => {
                 if (e.target.matches('.divisor-input')) {
@@ -836,15 +935,12 @@
             });
             resetInactivityTimer();
 
-            // --- CORRECCIÓN: Cierre de sesión inmediato al cambiar de pestaña ---
             document.addEventListener('visibilitychange', () => {
-              // Si la pestaña se oculta y hay un usuario con sesión iniciada
-              if (document.hidden && currentUserRole) {
+              if (document.hidden && currentUserRole && allowAutoLogout) {
                 console.log("La pestaña ya no está visible. Cerrando sesión por seguridad.");
                 logout();
               }
             });
-            // --- FIN DE LA CORRECCIÓN ---
 
             if (dataUpdateInterval) clearInterval(dataUpdateInterval);
             dataUpdateInterval = setInterval(() => {
