@@ -62,9 +62,7 @@
         .loader { border: 5px solid rgba(255, 255, 255, 0.3); border-top: 5px solid #ffffff; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto; }
         .loader-content p { margin-top: 15px; font-weight: bold; font-size: 1.1em; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .balance-info-container { position: relative; background-color: var(--bg-main); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px var(--shadow-color); margin: 0 auto 15px auto; max-width: 400px; }
-        .balance-display { display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text-primary); white-space: nowrap; width: auto; }
-        .balance-display .edit-balance-btn { background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 14px; margin-left: 8px; padding: 0; }
+        .balance-info-container { background-color: var(--bg-main); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px var(--shadow-color); margin: 0 auto 15px auto; max-width: 400px; }
         .controls-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px auto; max-width: 900px; padding: 0 20px; }
         .main-buttons-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; margin-bottom: 10px; }
         .control-group, #btnReiniciarFiltros, .data-management-group { display: none; }
@@ -72,13 +70,13 @@
         .data-management-group { display:flex; flex-wrap:wrap; gap: 8px; justify-content: center; width:100%; margin-top:10px; }
         label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-secondary); }
         input[type="date"], input[type="tel"], input[type="text"], input[type="number"], select, textarea, input[type="file"] { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; background-color: var(--bg-content); color: var(--text-primary); }
-        button { padding: 8px 12px; background-color: var(--secondary-color); border: none; border-radius: 4px; color: white; font-size: 14px; cursor: pointer; transition: background-color 0.3s ease; white-space: nowrap; }
-        button:hover { background-color: #218838; }
+        button, .download-link { padding: 8px 12px; background-color: var(--secondary-color); border: none; border-radius: 4px; color: white !important; font-size: 14px; cursor: pointer; transition: background-color 0.3s ease; white-space: nowrap; text-decoration: none; display: inline-block; text-align: center;}
+        button:hover, .download-link:hover { background-color: #218838; }
         .button-delete, .delete-btn { background-color: #dc3545; }
         .button-delete:hover, .delete-btn:hover { background-color: #c82333; }
-        .button-reset { background-color: #007bff; }
-        .button-reset:hover { background-color: #0056b3; }
-        .button-copy, .copy-btn { background-color: #ffc107; color: #333; }
+        .button-reset, .download-link { background-color: #007bff; }
+        .button-reset:hover, .download-link:hover { background-color: #0056b3; }
+        .button-copy, .copy-btn { background-color: #ffc107; color: #333 !important; }
         .button-copy:hover, .copy-btn:hover { background-color: #e0a800; }
         .button-danger { background-color: #c82333; }
         .fab-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
@@ -95,7 +93,7 @@
         tfoot td { font-weight: bold; text-align: left; }
         tfoot tr { background-color: var(--header-bg); }
         .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); padding-top: 60px; }
-        .modal-content { background-color: var(--bg-content); margin: 5% auto; padding: 20px; border: 1px solid var(--border-color); width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 0 10px var(--shadow-color); }
+        .modal-content { background-color: var(--bg-content); margin: 5% auto; padding: 20px; border: 1px solid var(--border-color); width: 80%; max-width: 500px; border-radius: 8px; box-shadow: 0 0 10px var(--shadow-color); text-align: center; }
         .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
         .fecha-par tbody tr { background-color: var(--row-color-even); }
         .fecha-impar tbody tr { background-color: var(--row-color-odd); }
@@ -107,8 +105,9 @@
         .note-header { font-size: 0.8em; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 12px; }
         .note-header .author { font-weight: bold; color: var(--primary-color); text-transform: capitalize; }
         .note-body { font-size: 0.95em; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
-        .note-delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 16px; padding: 5px; }
-        .note-delete-btn:hover { color: #dc3545; }
+        .note-delete-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; font-size: 16px; padding: 5px; }
+        .note-delete-btn i { color: var(--text-secondary); transition: color 0.2s ease; }
+        .note-delete-btn:hover i { color: #dc3545; }
         #ayudaPanel { position: fixed; top: 0; right: 0; width: 380px; max-width: 90%; height: 100%; background-color: var(--bg-content); z-index: 1050; transform: translateX(100%); transition: transform 0.3s ease-in-out; overflow-y: auto; box-shadow: -5px 0 15px rgba(0,0,0,0.2); display: block !important; animation: none; }
         #ayudaPanel.open { transform: translateX(0); }
         .close-ayuda { position: absolute; top: 15px; right: 25px; font-size: 30px; font-weight: bold; color: #aaa; cursor: pointer; line-height: 1; }
@@ -158,12 +157,8 @@
             <section id="historialPanel" class="content-panel">
                 <h2>Datos Recaudados</h2>
                 <div class="balance-info-container">
-                    <div class="balance-display" id="historialBalanceDisplay">
-                        Valor del Punto: <span id="displaySaldoGuardadoHistorial"></span>(<span id="displayFechaSaldoHistorial"></span>)
-                        <button class="edit-balance-btn" id="btnEditBalanceHistorial" title="Editar Valor del Punto"><i class="fas fa-pencil-alt"></i></button>
-                    </div>
                     <h3>Total Recaudado: <span id="totalRecaudadoHistorial"></span></h3>
-                    <h3>Total General División: <span id="totalGeneralDivision"></span></h3>
+                    <h3>Total General División: <span id="totalGeneralDivisionHistorial"></span></h3>
                 </div>
                 <div class="controls-container" id="controlsContainer">
                     <div class="main-buttons-group">
@@ -189,11 +184,8 @@
             <section id="agregarPanel" class="content-panel">
                 <div class="form-container" style="max-width: 400px;">
                     <div class="balance-info-container">
-                         <div class="balance-display" id="agregarBalanceDisplay">
-                            Valor del Punto: <span id="displaySaldoGuardadoAgregar"></span>(<span id="displayFechaSaldoAgregar"></span>)
-                            <button class="edit-balance-btn" id="btnEditBalanceAgregar" title="Editar Valor del Punto"><i class="fas fa-pencil-alt"></i></button>
-                        </div>
                         <h3>Total Recaudado: <span id="totalRecaudadoAgregar"></span></h3>
+                        <h3>Total General División: <span id="totalGeneralDivisionAgregar"></span></h3>
                     </div><hr style="margin-bottom: 25px;">
                     <h2>Agregar Datos</h2>
                     <form id="agregarForm">
@@ -233,7 +225,6 @@
                     <h2>Guía de Uso</h2>
                     <p style="text-align: center;">Sigue estos pasos para llevar un registro ordenado.</p>
                     <hr style="margin: 20px 0;">
-
                     <h3><i class="fas fa-plus-circle"></i>Paso 1: Agrega tus Recaudaciones</h3>
                     <p>El primer paso es registrar todo el dinero que entra.</p>
                     <ol>
@@ -241,34 +232,26 @@
                         <li>Completa el formulario con el tipo, la fecha y el monto.</li>
                         <li>Haz clic en "Agregar".</li>
                     </ol>
-
                     <h3><i class="fas fa-history"></i>Paso 2: Revisa y Gestiona tu Historial</h3>
                     <p>En la pestaña <strong>"Historial"</strong> podrás ver y administrar tus registros.</p>
                     <ul>
                         <li><strong>Administrador:</strong> Puede editar y borrar cualquier registro.</li>
                         <li><strong>Invitado:</strong> Solo puede 'Corregir' los datos que él mismo agregó durante la sesión actual. No puede borrar nada.</li>
                     </ul>
-
-                    <h3><i class="fas fa-calculator"></i>Paso 3: El Valor del Punto</h3>
-                    <p>El "Valor del Punto" es un dato de referencia que debes calcular e ingresar manualmente.</p>
-                    <p>Una vez que tengas el resultado, haz clic en el ícono del lápiz <i class="fas fa-pencil-alt"></i> para guardarlo junto con la fecha del cálculo.</p>
-                    
-                    <h3><i class="fas fa-sticky-note"></i>Paso 4: Bloc de Notas</h3>
+                    <h3><i class="fas fa-sticky-note"></i>Paso 3: Bloc de Notas</h3>
                     <p>La sección de <strong>"Notas"</strong> sirve como un tablero de comunicación. Si hay una nota nueva que no has leído, verás un <strong>punto rojo</strong> en el menú y un <strong>icono parpadeante</strong> en la esquina.</p>
                     <ul>
                         <li>Para que las notificaciones desaparezcan, solo tienes que hacer clic en la pestaña "Notas".</li>
                         <li>El Administrador puede borrar cualquier nota. El Invitado solo puede borrar las notas que él mismo ha creado.</li>
                     </ul>
-                    
-                    <h3><i class="fas fa-divide"></i>Paso 5: Divisor Diario y Total General</h3>
+                    <h3><i class="fas fa-divide"></i>Paso 4: Divisor Diario y Total General</h3>
                     <p>Esta es una herramienta para hacer cálculos rápidos sobre el total de un día.</p>
                     <ul>
                         <li>En la tabla del <strong>Historial</strong>, cada día tiene una casilla: <strong>"Dividir total por:"</strong>.</li>
                         <li>Ingresa un número en esa casilla (por ejemplo, la cantidad de personas) y el resultado de la división aparecerá al instante.</li>
                         <li>El <strong>"Total General División"</strong> que ves arriba de la tabla es la suma de todos los resultados de estas divisiones diarias.</li>
                     </ul>
-
-                    <h3><i class="fas fa-cogs"></i>Funciones Avanzadas</h3>
+                    <h3><i class="fas fa-cogs"></i>Paso 5: Funciones Avanzadas</h3>
                     <p>En la vista expandida del Historial, encontrarás botones para gestionar tus datos.</p>
                     <ul>
                         <li><strong>Exportar JSON:</strong> Crea una copia de seguridad de todos tus datos (recaudaciones, notas, divisores) en un archivo. Es muy recomendable hacerlo periódicamente.</li>
@@ -290,9 +273,17 @@
     </div> 
 
     <div id="editModal" class="modal"><div class="modal-content"><span class="close">&times;</span><h2>Editar Datos</h2><form id="editarForm"><label for="editarTipo">Tipo:</label><select id="editarTipo" name="editarTipo"><option value="Máquinas">Máquinas</option><option value="Mesas">Mesas</option><option value="Otras">Otras</option></select><label for="editarFecha">Fecha:</label><input type="date" id="editarFecha" name="editarFecha" required><label for="editarMonto">Monto Recaudado:</label><input type="tel" id="editarMonto" name="editarMonto" oninput="formatearMonto(this)" required><button type="submit">Guardar</button></form></div></div>
-    <div id="editBalanceModal" class="modal"><div class="modal-content"><span class="close">&times;</span><h2>Editar Valor del Punto</h2><form id="editBalanceForm"><div style="margin-bottom: 15px;"><label for="editBalanceDate">Fecha del Cálculo:</label><input type="date" id="editBalanceDate" name="editBalanceDate" required></div><label for="editSaldoActual">Monto del Valor del Punto:</label><input type="tel" id="editSaldoActual" name="editSaldoActual" oninput="formatearMonto(this)" required><button type="submit">Guardar Punto</button></form></div></div>
     <div id="alertModal" class="modal"><div class="modal-content" style="max-width: 400px;"><span class="close">&times;</span><p id="alertMessage" style="text-align: center; margin-top: 20px; font-size: 1.1em;"></p><button id="alertOkBtn" class="button-reset" style="display: block; margin: 20px auto 0 auto; min-width: 100px;">OK</button></div></div>
     <div id="confirmModal" class="modal"><div class="modal-content" style="max-width: 400px;"><p id="confirmMessage" style="text-align: center; margin: 20px 0; font-size: 1.1em; white-space: pre-wrap;"></p><div style="display: flex; justify-content: center; gap: 20px;"><button id="confirmOkBtn" style="min-width: 100px;">Confirmar</button><button id="confirmCancelBtn" class="button-delete" style="min-width: 100px;">Cancelar</button></div></div></div>
+    
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Descargar Respaldo</h2>
+            <p>El respaldo está listo. Haz clic en el botón para guardarlo.</p>
+            <div id="exportLinkContainer" style="margin-top: 20px;"></div>
+        </div>
+    </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -313,6 +304,7 @@
         let notesUpdateInterval = null;
         let dataUpdateInterval = null;
         let allowAutoLogout = true;
+        let currentExportUrl = null;
         
         let inactivityTimer;
         const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
@@ -339,7 +331,14 @@
         const showGlobalLoader = (message = 'Procesando...') => { globalLoaderMessage.textContent = message; globalLoader.classList.add('show'); };
         const hideGlobalLoader = () => globalLoader.classList.remove('show');
         const showModal = (id) => document.getElementById(id).style.display = 'block';
-        const hideModal = (id) => document.getElementById(id).style.display = 'none';
+        const hideModal = (id) => {
+            document.getElementById(id).style.display = 'none';
+            if (id === 'exportModal' && currentExportUrl) {
+                URL.revokeObjectURL(currentExportUrl);
+                currentExportUrl = null;
+                document.getElementById('exportLinkContainer').innerHTML = '';
+            }
+        };
         
         const showAlert = (message) => { document.getElementById('alertMessage').textContent = message; showModal('alertModal'); };
         const showConfirm = (message, onConfirm) => {
@@ -376,11 +375,9 @@
                 return result;
             } catch (error) {
                 if (retries > 0) {
-                    console.warn(`Falló la conexión, reintentando en ${delay / 1000}s... (${retries} intentos restantes)`);
                     await new Promise(res => setTimeout(res, delay));
                     return fetchFromScript(params, retries - 1, delay);
                 } else {
-                    console.error(`Error final en fetchFromScript (GET) con acción "${params.action}":`, error);
                     showAlert(`Error de Conexión persistente: ${error.message}.`);
                     return { status: 'error', message: error.message };
                 }
@@ -402,11 +399,9 @@
                 return result;
             } catch (error) {
                 if (retries > 0) {
-                    console.warn(`Falló el envío de datos, reintentando en ${delay / 1000}s... (${retries} intentos restantes)`);
                     await new Promise(res => setTimeout(res, delay));
                     return postToScript(data, retries - 1, delay);
                 } else {
-                    console.error(`Error final en postToScript (POST) con acción "${data.action}":`, error);
                     showAlert(`Error persistente al enviar datos: ${error.message}.`);
                     return { status: 'error', message: error.message };
                 }
@@ -422,16 +417,16 @@
                 { id: 'importarPanel', title: 'Importar Texto', icon: 'fa-file-import' },
                 { id: 'notasPanel', title: 'Notas', icon: 'fa-sticky-note' }
             ];
+            let menuHtml = '';
             menuItems.forEach(item => {
-                container.innerHTML += `<a href="#" class="menu-link" data-target="${item.id}"><i class="fas ${item.icon}"></i> ${item.title} ${item.id === 'notasPanel' ? '<span class="unread-indicator" id="notes-indicator"></span>' : ''}</a>`;
+                menuHtml += `<a href="#" class="menu-link" data-target="${item.id}"><i class="fas ${item.icon}"></i> ${item.title} ${item.id === 'notasPanel' ? '<span class="unread-indicator" id="notes-indicator"></span>' : ''}</a>`;
             });
+            container.innerHTML = menuHtml;
             sideMenu.innerHTML += `<a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>`;
         };
         
         const actualizarUI = () => {
             const totalRecaudado = datos.reduce((sum, d) => sum + d.monto, 0);
-            document.querySelectorAll('#displaySaldoGuardadoHistorial, #displaySaldoGuardadoAgregar').forEach(el => el.textContent = formatearNumero(saldoInicialGuardado.monto));
-            document.querySelectorAll('#displayFechaSaldoHistorial, #displayFechaSaldoAgregar').forEach(el => el.textContent = `(${formatearFecha(saldoInicialGuardado.fecha)})`);
             document.querySelectorAll('#totalRecaudadoHistorial, #totalRecaudadoAgregar').forEach(el => el.textContent = formatearNumero(totalRecaudado));
             actualizarTotalGeneralDivision();
         };
@@ -446,7 +441,8 @@
                 const divisor = divisores[fecha];
                 return divisor > 0 ? sum + (totalesPorDia[fecha] / divisor) : sum;
             }, 0);
-            document.getElementById('totalGeneralDivision').textContent = formatearNumero(totalGeneral);
+            document.getElementById('totalGeneralDivisionHistorial').textContent = formatearNumero(totalGeneral);
+            document.getElementById('totalGeneralDivisionAgregar').textContent = formatearNumero(totalGeneral);
         };
         
         const renderizarTabla = () => {
@@ -478,8 +474,8 @@
                     const guestEntries = JSON.parse(sessionStorage.getItem('guestAddedEntries') || '[]');
                     const canEdit = currentUserRole === 'admin' || (currentUserRole === 'guest' && guestEntries.includes(dato.originalIndex));
                     let accionesHtml = '';
-                    if (canEdit) accionesHtml += `<button class="edit-btn" data-index="${dato.originalIndex}">${currentUserRole === 'guest' ? 'Corregir' : 'Editar'}</button>`;
-                    if (currentUserRole === 'admin') accionesHtml += `<button class="delete-btn" data-index="${dato.originalIndex}">Borrar</button>`;
+                    if (canEdit) accionesHtml += `<button class="edit-btn" data-index="${dato.originalIndex}"><i class="fas fa-pencil-alt"></i></button>`;
+                    if (currentUserRole === 'admin') accionesHtml += `<button class="delete-btn" data-index="${dato.originalIndex}"><i class="fas fa-trash-alt"></i></button>`;
                     tbodyHtml += `<tr><td data-label="Fecha">${formatearFecha(dato.fecha)}</td><td data-label="Tipo">${dato.tipo}</td><td data-label="Monto">${formatearNumero(dato.monto)}</td><td data-label="Acciones">${accionesHtml}</td></tr>`;
                 });
 
@@ -597,16 +593,17 @@
             window.addEventListener('focus', () => {
                 if (!allowAutoLogout) {
                     allowAutoLogout = true;
-                    console.log("Ventana enfocada. Cierre de sesión automático por cambio de visibilidad reactivado.");
                 }
             });
 
             document.addEventListener('click', async (e) => {
                 const target = e.target.closest('button, a');
                 if (!target) return;
+
+                const isDownload = target.classList.contains('download-link');
                 
-                if (target.tagName === 'A' || (target.tagName === 'BUTTON' && target.type !== 'submit')) {
-                    e.preventDefault();
+                if (target.closest('form') === null && !isDownload) {
+                     e.preventDefault();
                 }
 
                 if (target.closest('.note-delete-btn')) {
@@ -621,7 +618,7 @@
                     });
                     return;
                 }
-
+                
                 if (target.id === 'logoutBtn') { logout(); }
                 if (target.matches('.menu-link')) {
                     document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
@@ -631,12 +628,6 @@
                     sessionStorage.setItem('activeTab', target.dataset.target);
                     if (target.dataset.target === 'notasPanel') markNotesAsRead();
                     if (window.innerWidth < 992) sideMenu.classList.remove('open');
-                }
-                if (target.matches('#btnEditBalanceHistorial, #btnEditBalanceAgregar')) {
-                    document.getElementById('editBalanceDate').value = saldoInicialGuardado.fecha || new Date().toISOString().slice(0,10);
-                    document.getElementById('editSaldoActual').value = saldoInicialGuardado.monto || '';
-                    window.formatearMonto(document.getElementById('editSaldoActual'));
-                    showModal('editBalanceModal');
                 }
                 if (target.matches('.edit-btn')) {
                     const index = parseInt(target.dataset.index);
@@ -683,14 +674,14 @@
                     } else { showAlert('Escribe un mensaje.'); }
                 }
                 if (target.id === 'btnReiniciarMes') {
-                    showConfirm('¿Borrar TODOS los datos y divisores permanentemente?', async () => {
+                    showConfirm('¿Borrar TODOS los datos de recaudación y divisores?\nLas notas se conservarán.', async () => {
                         showGlobalLoader('Reiniciando mes...');
                         if ((await postToScript({ action: 'clearAll' })).status === 'success') await cargarDatosIniciales(false);
                         hideGlobalLoader();
                     });
                 }
                 if (target.id === 'btnExportarJson') {
-                    try {
+                     try {
                         const dataToExport = {
                             recaudaciones: datos,
                             notas: notes,
@@ -699,33 +690,33 @@
                         };
                         const jsonString = JSON.stringify(dataToExport, null, 2);
                         const blob = new Blob([jsonString], { type: 'application/json' });
-                        const url = URL.createObjectURL(blob);
+                        currentExportUrl = URL.createObjectURL(blob);
+                        
+                        const exportLinkContainer = document.getElementById('exportLinkContainer');
+                        exportLinkContainer.innerHTML = ''; 
+                        
                         const a = document.createElement('a');
-                        a.href = url;
-                        const fecha = new Date().toISOString().slice(0, 10);
-                        a.download = `recaudacion_backup_${fecha}.json`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                        showAlert('Copia de seguridad generada.');
+                        a.href = currentExportUrl;
+                        a.download = `recaudacion_backup_${new Date().toISOString().slice(0, 10)}.json`;
+                        a.textContent = 'Descargar Respaldo';
+                        a.className = 'download-link';
+                        
+                        exportLinkContainer.appendChild(a);
+                        showModal('exportModal');
                     } catch (error) {
-                        console.error("Error al exportar JSON:", error);
-                        showAlert('No se pudo generar la copia de seguridad.');
+                       showAlert('Error al generar el respaldo.');
+                       console.error(error);
                     }
                 }
                 if (target.id === 'btnImportarJsonTrigger') {
                     allowAutoLogout = false;
-                    console.log("Cierre de sesión automático desactivado para importar archivo.");
                     document.getElementById('jsonFileInput').click();
                 }
             });
 
             document.getElementById('jsonFileInput').onchange = (event) => {
                 const file = event.target.files[0];
-                if (!file) {
-                    return; 
-                }
+                if (!file) { return; }
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -737,18 +728,16 @@
                         if (!rawImportedData || typeof rawImportedData !== 'object') {
                             throw new Error("El archivo de respaldo no es un objeto JSON válido.");
                         }
-
-                        // --- NEW COMPATIBILITY LOGIC ---
+                        
                         const dataToImport = {
-                            recaudaciones: rawImportedData.recaudaciones || rawImportedData.datos,
-                            valorPunto: rawImportedData.valorPunto || rawImportedData.saldoInicialGuardado,
-                            notas: rawImportedData.notes,
-                            divisores: rawImportedData.divisores
+                            recaudaciones: rawImportedData.recaudaciones || rawImportedData.datos || [],
+                            valorPunto: rawImportedData.valorPunto || rawImportedData.saldoInicialGuardado || {},
+                            notas: rawImportedData.notas || rawImportedData.notes || [],
+                            divisores: rawImportedData.divisores || {}
                         };
 
-                        // --- NEW VALIDATION ---
-                        if (!Array.isArray(dataToImport.recaudaciones) || !Array.isArray(dataToImport.notas) || typeof dataToImport.divisores !== 'object' || typeof dataToImport.valorPunto !== 'object') {
-                            throw new Error('El archivo de respaldo tiene un formato incorrecto o faltan datos esenciales.');
+                        if (!Array.isArray(dataToImport.recaudaciones)) {
+                            throw new Error('El archivo de respaldo es inválido o no contiene datos de recaudación.');
                         }
                         
                         const confirmMessage = '¡ADVERTENCIA!\n\nEsto reemplazará TODOS los datos actuales con el contenido del archivo. Esta acción no se puede deshacer.\n\n¿Estás seguro de que quieres continuar?';
@@ -762,10 +751,9 @@
 
                             if (response.status === 'success') {
                                 await cargarDatosIniciales(true);
-                                showAlert('Datos restaurados correctamente desde la copia de seguridad.');
+                                showAlert('Datos restaurados correctamente.');
                             } else {
                                 const errorMessage = response.message || 'Error desconocido del servidor.';
-                                console.error("Error en la importación:", errorMessage);
                                 showAlert(`No se pudieron importar los datos: ${errorMessage}`);
                             }
                             hideGlobalLoader();
@@ -833,20 +821,6 @@
                 hideGlobalLoader();
             };
             
-            document.getElementById('editBalanceForm').onsubmit = async e => {
-                e.preventDefault();
-                const fecha = document.getElementById('editBalanceDate').value;
-                const monto = parseFloat(document.getElementById('editSaldoActual').value.replace(/\./g, ''));
-                if (!fecha || isNaN(monto)) { showAlert('Datos inválidos.'); return; }
-                showGlobalLoader('Guardando punto...');
-                const response = await postToScript({ action: 'updateSaldo', fecha, monto });
-                if (response.status === 'success') {
-                    hideModal('editBalanceModal');
-                    await cargarDatosIniciales(false);
-                }
-                hideGlobalLoader();
-            };
-
             document.getElementById('btnMinimizarTabla').onclick = () => { minimizado = !minimizado; document.getElementById('btnMinimizarTabla').textContent = minimizado ? 'Maximizar Tabla' : 'Minimizar Tabla'; renderizarTabla(); };
             document.getElementById('btnOrdenarFechaAsc').onclick = () => { ordenFecha = 'asc'; renderizarTabla(); };
             document.getElementById('btnOrdenarFechaDesc').onclick = () => { ordenFecha = 'desc'; renderizarTabla(); };
@@ -863,16 +837,12 @@
                 const targetId = 'notasPanel';
                 const link = document.querySelector(`.menu-link[data-target="${targetId}"]`);
                 if (!link) return;
-
                 document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
                 document.getElementById(targetId).classList.add('active');
-
                 document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active-link'));
                 link.classList.add('active-link');
-
                 sessionStorage.setItem('activeTab', targetId);
                 markNotesAsRead();
-
                 if (window.innerWidth < 992) {
                     sideMenu.classList.remove('open');
                 }
@@ -937,14 +907,12 @@
 
             document.addEventListener('visibilitychange', () => {
               if (document.hidden && currentUserRole && allowAutoLogout) {
-                console.log("La pestaña ya no está visible. Cerrando sesión por seguridad.");
                 logout();
               }
             });
 
             if (dataUpdateInterval) clearInterval(dataUpdateInterval);
             dataUpdateInterval = setInterval(() => {
-                console.log("Buscando nuevos datos y notas silenciosamente...");
                 fetchFromScript({ action: 'get' }).then(res => { if(res.status === 'success') datos = res.data; renderizarTabla(); actualizarUI(); });
                 fetchFromScript({ action: 'getNotes' }).then(res => { if(res.status === 'success') notes = res.data; renderizarNotas(); checkUnreadNotes(); });
             }, 15000);
