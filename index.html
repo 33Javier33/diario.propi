@@ -381,7 +381,8 @@
         let currentExportUrl = null;
         
         let inactivityTimer;
-        const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
+        // CAMBIO IMPLEMENTADO: El tiempo de inactividad ahora es de 15 minutos (900000 ms).
+        const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
 
         function logout() {
             if (notesUpdateInterval) clearInterval(notesUpdateInterval);
@@ -685,6 +686,15 @@
                 }
             });
 
+            // LÍNEA ELIMINADA: Ya no se cierra la sesión al cambiar de pestaña.
+            /*
+            document.addEventListener('visibilitychange', () => {
+              if (document.hidden && currentUserRole && allowAutoLogout) {
+                logout();
+              }
+            });
+            */
+            
             document.addEventListener('click', async (e) => {
                 const target = e.target.closest('button, a');
                 if (!target) return;
@@ -1002,11 +1012,14 @@
             });
             resetInactivityTimer();
 
+            // CAMBIO IMPLEMENTADO: Se eliminó el cierre de sesión al cambiar la visibilidad.
+            /*
             document.addEventListener('visibilitychange', () => {
               if (document.hidden && currentUserRole && allowAutoLogout) {
                 logout();
               }
             });
+            */
 
             if (dataUpdateInterval) clearInterval(dataUpdateInterval);
             dataUpdateInterval = setInterval(() => {
