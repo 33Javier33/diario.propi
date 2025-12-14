@@ -132,7 +132,7 @@
         table { width: 100%; border-collapse: collapse; margin: 25px 0; border-radius: 8px; overflow: hidden; }
         th, td { padding: 15px; border: 1px solid var(--border-color); text-align: left; }
         th { background-color: var(--header-bg); font-weight: bold; color: var(--text-primary); font-size: 1.05em; }
-        tfoot td { font-weight: bold; text-align: left; padding-top: 20px; padding-bottom: 20px; }
+        tfoot td { font-weight: bold; text-align: left; padding-top: 15px; padding-bottom: 15px; }
         tfoot tr { background-color: var(--header-bg); }
         .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); padding-top: 50px; }
         .modal-content { background-color: var(--bg-content); margin: 5% auto; padding: 30px; border: 1px solid var(--border-color); width: 85%; max-width: 550px; border-radius: 12px; box-shadow: 0 0 20px var(--shadow-color); text-align: center; position: relative; }
@@ -143,6 +143,7 @@
         .fecha-par tbody tr { background-color: var(--row-color-even); }
         .fecha-impar tbody tr { background-color: var(--row-color-odd); }
         .fecha-impar tfoot tr { background-color: var(--row-footer-odd); }
+        .fecha-par tfoot tr { background-color: var(--header-bg); } /* Aseguramos que los pares también tengan fondo */
         .fecha-impar tfoot td, .fecha-par tfoot td { background-color: transparent; }
         #notes-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; margin-top: 25px; }
         .note-card { background-color: var(--bg-content); border: 1px solid var(--border-color); border-left: 6px solid var(--primary-color); border-radius: 10px; padding: 20px; box-shadow: 0 4px 12px var(--shadow-color); position: relative; transition: background-color 0.3s, border-color 0.3s; }
@@ -164,6 +165,94 @@
         #ayudaPanel li { margin-bottom: 8px; }
         #ayudaPanel strong { color: var(--text-primary); }
         footer { text-align: center; padding: 25px; margin-top: 40px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.9em; background-color: var(--header-bg); }
+        
+        /* ************************************************* */
+        /* CSS para agrupar Total y Divisor en la tabla de Historial */
+        /* ************************************************* */
+
+        /* Estilo para las filas del pie (Totales y Divisor) */
+        tfoot tr { 
+            display: flex; /* Usar flexbox para control de espaciado */
+            width: 100%; 
+        }
+        
+        /* Celda que abarca Fecha y Tipo (50% de ancho) */
+        tfoot td:first-child {
+            width: 50%;
+            text-align: left;
+            padding-right: 15px;
+        }
+
+        /* Celda que abarca Monto (30% de ancho) */
+        tfoot td:nth-child(2) {
+            width: 30%; 
+            text-align: left;
+            padding-left: 15px;
+        }
+        
+        /* Celda que abarca Acciones (20% de ancho) */
+        tfoot td:last-child {
+             width: 20%; 
+             text-align: right;
+             padding-left: 15px;
+        }
+
+        /* AJUSTE CLAVE PARA IGUALAR EL ESTILO DE AMBAS FILAS DEL FOOTER */
+        /* ----------------------------------------------------------- */
+        
+        /* Aseguramos que el TR tome el color correcto */
+        .fecha-par tfoot tr { background-color: var(--header-bg); }
+        .fecha-impar tfoot tr { background-color: var(--row-footer-odd); }
+        
+        /* Forzamos que todas las celdas hereden el fondo del TR (para las dos filas) */
+        tfoot td {
+            background-color: inherit !important;
+            border-top: 1px solid var(--border-color); /* Borde consistente en el TOP */
+            border-bottom: 1px solid var(--border-color); /* Borde consistente en el BOTTOM */
+        }
+        
+        /* Ajustes de contenido para la fila del Divisor */
+        tfoot tr:last-child td {
+            display: flex;
+            align-items: center;
+            padding-top: 10px; 
+            padding-bottom: 10px;
+        }
+
+        /* Celda del divisor con input (debe justificar al inicio) */
+        tfoot tr:last-child td:first-child {
+            display: flex;
+            justify-content: flex-start; 
+        }
+        
+        /* Quitamos el borde izquierdo de la celda de resultado que estaba antes */
+        tfoot tr:last-child td:nth-child(2) {
+            border-left: 1px solid var(--border-color);
+        }
+        
+        /* Quitamos el borde izquierdo de la celda vacía para que parezca una sola columna */
+        tfoot tr:last-child td:last-child {
+            border-left: 1px solid var(--border-color); 
+        }
+
+        /* ----------------------------------------------------------- */
+        /* FIN DE AJUSTE CLAVE */
+
+        .divisor-input {
+            width: 60px; 
+            padding: 8px;
+            margin-left: 8px;
+            text-align: center;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+        }
+
+        /* ************************************************* */
+        /* FIN: CSS para agrupar Total y Divisor */
+        /* ************************************************* */
+
         @media (max-width: 600px) { 
             h2 { margin-top: 20px; font-size: 1.8em; } 
             h3 { font-size: 1.3em; }
@@ -185,15 +274,63 @@
             .main-buttons-group button { flex-grow: 1; min-width: unset; font-size: 13px; padding: 8px 10px; } 
             button, .download-link { font-size: 14px; padding: 8px 15px; }
             button i, .download-link i { margin-right: 5px; }
+            
+            /* Ajustes para la tabla en vista móvil */
             table, thead, tbody, th, td, tr { display: block; } 
             thead tr { position: absolute; top: -9999px; left: -9999px; } 
             tr { border: 1px solid var(--border-color); margin-bottom: 10px; display: flex; flex-wrap: wrap; } 
             td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50%; text-align: right; width: 100%; background-color: transparent !important; } 
             td:before { content: attr(data-label); position: absolute; left: 6px; width: 45%; padding-right: 10px; white-space: nowrap; text-align: left; font-weight: bold; color: var(--text-secondary); } 
-            tfoot tr { display: flex; flex-wrap: wrap; width: 100%; border: 1px solid var(--border-color); margin-top: 10px; } 
-            tfoot td { width: 100%; text-align: right; padding-left: 50%; } 
-            tfoot td:first-child { text-align: left; padding-left: 15px; } 
             .fecha-par tr, .fecha-impar tr { background-color: transparent; }
+            
+            /* Ajustes para el pie de tabla en vista móvil */
+            tfoot tr { 
+                display: block; 
+                width: 100%; 
+                border: 1px solid var(--border-color); 
+                margin-top: 10px;
+                padding: 5px 0;
+            } 
+            tfoot td {
+                display: block;
+                width: 100%;
+                text-align: right; 
+                padding: 10px 15px;
+                border: none;
+            }
+            /* Reset de anchos y alineación en móvil */
+            tfoot tr:first-child td:first-child,
+            tfoot tr:first-child td:nth-child(2),
+            tfoot tr:first-child td:last-child,
+            tfoot tr:last-child td:first-child,
+            tfoot tr:last-child td:nth-child(2),
+            tfoot tr:last-child td:last-child {
+                width: 100%;
+                padding-left: 15px;
+                text-align: right;
+                display: block;
+            }
+            
+            /* Ajuste de alineación para la etiqueta del divisor en móvil */
+            tfoot tr:last-child td:first-child {
+                 text-align: left;
+            }
+            
+            tfoot tr:last-child td:first-child strong {
+                 display: block;
+                 text-align: right;
+                 padding-right: 80px;
+            }
+            
+            tfoot tr:last-child td:first-child .divisor-input {
+                width: 60px; 
+                position: absolute;
+                right: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                margin-left: 0;
+            }
+
             .note-card { padding: 15px; }
             .note-delete-btn { top: 10px; right: 10px; font-size: 16px; }
             .fab { width: 45px; height: 45px; font-size: 22px; }
@@ -381,7 +518,7 @@
         let currentExportUrl = null;
         
         let inactivityTimer;
-        // CAMBIO IMPLEMENTADO: El tiempo de inactividad ahora es de 15 minutos (900000 ms).
+        // El tiempo de inactividad es de 15 minutos (900000 ms).
         const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
 
         function logout() {
@@ -425,13 +562,34 @@
             document.getElementById('confirmCancelBtn').onclick = () => hideModal('confirmModal');
             showModal('confirmModal');
         };
+
+        const getDayOfWeek = (fechaStr) => {
+            if (!fechaStr) return '';
+            const date = new Date(fechaStr + 'T12:00:00'); 
+            const options = { weekday: 'long', timeZone: 'America/Santiago' };
+            let day = date.toLocaleDateString('es-ES', options);
+            return day.charAt(0).toUpperCase() + day.slice(1);
+        };
+        
         const formatearFecha = (fechaStr, includeTime = false) => {
             if (!fechaStr) return 'N/A';
             const date = includeTime ? new Date(fechaStr) : new Date(fechaStr + 'T12:00:00');
             const options = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Santiago' };
-            if (includeTime) { options.hour = '2-digit'; options.minute = '2-digit'; }
-            return date.toLocaleString('es-ES', options);
+            if (includeTime) { 
+                options.hour = '2-digit'; 
+                options.minute = '2-digit'; 
+            }
+            
+            let formattedDate = date.toLocaleString('es-ES', options);
+            
+            if (!includeTime) {
+                const dayOfWeek = getDayOfWeek(fechaStr);
+                formattedDate = `${dayOfWeek}, ${formattedDate}`;
+            }
+            
+            return formattedDate;
         };
+        
         const formatearNumero = (num) => isNaN(num) || num === null ? '$0' : `$${Math.ceil(num).toLocaleString('es-ES')}`;
         window.formatearMonto = (input) => {
             let valor = input.value.replace(/\D/g, '');
@@ -542,10 +700,9 @@
                 
                 const totalDia = datosPorFecha[fecha].reduce((sum, d) => sum + d.monto, 0);
                 const divisor = divisores[fecha] || '';
-                const resultadoDivision = divisor > 0 ? totalDia / divisor : 0; // Manejar divisor 0 o undefined
+                const resultadoDivision = divisor > 0 ? totalDia / divisor : 0; 
                 
                 let tbodyHtml = '';
-                // Simplificación: Solo el admin puede editar/borrar
                 const isAdmin = currentUserRole === 'admin'; 
 
                 datosPorFecha[fecha].forEach(dato => {
@@ -562,13 +719,17 @@
                         <thead><tr><th>Fecha</th><th>Tipo</th><th>Monto</th><th>Acciones</th></tr></thead>
                         <tbody>${tbodyHtml}</tbody>
                         <tfoot>
-                            <tr><td colspan="2"><strong>Total Día:</strong></td><td>${formatearNumero(totalDia)}</td><td><button class="copy-btn" data-fecha="${fecha}" title="Copiar datos del día"><i class="fas fa-copy"></i></button></td></tr>
                             <tr>
-                                <td data-label="Divisor:" colspan="2">
+                                <td colspan="2"><strong>Total Día:</strong></td>
+                                <td>${formatearNumero(totalDia)}</td>
+                                <td><button class="copy-btn" data-fecha="${fecha}" title="Copiar datos del día"><i class="fas fa-copy"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td>
                                     <strong>Dividir total por:</strong>
-                                    <input type="number" min="1" class="divisor-input" value="${divisor}" data-fecha="${fecha}" style="width:70px;padding:8px;margin-left:8px;text-align:center;border-radius:6px;border:1px solid var(--border-color);background-color:var(--bg-main);color:var(--text-primary);">
+                                    <input type="number" min="1" class="divisor-input" value="${divisor}" data-fecha="${fecha}">
                                 </td>
-                                <td data-label="Resultado División:"><strong id="resultado-division-${fecha}">${formatearNumero(resultadoDivision)}</strong></td>
+                                <td><strong id="resultado-division-${fecha}">${formatearNumero(resultadoDivision)}</strong></td>
                                 <td></td>
                             </tr>
                         </tfoot>
@@ -591,12 +752,10 @@
 
             const notesHtml = notasOrdenadas.map(nota => {
                 let deleteBtn = '';
-                // Simplificación: Solo el admin puede borrar notas
                 if (isAdmin) {
                     deleteBtn = `<button class="note-delete-btn" data-index="${nota.originalIndex}" title="Eliminar nota"><i class="fas fa-trash-alt"></i></button>`;
                 }
 
-                // Check unread status (still comparing against current user role, which is now always 'admin')
                 const isUnread = nota.autor !== currentUserRole && new Date(nota.fecha).getTime() > lastSeen;
                 
                 return `
@@ -638,7 +797,6 @@
 
         const checkUnreadNotes = () => {
             const lastSeen = localStorage.getItem(lastSeenKey) || 0;
-            // Solo considera notas no leídas si el autor NO es el admin actual
             const hasUnread = notes.some(n => n.autor !== currentUserRole && new Date(n.fecha).getTime() > lastSeen);
             const notesIndicator = document.getElementById('notes-indicator');
             if (notesIndicator) notesIndicator.classList.toggle('show', hasUnread);
@@ -646,7 +804,6 @@
         };
 
         const markNotesAsRead = () => {
-            // Marca como leído hasta la nota más reciente de cualquier otro usuario (si la hay)
             const lastNoteFromOther = notes.filter(n => n.autor !== currentUserRole).sort((a,b) => new Date(b.fecha) - new Date(a.fecha))[0];
             if (lastNoteFromOther) {
                 localStorage.setItem(lastSeenKey, new Date(lastNoteFromOther.fecha).getTime());
@@ -664,7 +821,6 @@
                 }
             };
             
-            // Cerrar menú si se hace clic fuera en pantallas pequeñas
             window.addEventListener('resize', () => {
                 if (window.innerWidth >= 992 && sideMenu.classList.contains('open')) {
                     sideMenu.classList.remove('open');
@@ -685,15 +841,6 @@
                     allowAutoLogout = true;
                 }
             });
-
-            // LÍNEA ELIMINADA: Ya no se cierra la sesión al cambiar de pestaña.
-            /*
-            document.addEventListener('visibilitychange', () => {
-              if (document.hidden && currentUserRole && allowAutoLogout) {
-                logout();
-              }
-            });
-            */
             
             document.addEventListener('click', async (e) => {
                 const target = e.target.closest('button, a');
@@ -755,7 +902,7 @@
                  if (target.matches('.copy-btn')) {
                     const fecha = target.dataset.fecha;
                     const datosDelDia = datos.filter(d => d.fecha === fecha);
-                    let texto = `Datos de Recaudación del Día ${formatearFecha(fecha)}:\n`;
+                    let texto = `Datos de Recaudación del Día ${getDayOfWeek(fecha)} ${formatearFecha(fecha).split(', ')[1]}:\n`;
                     let total = 0;
                     const porTipo = {};
                     datosDelDia.forEach(d => { porTipo[d.tipo] = (porTipo[d.tipo] || 0) + d.monto; total += d.monto; });
@@ -767,7 +914,6 @@
                     const mensaje = document.getElementById('notaMensaje').value.trim();
                     if (mensaje) {
                         showGlobalLoader('Guardando nota...');
-                        // El autor de la nota es el rol actual, que ahora solo puede ser 'admin'
                         const response = await postToScript({ action: 'addNote', autor: currentUserRole, mensaje });
                         if (response.status === 'success') {
                             document.getElementById('notaMensaje').value = '';
@@ -889,27 +1035,49 @@
                 }
             });
             
+            // **********************************************
+            // INICIO DE LA MODIFICACIÓN SOLICITADA
+            // **********************************************
             document.getElementById('agregarForm').onsubmit = e => {
                 e.preventDefault();
                 const performAdd = async () => {
                     const tipo = document.getElementById('tipo').value;
                     const fecha = document.getElementById('fecha').value;
-                    // Se asume que el input de monto siempre tiene un punto como separador de miles si usa formatMonto
+                    // Elimina los puntos de miles antes de parsear a número
                     const monto = parseFloat(document.getElementById('monto').value.replace(/\./g, '')); 
-                    if (!fecha || isNaN(monto)) { showAlert('Datos inválidos.'); return; }
-                    showGlobalLoader('Agregando...');
+                    
+                    if (!fecha || isNaN(monto) || monto <= 0) { 
+                        showAlert('Datos de fecha o monto inválidos. Asegúrate de ingresar un monto mayor a cero.'); 
+                        return; 
+                    }
+                    
+                    showGlobalLoader('Agregando dato...'); // Muestra el loader
+                    
                     const response = await postToScript({ action: 'add', fecha, tipo, monto });
+                    
+                    hideGlobalLoader(); // Oculta el loader
+                    
                     if (response.status === 'success') {
                         document.getElementById('agregarForm').reset();
-                        document.getElementById('fecha').value = new Date().toISOString().slice(0,10);
-                        await cargarDatosIniciales(false);
-                        document.querySelector('.menu-link[data-target="historialPanel"]').click();
+                        document.getElementById('fecha').value = new Date().toISOString().slice(0,10); 
+                        
+                        // Recargar datos y actualizar la UI sin cambiar de pestaña
+                        await cargarDatosIniciales(false); 
+                        
+                        // Mostrar mensaje de éxito en la misma pantalla
+                        showAlert('¡Dato agregado con éxito!'); 
+                        
+                        // ** LÍNEA DE REDIRECCIÓN ELIMINADA **
+                        
+                    } else {
+                        showAlert('Error al agregar el dato: ' + (response.message || 'Error desconocido.'));
                     }
-                    hideGlobalLoader();
                 };
-                // Eliminado el showConfirm para 'guest'
                 performAdd();
             };
+            // **********************************************
+            // FIN DE LA MODIFICACIÓN SOLICITADA
+            // **********************************************
             
             document.getElementById('editarForm').onsubmit = async e => {
                 e.preventDefault();
@@ -992,7 +1160,6 @@
             mainContent.style.display = 'block';
             menuToggle.style.display = 'flex';
             document.body.classList.add('loggedin');
-            // 'lastSeenKey' ahora usa el rol 'admin'
             lastSeenKey = `lastSeenNote_${currentUserRole}`; 
             document.body.classList.toggle('dark-mode', localStorage.getItem('theme') === 'dark');
 
@@ -1012,18 +1179,8 @@
             });
             resetInactivityTimer();
 
-            // CAMBIO IMPLEMENTADO: Se eliminó el cierre de sesión al cambiar la visibilidad.
-            /*
-            document.addEventListener('visibilitychange', () => {
-              if (document.hidden && currentUserRole && allowAutoLogout) {
-                logout();
-              }
-            });
-            */
-
             if (dataUpdateInterval) clearInterval(dataUpdateInterval);
             dataUpdateInterval = setInterval(() => {
-                // Se podría optimizar esto, pero se mantiene la estructura original de refresco
                 fetchFromScript({ action: 'get' }).then(res => { if(res.status === 'success') datos = res.data; renderizarTabla(); actualizarUI(); });
                 fetchFromScript({ action: 'getNotes' }).then(res => { if(res.status === 'success') notes = res.data; renderizarNotas(); checkUnreadNotes(); });
             }, 15000);
@@ -1043,7 +1200,6 @@
                     document.getElementById('loginMessage').style.display = 'block';
                 }
             };
-            // ELIMINADO: guestLoginBtn.onclick
             
             document.getElementById('togglePassword').onclick = function() {
                 const passInput = document.getElementById('password');
@@ -1053,7 +1209,6 @@
         };
 
         const checkLogin = () => {
-            // Solo verifica si el rol es 'admin'
             if (sessionStorage.getItem('userRole') === 'admin') {
                 currentUserRole = 'admin';
                 initializeApp();
