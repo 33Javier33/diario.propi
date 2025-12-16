@@ -501,7 +501,6 @@
         const VALID_PASSWORD = '1234';
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz_kCb4aEe437zHGbRqnjCibw1NtAqfCbTNmsVPn9jaZOPBFaZ6-FwmiTLqVxq39X1P/exec';
 
-        // Ahora solo existirá el rol 'admin' (o será null/undefined)
         let currentUserRole = null; 
         let lastSeenKey = '';
         let datos = [];
@@ -514,24 +513,57 @@
         let debounceTimer;
         let notesUpdateInterval = null;
         let dataUpdateInterval = null;
-        let allowAutoLogout = true;
         let currentExportUrl = null;
         
         let inactivityTimer;
         // El tiempo de inactividad es de 15 minutos (900000 ms).
         const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
 
+        // ** CORRECCIÓN: Función logout optimizada para limpieza total **
         function logout() {
+            // Detener todos los intervalos para evitar problemas tras el reload
             if (notesUpdateInterval) clearInterval(notesUpdateInterval);
             if (dataUpdateInterval) clearInterval(dataUpdateInterval);
             sessionStorage.clear();
-            location.reload();
+            
+            // Forzar una recarga limpia
+            location.reload(true); 
         }
 
+        // ** CORRECCIÓN: Función para manejar la inactividad **
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(logout, INACTIVITY_TIMEOUT);
+            if (document.visibilityState === 'visible') {
+                inactivityTimer = setTimeout(logout, INACTIVITY_TIMEOUT);
+            }
         }
+        
+        // ** CORRECCIÓN: Función para iniciar los intervalos de actualización **
+        const startUpdateIntervals = () => {
+             // Limpiar por si acaso antes de empezar
+            if (dataUpdateInterval) clearInterval(dataUpdateInterval);
+            
+            dataUpdateInterval = setInterval(() => {
+                // Solo actualiza si la pestaña está visible
+                if (document.visibilityState === 'visible') {
+                    // Solo recargar datos, no notas ya que se gestionan con el checkUnreadNotes
+                    fetchFromScript({ action: 'get' }).then(res => { 
+                        if(res.status === 'success') {
+                            datos = res.data; 
+                            renderizarTabla(); 
+                            actualizarUI();
+                            // También recargamos notas para la comprobación
+                            fetchFromScript({ action: 'getNotes' }).then(res => { 
+                                if(res.status === 'success') {
+                                    notes = res.data; 
+                                    checkUnreadNotes(); 
+                                }
+                            });
+                        } 
+                    });
+                }
+            }, 15000); // 15 segundos
+        };
 
         const mainContent = document.getElementById('mainContent');
         const loginOverlay = document.getElementById('loginOverlay');
@@ -804,10 +836,8 @@
         };
 
         const markNotesAsRead = () => {
-            const lastNoteFromOther = notes.filter(n => n.autor !== currentUserRole).sort((a,b) => new Date(b.fecha) - new Date(a.fecha))[0];
-            if (lastNoteFromOther) {
-                localStorage.setItem(lastSeenKey, new Date(lastNoteFromOther.fecha).getTime());
-            }
+            // Se marca como leído al momento de entrar a la pestaña, no a la última nota.
+            localStorage.setItem(lastSeenKey, new Date().getTime());
             renderizarNotas();
             checkUnreadNotes();
         };
@@ -835,13 +865,25 @@
             document.getElementById('ayudaFabBtn').onclick = () => ayudaPanel.classList.add('open');
             const closeAyudaBtn = document.querySelector('#ayudaPanel .close-ayuda');
             if(closeAyudaBtn) closeAyudaBtn.onclick = () => ayudaPanel.classList.remove('open');
-
-            window.addEventListener('focus', () => {
-                if (!allowAutoLogout) {
-                    allowAutoLogout = true;
+            
+            // ** CORRECCIÓN: Manejo de visibilidad para pausar/reiniciar temporizadores **
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    resetInactivityTimer(); // Reinicia el temporizador de inactividad
+                    cargarDatosIniciales(false); // Forzar actualización de datos al volver
+                    startUpdateIntervals(); // Reiniciar los intervalos
+                } else {
+                    clearTimeout(inactivityTimer); // Detener el temporizador de inactividad
+                    if (dataUpdateInterval) clearInterval(dataUpdateInterval); // Detener actualizaciones automáticas
                 }
             });
-            
+
+            const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+            activityEvents.forEach(event => {
+                window.addEventListener(event, resetInactivityTimer, true); // Reiniciar timer con actividad
+            });
+            // Fin de corrección de manejo de visibilidad/inactividad.
+
             document.addEventListener('click', async (e) => {
                 const target = e.target.closest('button, a');
                 if (!target) return;
@@ -958,7 +1000,7 @@
                     }
                 }
                 if (target.id === 'btnImportarJsonTrigger') {
-                    allowAutoLogout = false;
+                    // ** CORRECCIÓN: En lugar de una variable global, solo se fuerza el reinicio del timer al volver. **
                     document.getElementById('jsonFileInput').click();
                 }
             });
@@ -1028,6 +1070,7 @@
                     clearTimeout(debounceTimer);
                     debounceTimer = setTimeout(async () => {
                         divisores[fecha] = valor > 0 ? valor : undefined;
+                        // No es necesario recargar el DOM completo, solo los totales y la tabla
                         await postToScript({ action: 'updateDivisor', fecha, divisor: divisores[fecha] || null }); 
                         actualizarTotalGeneralDivision();
                         renderizarTabla(); 
@@ -1035,9 +1078,6 @@
                 }
             });
             
-            // **********************************************
-            // INICIO DE LA MODIFICACIÓN SOLICITADA
-            // **********************************************
             document.getElementById('agregarForm').onsubmit = e => {
                 e.preventDefault();
                 const performAdd = async () => {
@@ -1051,33 +1091,24 @@
                         return; 
                     }
                     
-                    showGlobalLoader('Agregando dato...'); // Muestra el loader
+                    showGlobalLoader('Agregando dato...');
                     
                     const response = await postToScript({ action: 'add', fecha, tipo, monto });
                     
-                    hideGlobalLoader(); // Oculta el loader
+                    hideGlobalLoader();
                     
                     if (response.status === 'success') {
                         document.getElementById('agregarForm').reset();
                         document.getElementById('fecha').value = new Date().toISOString().slice(0,10); 
                         
-                        // Recargar datos y actualizar la UI sin cambiar de pestaña
                         await cargarDatosIniciales(false); 
-                        
-                        // Mostrar mensaje de éxito en la misma pantalla
                         showAlert('¡Dato agregado con éxito!'); 
-                        
-                        // ** LÍNEA DE REDIRECCIÓN ELIMINADA **
-                        
                     } else {
                         showAlert('Error al agregar el dato: ' + (response.message || 'Error desconocido.'));
                     }
                 };
                 performAdd();
             };
-            // **********************************************
-            // FIN DE LA MODIFICACIÓN SOLICITADA
-            // **********************************************
             
             document.getElementById('editarForm').onsubmit = async e => {
                 e.preventDefault();
@@ -1173,17 +1204,9 @@
                 linkToActivate.click();
             }
             
-            const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-            activityEvents.forEach(event => {
-                window.addEventListener(event, resetInactivityTimer, true);
-            });
+            // Iniciar el temporizador y los intervalos solo si la pestaña es visible
             resetInactivityTimer();
-
-            if (dataUpdateInterval) clearInterval(dataUpdateInterval);
-            dataUpdateInterval = setInterval(() => {
-                fetchFromScript({ action: 'get' }).then(res => { if(res.status === 'success') datos = res.data; renderizarTabla(); actualizarUI(); });
-                fetchFromScript({ action: 'getNotes' }).then(res => { if(res.status === 'success') notes = res.data; renderizarNotas(); checkUnreadNotes(); });
-            }, 15000);
+            startUpdateIntervals();
         };
 
         const setupLoginListeners = () => {
