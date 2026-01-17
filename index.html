@@ -538,31 +538,50 @@
             }
         }
         
-        // ** CORRECCIÓN: Función para iniciar los intervalos de actualización **
+        // ** NUEVA CONFIGURACIÓN: Intervalos separados para eliminar parpadeo **
         const startUpdateIntervals = () => {
-             // Limpiar por si acaso antes de empezar
+             // Limpiar intervalos existentes por si acaso
             if (dataUpdateInterval) clearInterval(dataUpdateInterval);
+            if (notesUpdateInterval) clearInterval(notesUpdateInterval);
             
+            // 1. INTERVALO DE DATOS PRINCIPALES (Tabla, Totales, Divisores)
+            // Se ejecuta cada 5 MINUTOS (300000 ms) para evitar parpadeos molestos
             dataUpdateInterval = setInterval(() => {
-                // Solo actualiza si la pestaña está visible
                 if (document.visibilityState === 'visible') {
-                    // Solo recargar datos, no notas ya que se gestionan con el checkUnreadNotes
                     fetchFromScript({ action: 'get' }).then(res => { 
                         if(res.status === 'success') {
                             datos = res.data; 
                             renderizarTabla(); 
                             actualizarUI();
-                            // También recargamos notas para la comprobación
-                            fetchFromScript({ action: 'getNotes' }).then(res => { 
-                                if(res.status === 'success') {
-                                    notes = res.data; 
-                                    checkUnreadNotes(); 
+                            // También actualizamos divisores para asegurar sincronización de totales
+                            fetchFromScript({ action: 'getDivisores' }).then(r => {
+                                if(r.status === 'success') { 
+                                    divisores = r.data;
+                                    renderizarTabla(); // Re-renderizar si es necesario para totales
+                                    actualizarTotalGeneralDivision();
                                 }
                             });
                         } 
                     });
                 }
-            }, 15000); // 15 segundos
+            }, 300000); // 5 Minutos
+
+            // 2. INTERVALO DE NOTAS (Indicador rojo)
+            // Se ejecuta cada 15 SEGUNDOS para mantener la alerta activa
+            notesUpdateInterval = setInterval(() => {
+                 if (document.visibilityState === 'visible') {
+                    fetchFromScript({ action: 'getNotes' }).then(res => { 
+                        if(res.status === 'success') {
+                            notes = res.data; 
+                            checkUnreadNotes(); 
+                            // Opcional: Si el usuario está viendo el panel de notas, refrescar la lista
+                            if (document.getElementById('notasPanel').classList.contains('active')) {
+                                renderizarNotas();
+                            }
+                        }
+                    });
+                 }
+            }, 15000); // 15 Segundos
         };
 
         const mainContent = document.getElementById('mainContent');
@@ -875,6 +894,7 @@
                 } else {
                     clearTimeout(inactivityTimer); // Detener el temporizador de inactividad
                     if (dataUpdateInterval) clearInterval(dataUpdateInterval); // Detener actualizaciones automáticas
+                    if (notesUpdateInterval) clearInterval(notesUpdateInterval); // Detener actualizaciones de notas
                 }
             });
 
