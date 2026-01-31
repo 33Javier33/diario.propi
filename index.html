@@ -3,1265 +3,692 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Recaudación</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#4a90e2">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Recaudación Pro - Gestión Profesional</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #4a90e2; /* Azul principal */
-            --secondary-color: #50e3c2; /* Verde menta para acentos */
-            --bg-main: #f0f2f5; /* Fondo general claro */
-            --bg-content: #ffffff; /* Fondo de paneles y tarjetas */
-            --text-primary: #333d47; /* Texto principal oscuro */
-            --text-secondary: #6e7a87; /* Texto secundario gris */
-            --border-color: #e1e4e8; /* Bordes suaves */
-            --shadow-color: rgba(0, 0, 0, 0.08); /* Sombra ligera */
-            --header-bg: #f9fbfd; /* Fondo de encabezados de tabla */
-            --row-color-even: #ffffff; /* Fila par de tabla */
-            --row-color-odd: #f8fbfd; /* Fila impar de tabla */
-            --row-footer-odd: #eef5fb; /* Pie de tabla impar */
-            --unread-bg: #fffbe6; /* Fondo de notas no leídas */
-            --danger-color: #e74c3c; /* Rojo para acciones peligrosas */
-            --warning-color: #f1c40f; /* Amarillo para advertencias */
-            --success-color: #2ecc71; /* Verde para éxito */
-            --info-color: #3498db; /* Azul para información */
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 20px;
+            --sidebar-width: 280px;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
         }
+
         body.dark-mode {
-            --bg-main: #212121;
-            --bg-content: #2d2d2d;
-            --text-primary: #e0e0e0;
-            --text-secondary: #b0b0b0;
-            --border-color: #424242;
-            --shadow-color: rgba(0, 0, 0, 0.4);
-            --header-bg: #3a3a3a;
-            --row-color-even: #2d2d2d;
-            --row-color-odd: #383838;
-            --row-footer-odd: #474747;
-            --unread-bg: #4a4200;
-            --danger-color: #c0392b;
-            --warning-color: #f39c12;
-            --success-color: #27ae60;
-            --info-color: #2980b9;
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
         }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-main); color: var(--text-primary); margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-size: 15px; }
-        body.loggedin { display: block; justify-content: initial; align-items: initial; }
-        .menu-toggle { position: fixed; top: 15px; left: 15px; z-index: 1002; width: 45px; height: 45px; background-color: var(--primary-color); border: none; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px var(--shadow-color); transition: left 0.3s ease, background-color 0.3s; }
-        .menu-toggle span { display: block; width: 25px; height: 3px; background-color: white; margin: 3px 0; transition: all 0.3s ease; }
-        .side-menu.open + .main-container .menu-toggle { left: calc(var(--menu-width) + 15px); }
-        .menu-toggle.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
-        .menu-toggle.active span:nth-child(2) { opacity: 0; }
-        .menu-toggle.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
-        .side-menu { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background-color: #2c3e50; z-index: 1001; transform: translateX(-100%); transition: transform 0.3s ease; display: flex; flex-direction: column; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); transition: background-color 0.3s; scroll-behavior: smooth; overflow-x: hidden; }
+
+        /* --- SIDEBAR --- */
+        .side-menu { 
+            position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-width); 
+            background: #1e293b; color: white; z-index: 1001; 
+            transform: translateX(-100%); transition: var(--transition);
+            display: flex; flex-direction: column; box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+        }
         .side-menu.open { transform: translateX(0); }
-        .menu-header { color: white; font-size: 1.6em; font-weight: 700; text-align: center; padding: 25px 10px; border-bottom: 1px solid #3e5060; flex-shrink: 0; background-color: var(--primary-color); }
-        .menu-links-container { flex-grow: 1; overflow-y: auto; }
-        .side-menu a { color: #f5f5f5; text-decoration: none; padding: 18px 25px; display: flex; align-items: center; font-size: 1.05em; transition: background-color 0.2s ease, padding-left 0.2s ease, color 0.2s; border-bottom: 1px solid #3e5060; }
-        .side-menu a i { margin-right: 15px; font-size: 1.2em; }
-        .side-menu a:hover, .side-menu a.active-link { background-color: var(--primary-color); padding-left: 30px; color: white; }
-        #logoutBtn { background-color: var(--danger-color); border-bottom: none; border-top: 1px solid #3e5060; color: white; }
-        #logoutBtn:hover { background-color: #c0392b; }
-        .unread-indicator { background-color: var(--warning-color); width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-left: auto; vertical-align: middle; transition: opacity 0.3s ease; opacity: 0; box-shadow: 0 0 0 3px rgba(241, 196, 15, 0.4); }
-        .unread-indicator.show { opacity: 1; }
-        .main-container { transition: margin-left 0.3s ease; width: 100%; }
-        .content-panel { display: none; padding: 20px; }
-        .content-panel.active { display: block; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @media (min-width: 992px) { 
-            body.loggedin { margin-left: 280px; } 
-            .menu-toggle { display: none; } 
-            .side-menu { transform: translateX(0); } 
-            .side-menu + .main-container { margin-left: 0; } /* Reset margin for larger screens */
-        }
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; transition: opacity 0.3s ease, visibility 0.3s ease; }
-        #loginOverlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-        #loginBox { background-color: var(--bg-content); padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px var(--shadow-color); width: 90%; max-width: 400px; text-align: center; }
-        #loginBox h2 { margin-bottom: 30px; color: var(--primary-color); font-size: 2em; }
-        #loginBox label { display: block; margin-bottom: 8px; text-align: left; font-weight: bold; color: var(--text-secondary); font-size: 0.95em; }
-        #loginBox input[type="text"], #loginBox input[type="password"] { width: 100%; padding: 12px 15px; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-size: 16px; background-color: var(--bg-main); color: var(--text-primary); transition: border-color 0.3s, box-shadow 0.3s; }
-        #loginBox input[type="text"]:focus, #loginBox input[type="password"]:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2); outline: none; }
-        #loginBox button { width: 100%; padding: 14px; background-color: var(--primary-color); border: none; border-radius: 6px; color: white; font-size: 1.1em; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease; margin-top: 15px; }
-        #loginBox button:hover { background-color: #3a7bd5; transform: translateY(-2px); }
-        .password-wrapper { position: relative; display: flex; align-items: center; }
-        .password-wrapper input { padding-right: 45px; }
-        .password-wrapper i { position: absolute; right: 15px; cursor: pointer; color: var(--text-secondary); font-size: 1.1em; }
-        #loginMessage { color: var(--danger-color); font-weight: bold; margin-top: 15px; }
-        #mainContent { display: none; padding: 0 15px; }
-        h2, h3 { text-align: center; color: var(--text-primary); margin-top: 25px; margin-bottom: 20px; }
-        h2 { font-size: 2.2em; color: var(--primary-color); }
-        h3 { font-size: 1.6em; color: var(--text-primary); }
-        .form-container, .table-container { background-color: var(--bg-content); padding: 30px; margin: 25px auto; border-radius: 12px; box-shadow: 0 5px 20px var(--shadow-color); max-width: 900px; }
-        #globalLoaderOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 3000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; pointer-events: none; }
-        #globalLoaderOverlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
-        .loader-content { text-align: center; color: white; }
-        .loader { border: 5px solid rgba(255, 255, 255, 0.3); border-top: 5px solid var(--secondary-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto; }
-        .loader-content p { margin-top: 15px; font-weight: bold; font-size: 1.1em; color: white; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .balance-info-container { background-color: var(--header-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px var(--shadow-color); margin: 0 auto 25px auto; max-width: 450px; text-align: center; }
-        .balance-info-container h3 { margin-bottom: 10px; font-size: 1.4em; color: var(--text-primary); }
-        .balance-info-container span { color: var(--primary-color); font-weight: bold; font-size: 1.1em; }
-        .controls-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 25px auto; max-width: 900px; padding: 0 20px; }
-        .main-buttons-group { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; margin-bottom: 15px; }
-        .control-group, #btnReiniciarFiltros, .data-management-group { display: none; }
-        .controls-expanded .control-group, .controls-expanded #btnReiniciarFiltros, .controls-expanded .data-management-group { display: block; }
-        .data-management-group { display:flex; flex-wrap:wrap; gap: 10px; justify-content: center; width:100%; margin-top:15px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-secondary); font-size: 0.95em; }
-        input[type="date"], input[type="tel"], input[type="text"], input[type="number"], select, textarea, input[type="file"] { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; background-color: var(--bg-main); color: var(--text-primary); font-size: 16px; transition: border-color 0.3s, box-shadow 0.3s; }
-        input[type="date"]:focus, input[type="tel"]:focus, input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus, input[type="file"]:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2); outline: none; }
-        button, .download-link { padding: 10px 18px; background-color: var(--secondary-color); border: none; border-radius: 6px; color: white !important; font-size: 15px; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
-        button i, .download-link i { margin-right: 8px; }
-        button:hover, .download-link:hover { background-color: #43c1a9; transform: translateY(-1px); }
-        .button-delete, .delete-btn { background-color: var(--danger-color); }
-        .button-delete:hover, .delete-btn:hover { background-color: #c0392b; }
-        .button-reset, .download-link { background-color: var(--primary-color); }
-        .button-reset:hover, .download-link:hover { background-color: #3a7bd5; }
-        .button-copy, .copy-btn { background-color: var(--info-color); color: white !important; }
-        .button-copy:hover, .copy-btn:hover { background-color: #2980b9; }
-        .button-warning { background-color: var(--warning-color); color: var(--text-primary) !important; }
-        .button-warning:hover { background-color: #f39c12; }
-        .button-danger { background-color: var(--danger-color); }
-        .fab-container { position: fixed; bottom: 25px; right: 25px; z-index: 1000; display: flex; flex-direction: column; gap: 12px; }
-        .fab { background-color: #2c3e50; color: white; border-radius: 50%; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; font-size: 26px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; transition: all 0.3s ease; }
-        .fab:hover { background-color: var(--primary-color); transform: scale(1.08); }
-        #notesFabBtn { background-color: var(--warning-color); color: var(--text-primary); display: none; }
-        #notesFabBtn:hover { background-color: #f39c12; }
-        .pulsing { animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(241, 196, 15, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(241, 196, 15, 0); } }
-        #scrollToTopBtn { opacity: 0; visibility: hidden; }
-        #scrollToTopBtn.show { opacity: 1; visibility: visible; }
-        table { width: 100%; border-collapse: collapse; margin: 25px 0; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 15px; border: 1px solid var(--border-color); text-align: left; }
-        th { background-color: var(--header-bg); font-weight: bold; color: var(--text-primary); font-size: 1.05em; }
-        tfoot td { font-weight: bold; text-align: left; padding-top: 15px; padding-bottom: 15px; }
-        tfoot tr { background-color: var(--header-bg); }
-        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); padding-top: 50px; }
-        .modal-content { background-color: var(--bg-content); margin: 5% auto; padding: 30px; border: 1px solid var(--border-color); width: 85%; max-width: 550px; border-radius: 12px; box-shadow: 0 0 20px var(--shadow-color); text-align: center; position: relative; }
-        .modal-content h2 { color: var(--primary-color); font-size: 1.8em; margin-bottom: 25px; }
-        .modal-content p { color: var(--text-primary); line-height: 1.6; }
-        .close { color: #aaa; float: right; font-size: 32px; font-weight: bold; cursor: pointer; position: absolute; top: 15px; right: 25px; transition: color 0.3s; }
-        .close:hover, .close:focus { color: var(--primary-color); text-decoration: none; }
-        .fecha-par tbody tr { background-color: var(--row-color-even); }
-        .fecha-impar tbody tr { background-color: var(--row-color-odd); }
-        .fecha-impar tfoot tr { background-color: var(--row-footer-odd); }
-        .fecha-par tfoot tr { background-color: var(--header-bg); } /* Aseguramos que los pares también tengan fondo */
-        .fecha-impar tfoot td, .fecha-par tfoot td { background-color: transparent; }
-        #notes-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; margin-top: 25px; }
-        .note-card { background-color: var(--bg-content); border: 1px solid var(--border-color); border-left: 6px solid var(--primary-color); border-radius: 10px; padding: 20px; box-shadow: 0 4px 12px var(--shadow-color); position: relative; transition: background-color 0.3s, border-color 0.3s; }
-        .note-unread { background-color: var(--unread-bg); border-left-color: var(--warning-color); }
-        .note-header { font-size: 0.85em; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; }
-        .note-header .author { font-weight: bold; color: var(--primary-color); text-transform: capitalize; }
-        .note-body { font-size: 1em; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; color: var(--text-primary); }
-        .note-delete-btn { position: absolute; top: 15px; right: 15px; background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px; }
-        .note-delete-btn i { color: var(--text-secondary); transition: color 0.2s ease; }
-        .note-delete-btn:hover i { color: var(--danger-color); }
-        #ayudaPanel { position: fixed; top: 0; right: 0; width: 400px; max-width: 95%; height: 100%; background-color: var(--bg-content); z-index: 1050; transform: translateX(100%); transition: transform 0.3s ease-in-out; overflow-y: auto; box-shadow: -5px 0 15px rgba(0,0,0,0.2); display: block !important; animation: none; padding: 25px; }
-        #ayudaPanel.open { transform: translateX(0); }
-        .close-ayuda { position: absolute; top: 20px; right: 25px; font-size: 34px; font-weight: bold; color: var(--text-secondary); cursor: pointer; line-height: 1; transition: color 0.3s; }
-        .close-ayuda:hover { color: var(--primary-color); }
-        #ayudaPanel h2 { font-size: 2em; color: var(--primary-color); margin-bottom: 20px; }
-        #ayudaPanel h3 { font-size: 1.4em; color: var(--text-primary); margin-top: 30px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        #ayudaPanel h3 i { color: var(--secondary-color); font-size: 1.2em; }
-        #ayudaPanel p, #ayudaPanel ul, #ayudaPanel ol { color: var(--text-secondary); line-height: 1.7; margin-bottom: 15px; }
-        #ayudaPanel li { margin-bottom: 8px; }
-        #ayudaPanel strong { color: var(--text-primary); }
-        footer { text-align: center; padding: 25px; margin-top: 40px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.9em; background-color: var(--header-bg); }
-        
-        /* ************************************************* */
-        /* CSS para agrupar Total y Divisor en la tabla de Historial */
-        /* ************************************************* */
-
-        /* Estilo para las filas del pie (Totales y Divisor) */
-        tfoot tr { 
-            display: flex; /* Usar flexbox para control de espaciado */
-            width: 100%; 
+        .menu-header { 
+            padding: 2.5rem 1.5rem; font-size: 1.2rem; font-weight: 800; 
+            background: linear-gradient(135deg, var(--primary), #a855f7);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);
+            letter-spacing: 1px;
         }
         
-        /* Celda que abarca Fecha y Tipo (50% de ancho) */
-        tfoot td:first-child {
-            width: 50%;
-            text-align: left;
-            padding-right: 15px;
+        /* Etiqueta de Usuario Activo */
+        .user-status {
+            padding: 12px; margin: 15px 20px; border-radius: 12px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            text-align: center; font-size: 0.75rem; color: var(--secondary);
+            font-weight: 700; text-transform: uppercase;
         }
 
-        /* Celda que abarca Monto (30% de ancho) */
-        tfoot td:nth-child(2) {
-            width: 30%; 
-            text-align: left;
-            padding-left: 15px;
+        .menu-links-container { flex: 1; padding: 1rem; }
+        .side-menu a { 
+            color: #cbd5e1; text-decoration: none; padding: 1rem 1.2rem; 
+            display: flex; align-items: center; border-radius: 14px;
+            margin-bottom: 0.5rem; transition: var(--transition); font-weight: 500;
+            position: relative;
         }
-        
-        /* Celda que abarca Acciones (20% de ancho) */
-        tfoot td:last-child {
-             width: 20%; 
-             text-align: right;
-             padding-left: 15px;
+        .side-menu a i { width: 28px; font-size: 1.2rem; }
+        .side-menu a:hover, .side-menu a.active-link { background: rgba(255,255,255,0.08); color: white; transform: translateX(5px); }
+        .side-menu a.active-link { background: var(--primary); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); }
+
+        .ind-notas { 
+            width: 10px; height: 10px; background: var(--warning); 
+            border-radius: 50%; position: absolute; right: 15px; 
+            display: none; box-shadow: 0 0 10px var(--warning);
         }
 
-        /* AJUSTE CLAVE PARA IGUALAR EL ESTILO DE AMBAS FILAS DEL FOOTER */
-        /* ----------------------------------------------------------- */
-        
-        /* Aseguramos que el TR tome el color correcto */
-        .fecha-par tfoot tr { background-color: var(--header-bg); }
-        .fecha-impar tfoot tr { background-color: var(--row-footer-odd); }
-        
-        /* Forzamos que todas las celdas hereden el fondo del TR (para las dos filas) */
-        tfoot td {
-            background-color: inherit !important;
-            border-top: 1px solid var(--border-color); /* Borde consistente en el TOP */
-            border-bottom: 1px solid var(--border-color); /* Borde consistente en el BOTTOM */
-        }
-        
-        /* Ajustes de contenido para la fila del Divisor */
-        tfoot tr:last-child td {
-            display: flex;
-            align-items: center;
-            padding-top: 10px; 
-            padding-bottom: 10px;
+        .menu-toggle { 
+            position: fixed; top: 1.2rem; left: 1.2rem; z-index: 1002; 
+            width: 48px; height: 48px; border-radius: 14px; background: var(--primary);
+            border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3); transition: 0.3s;
         }
 
-        /* Celda del divisor con input (debe justificar al inicio) */
-        tfoot tr:last-child td:first-child {
-            display: flex;
-            justify-content: flex-start; 
+        /* --- CONTENIDO --- */
+        .main-container { padding: 2rem; transition: var(--transition); max-width: 1200px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+        @media (min-width: 992px) { body.loggedin { padding-left: var(--sidebar-width); } .side-menu { transform: translateX(0); } .menu-toggle { display: none; } }
+
+        .content-panel { display: none; animation: panelFade 0.5s cubic-bezier(0.4, 0, 0.2, 1); flex: 1; }
+        .content-panel.active { display: block; }
+        @keyframes panelFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- ESTADÍSTICAS --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--bg-card); padding: 1.8rem; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); position: relative; }
+        .stat-card .label { color: var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; }
+        .stat-card .value { font-size: 2rem; font-weight: 800; color: var(--primary); margin-top: 0.5rem; }
+
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 1.8rem; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 1.5rem; position: relative; }
+
+        /* --- CATEGORÍAS (RADIO CARDS) --- */
+        .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+        .category-option { position: relative; }
+        .category-option input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .category-card { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 15px 10px; background: var(--bg-main); border: 2px solid var(--border);
+            border-radius: 16px; cursor: pointer; transition: all 0.3s; gap: 8px;
         }
-        
-        /* Quitamos el borde izquierdo de la celda de resultado que estaba antes */
-        tfoot tr:last-child td:nth-child(2) {
-            border-left: 1px solid var(--border-color);
+        .category-card i { font-size: 1.5rem; color: var(--text-muted); transition: 0.3s; }
+        .category-card span { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+        .category-option input:checked + .category-card { 
+            border-color: var(--primary); background: rgba(99, 102, 241, 0.05); 
+            transform: translateY(-3px); box-shadow: 0 8px 15px rgba(99, 102, 241, 0.1);
         }
-        
-        /* Quitamos el borde izquierdo de la celda vacía para que parezca una sola columna */
-        tfoot tr:last-child td:last-child {
-            border-left: 1px solid var(--border-color); 
+        .category-option input:checked + .category-card i { color: var(--primary); }
+        .category-option input:checked + .category-card span { color: var(--primary); }
+
+        .monto-wrapper { position: relative; }
+        .monto-wrapper i { position: absolute; left: 18px; top: 18px; color: var(--primary); font-weight: 700; font-style: normal; }
+        .monto-wrapper input { padding-left: 35px; font-weight: 800; font-size: 1.2rem; color: var(--primary); }
+
+        /* --- HISTORIAL --- */
+        .day-group { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 2rem; background: var(--bg-card); box-shadow: var(--shadow); }
+        .day-header { background: var(--bg-main); padding: 1.2rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .day-footer { padding: 1.5rem; background: var(--bg-main); border-top: 2px solid var(--border); }
+        .footer-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .divisor-box { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 10px 18px; border-radius: 14px; border: 1px solid var(--border); }
+        .divisor-input { width: 70px; padding: 6px; text-align: center; font-weight: 800; border: 2px solid var(--primary); border-radius: 10px; background: transparent; color: var(--text-main); font-size: 1rem; }
+
+        /* --- BOTONES --- */
+        .btn { padding: 0.9rem 1.5rem; border-radius: 16px; border: none; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 10px; transition: all 0.3s; font-size: 0.95rem; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
+        .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text-main); }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        input, select, textarea { width: 100%; padding: 0.9rem 1.2rem; border-radius: 14px; border: 1.5px solid var(--border); background: var(--bg-main); color: var(--text-main); margin-bottom: 1.2rem; transition: 0.3s; font-size: 1rem; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+
+        /* --- FABS --- */
+        .fab-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; }
+        .fab-btn { width: 56px; height: 56px; border-radius: 18px; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        #btnScrollUp { background: var(--bg-card); color: var(--text-main); display: none; border: 1px solid var(--border); }
+        #btnNotesFab { background: var(--warning); color: white; display: none; animation: pulse-warn 1.5s infinite; }
+
+        @keyframes pulse-warn { 
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
         }
 
-        /* ----------------------------------------------------------- */
-        /* FIN DE AJUSTE CLAVE */
+        /* --- LOGIN --- */
+        #loginOverlay { position: fixed; inset: 0; background: var(--bg-main); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .password-container { position: relative; }
+        .toggle-password { position: absolute; right: 15px; top: 15px; cursor: pointer; color: var(--text-muted); font-size: 1.1rem; }
+        .login-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 1.5rem; line-height: 1.4; padding: 0 10px; }
 
-        .divisor-input {
-            width: 60px; 
-            padding: 8px;
-            margin-left: 8px;
-            text-align: center;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-main);
-            color: var(--text-primary);
-        }
+        /* --- UI HELPERS --- */
+        #globalLoader { position: fixed; inset: 0; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); z-index: 10000; display: none; align-items: center; justify-content: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid rgba(99, 102, 241, 0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ************************************************* */
-        /* FIN: CSS para agrupar Total y Divisor */
-        /* ************************************************* */
+        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: #1e293b; color: white; padding: 12px 24px; border-radius: 14px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px; animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(100px); } to { opacity: 1; transform: translateY(0); } }
 
-        @media (max-width: 600px) { 
-            h2 { margin-top: 20px; font-size: 1.8em; } 
-            h3 { font-size: 1.3em; }
-            .menu-toggle { top: 10px; left: 10px; width: 40px; height: 40px; }
-            .menu-toggle span { width: 20px; height: 2px; margin: 2px 0; }
-            .side-menu { width: 250px; }
-            .side-menu.open + .main-container .menu-toggle { left: 260px; }
-            .menu-header { font-size: 1.4em; padding: 15px 10px; }
-            .side-menu a { padding: 15px 20px; font-size: 0.95em; }
-            .side-menu a i { margin-right: 10px; }
-            .loginBox { padding: 30px; }
-            #loginBox h2 { font-size: 1.8em; }
-            #loginBox input, #loginBox button { padding: 10px; font-size: 16px; }
-            .form-container, .table-container { padding: 20px; margin: 15px auto; }
-            .balance-info-container { padding: 15px; }
-            .balance-info-container h3 { font-size: 1.2em; }
-            .controls-container { flex-direction: column; align-items: center; gap: 8px; margin: 15px auto; } 
-            .main-buttons-group { flex-direction: row; justify-content: center; width: 100%; margin-bottom: 10px; } 
-            .main-buttons-group button { flex-grow: 1; min-width: unset; font-size: 13px; padding: 8px 10px; } 
-            button, .download-link { font-size: 14px; padding: 8px 15px; }
-            button i, .download-link i { margin-right: 5px; }
-            
-            /* Ajustes para la tabla en vista móvil */
-            table, thead, tbody, th, td, tr { display: block; } 
-            thead tr { position: absolute; top: -9999px; left: -9999px; } 
-            tr { border: 1px solid var(--border-color); margin-bottom: 10px; display: flex; flex-wrap: wrap; } 
-            td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50%; text-align: right; width: 100%; background-color: transparent !important; } 
-            td:before { content: attr(data-label); position: absolute; left: 6px; width: 45%; padding-right: 10px; white-space: nowrap; text-align: left; font-weight: bold; color: var(--text-secondary); } 
-            .fecha-par tr, .fecha-impar tr { background-color: transparent; }
-            
-            /* Ajustes para el pie de tabla en vista móvil */
-            tfoot tr { 
-                display: block; 
-                width: 100%; 
-                border: 1px solid var(--border-color); 
-                margin-top: 10px;
-                padding: 5px 0;
-            } 
-            tfoot td {
-                display: block;
-                width: 100%;
-                text-align: right; 
-                padding: 10px 15px;
-                border: none;
-            }
-            /* Reset de anchos y alineación en móvil */
-            tfoot tr:first-child td:first-child,
-            tfoot tr:first-child td:nth-child(2),
-            tfoot tr:first-child td:last-child,
-            tfoot tr:last-child td:first-child,
-            tfoot tr:last-child td:nth-child(2),
-            tfoot tr:last-child td:last-child {
-                width: 100%;
-                padding-left: 15px;
-                text-align: right;
-                display: block;
-            }
-            
-            /* Ajuste de alineación para la etiqueta del divisor en móvil */
-            tfoot tr:last-child td:first-child {
-                 text-align: left;
-            }
-            
-            tfoot tr:last-child td:first-child strong {
-                 display: block;
-                 text-align: right;
-                 padding-right: 80px;
-            }
-            
-            tfoot tr:last-child td:first-child .divisor-input {
-                width: 60px; 
-                position: absolute;
-                right: 15px;
-                top: 50%;
-                transform: translateY(-50%);
-                margin-left: 0;
-            }
+        .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
+        .modal-content { background: var(--bg-card); padding: 2.5rem; border-radius: 24px; width: 100%; max-width: 480px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid var(--border); }
 
-            .note-card { padding: 15px; }
-            .note-delete-btn { top: 10px; right: 10px; font-size: 16px; }
-            .fab { width: 45px; height: 45px; font-size: 22px; }
-            .fab-container { bottom: 15px; right: 15px; gap: 8px; }
-            #ayudaPanel { width: 100%; padding: 20px; }
-            .close-ayuda { top: 15px; right: 20px; font-size: 30px; }
+        /* --- NOTAS --- */
+        .note-card { border-left: 6px solid var(--primary); position: relative; }
+        .note-author { color: var(--primary); font-weight: 800; text-transform: capitalize; }
+        .note-btn-del { position: absolute; top: 1.2rem; right: 1.2rem; background: rgba(239, 68, 68, 0.05); color: var(--danger); width: 36px; height: 36px; border-radius: 10px; border: none; cursor: pointer; }
+
+        footer { margin-top: auto; padding: 3rem 1rem; text-align: center; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
+
+        @media (max-width: 600px) {
+            .main-container { padding: 1.2rem; padding-top: 5.5rem; }
+            .category-grid { gap: 8px; }
+            .category-card { padding: 12px 5px; }
+            .footer-row { flex-direction: column; align-items: stretch; text-align: center; }
+            .divisor-box { justify-content: center; }
+            .fab-container { bottom: 20px; right: 20px; }
         }
     </style>
 </head>
 <body>
-    <div id="globalLoaderOverlay"><div class="loader-content"><div class="loader"></div><p id="globalLoaderMessage">Procesando...</p></div></div>
-    <div id="loginOverlay">
-        <div id="loginBox">
-            <h2>Acceso Requerido</h2>
-            <form id="loginForm">
-                <label for="username">Usuario:</label>
-                <input type="text" id="username" required autocomplete="username">
-                <label for="password">Contraseña:</label>
-                <div class="password-wrapper">
-                    <input type="password" id="password" required autocomplete="current-password">
-                    <i class="fas fa-eye" id="togglePassword"></i>
-                </div>
-                <button type="submit">Entrar</button>
-                <p id="loginMessage" style="display: none;"></p>
-            </form>
-            <p style="font-size: 12px; color: #666; margin-top: 15px;">El usuario y la contraseña deben ser solicitados al administrador.</p>
+
+    <!-- Cargador Global -->
+    <div id="globalLoader">
+        <div style="text-align: center;">
+            <div class="spinner"></div>
+            <p id="loaderMsg" style="margin-top: 15px; font-weight: 700; color: var(--primary);">Sincronizando...</p>
         </div>
     </div>
 
-    <nav id="sideMenu" class="side-menu"></nav>
-    <div id="mainContainer" class="main-container">
-        <button id="menuToggle" class="menu-toggle" style="display: none;"><span></span><span></span><span></span></button>
-        <div id="mainContent">
-            <section id="historialPanel" class="content-panel">
-                <h2>Datos Recaudados</h2>
-                <div class="balance-info-container">
-                    <h3>Total Recaudado: <span id="totalRecaudadoHistorial"></span></h3>
-                    <h3>Total General División: <span id="totalGeneralDivisionHistorial"></span></h3>
-                </div>
-                <div class="controls-container" id="controlsContainer">
-                    <div class="main-buttons-group">
-                        <button id="btnMinimizarTabla">Maximizar Tabla</button> 
-                        <button id="btnOrdenarFechaAsc" class="button-reset"><i class="fas fa-sort-numeric-down"></i> Fecha (Antiguo)</button>
-                        <button id="btnOrdenarFechaDesc" class="button-reset"><i class="fas fa-sort-numeric-up"></i> Fecha (Reciente)</button>
-                    </div>
-                    <div class="control-group">
-                        <label for="filtroFechas">Filtrar por fechas (AAAA-MM-DD, AAAA-MM-DD):</label>
-                        <input type="text" id="filtroFechas" placeholder="Ej: 2023-01-01, 2023-01-05">
-                    </div>
-                    <button id="btnReiniciarFiltros" class="button-reset"><i class="fas fa-filter-slash"></i> Reiniciar Filtros</button>
-                    <div class="data-management-group">
-                        <button id="btnReiniciarMes" class="button-danger"><i class="fas fa-redo-alt"></i> Reiniciar Mes</button>
-                        <button id="btnExportarJson" class="button-reset"><i class="fas fa-file-export"></i> Exportar JSON</button>
-                        <button id="btnImportarJsonTrigger" class="button-warning"><i class="fas fa-file-import"></i> Importar JSON</button>
-                        <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
-                    </div>
-                </div>
-                <div class="table-container" id="tableContainerScrollTarget"><div id="tablaContainer"></div></div>
-            </section>
+    <div id="toast-container"></div>
+    
+    <!-- Botones Flotantes -->
+    <div class="fab-container">
+        <button id="btnNotesFab" class="fab-btn" title="Notas nuevas"><i class="fas fa-sticky-note"></i></button>
+        <button id="btnScrollUp" class="fab-btn" title="Subir"><i class="fas fa-chevron-up"></i></button>
+    </div>
 
-            <section id="agregarPanel" class="content-panel">
-                <div class="form-container" style="max-width: 400px;">
-                    <div class="balance-info-container">
-                        <h3>Total Recaudado: <span id="totalRecaudadoAgregar"></span></h3>
-                        <h3>Total General División: <span id="totalGeneralDivisionAgregar"></span></h3>
-                    </div><hr style="margin-bottom: 25px; border-color: var(--border-color);">
-                    <h2>Agregar Datos</h2>
+    <!-- LOGIN CON SELECTOR DE USUARIO -->
+    <div id="loginOverlay">
+        <div class="card" style="width: 100%; max-width: 420px; text-align: center; padding: 3rem;">
+            <div style="background: var(--primary); color:white; width: 64px; height: 64px; border-radius: 20px; display:flex; align-items:center; justify-content:center; margin: 0 auto 1.5rem; font-size: 1.5rem;">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h2 style="margin-bottom: 0.5rem;">Acceso al Sistema</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Seleccione su identidad de trabajo</p>
+            <form id="loginForm">
+                <select id="username" style="font-weight: 700; text-align: center; cursor: pointer; background: var(--bg-main);">
+                    <option value="" disabled selected>Elegir Usuario...</option>
+                    <option value="mesas">USUARIO: MESAS</option>
+                    <option value="maquinas">USUARIO: MÁQUINAS</option>
+                </select>
+                <div class="password-container">
+                    <input type="password" id="password" placeholder="Clave de Seguridad" required>
+                    <i class="fas fa-eye toggle-password" id="toggleLoginPassword"></i>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Ingresar</button>
+                <p class="login-note">Las credenciales y clave de seguridad deben ser solicitadas al administrador.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <nav id="sideMenu" class="side-menu">
+        <div class="menu-header">SISTEMA GESTIÓN</div>
+        <div id="activeUserBadge" class="user-status">Iniciando...</div>
+        <div class="menu-links-container">
+            <a href="#" class="menu-link active-link" data-target="agregarPanel"><i class="fas fa-plus-circle"></i> Agregar Dato</a>
+            <a href="#" class="menu-link" data-target="historialPanel"><i class="fas fa-history"></i> Historial</a>
+            <a href="#" class="menu-link" data-target="notasPanel"><i class="fas fa-sticky-note"></i> Bloc de Notas <span id="ind-notas" class="ind-notas"></span></a>
+            <a href="#" class="menu-link" data-target="importarPanel"><i class="fas fa-file-import"></i> Importar Texto</a>
+            <a href="#" class="menu-link" data-target="ayudaPanel"><i class="fas fa-question-circle"></i> Ayuda</a>
+        </div>
+        <a href="#" id="logoutBtn" style="color: #f87171; margin-top:auto; padding: 2rem; border-top: 1px solid rgba(255,255,255,0.05);"><i class="fas fa-power-off"></i> Cerrar Sesión</a>
+    </nav>
+
+    <div class="main-container">
+        <button id="menuToggle" class="menu-toggle"><i class="fas fa-bars-staggered"></i></button>
+
+        <div id="mainContent" style="display: none; flex: 1; flex-direction: column;">
+            
+            <!-- Totales Superiores -->
+            <div class="stats-grid">
+                <div class="stat-card"><span class="label">Recaudación Total</span><div class="value" id="tot-rec">$0</div></div>
+                <div class="stat-card"><span class="label">Total Valor por Punto</span><div class="value" id="tot-div">$0</div></div>
+            </div>
+
+            <!-- PANEL: AGREGAR -->
+            <section id="agregarPanel" class="content-panel active">
+                <div class="card" style="max-width: 500px; margin: 0 auto;">
+                    <h2 style="margin-bottom: 2rem;"><i class="fas fa-circle-plus" style="color: var(--primary);"></i> Nuevo Registro</h2>
                     <form id="agregarForm">
-                        <label for="tipo">Tipo:</label>
-                        <select id="tipo" name="tipo"><option value="Máquinas">Máquinas</option><option value="Mesas">Mesas</option><option value="Otras">Otras</option></select>
-                        <label for="fecha">Fecha:</label>
-                        <input type="date" id="fecha" name="fecha" required>
-                        <label for="monto">Monto Recaudado:</label>
-                        <input type="tel" id="monto" name="monto" oninput="formatearMonto(this)" required>
-                        <button type="submit"><i class="fas fa-plus-circle"></i> Agregar</button>
+                        <label style="display:block; margin-bottom:12px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">SELECCIONE CATEGORÍA</label>
+                        <div class="category-grid">
+                            <label class="category-option">
+                                <input type="radio" name="tipo" value="Máquinas" checked>
+                                <div class="category-card"><i class="fas fa-coins"></i><span>Máquinas</span></div>
+                            </label>
+                            <label class="category-option">
+                                <input type="radio" name="tipo" value="Mesas">
+                                <div class="category-card"><i class="fas fa-dice"></i><span>Mesas</span></div>
+                            </label>
+                            <label class="category-option">
+                                <input type="radio" name="tipo" value="Otras">
+                                <div class="category-card"><i class="fas fa-ellipsis"></i><span>Otras</span></div>
+                            </label>
+                        </div>
+                        <label style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">FECHA DEL REGISTRO</label>
+                        <input type="date" id="fecha" required>
+                        <label style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">MONTO RECAUDADO</label>
+                        <div class="monto-wrapper"><i>$</i><input type="tel" id="monto" oninput="formatearMonto(this)" placeholder="0" required></div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">Guardar Registro</button>
                     </form>
                 </div>
             </section>
-            
-            <section id="importarPanel" class="content-panel">
-                 <div class="form-container" style="max-width: 400px;">
-                    <h2>Importar Datos desde Texto</h2>
-                    <p>Pega aquí el texto de los datos de recaudación (ej. desde WhatsApp):</p>
-                    <textarea id="importDataTextarea" rows="10" placeholder="Pega el texto aquí..."></textarea>
-                    <button id="btnProcesarImportacion"><i class="fas fa-upload"></i> Procesar Importación</button>
+
+            <!-- PANEL: HISTORIAL -->
+            <section id="historialPanel" class="content-panel">
+                <div class="card">
+                    <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 2rem;">
+                        <h2><i class="fas fa-clock-rotate-left" style="color: var(--primary);"></i> Historial</h2>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            <button id="btnMin" class="btn btn-outline btn-sm">Expandir/Min</button>
+                            <button id="btnSortDesc" class="btn btn-outline btn-sm">Reciente</button>
+                            <button id="btnSortAsc" class="btn btn-outline btn-sm">Antiguo</button>
+                            <input type="text" id="filtro" placeholder="Buscar fecha..." style="margin-bottom:0; flex:1; min-width:150px;">
+                        </div>
+                    </div>
+                    <div id="tablaContainer"></div>
+                    <div style="margin-top: 2rem; display: flex; gap: 12px; flex-wrap: wrap; padding-top: 2rem; border-top: 1.5px solid var(--border);">
+                        <button id="btnExport" class="btn btn-outline">Exportar Backup</button>
+                        <button id="btnImportTrigger" class="btn btn-outline" style="color:var(--warning)">Restaurar JSON</button>
+                        <button id="btnLimpiar" class="btn btn-danger">Vaciar Todo</button>
+                        <input type="file" id="jsonInput" style="display:none;" accept=".json">
+                    </div>
                 </div>
             </section>
 
+            <!-- PANEL: NOTAS -->
             <section id="notasPanel" class="content-panel">
-                <h2>Bloc de Notas</h2>
-                <div class="form-container">
-                    <label for="notaMensaje">Escribe una nueva nota:</label>
-                    <textarea id="notaMensaje" rows="4" placeholder="Deja un recordatorio o mensaje..."></textarea>
-                    <button id="btnAgregarNota"><i class="fas fa-save"></i> Guardar Nota</button>
+                <div class="card">
+                    <h2><i class="fas fa-note-sticky" style="color: var(--primary);"></i> Bloc de Notas</h2>
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 2.5rem;">
+                        <textarea id="notaMsg" rows="3" placeholder="Escribe un mensaje para el otro turno..."></textarea>
+                        <button id="btnNota" class="btn btn-primary" style="align-self: flex-end;">Publicar Nota</button>
+                    </div>
+                    <div id="notesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;"></div>
                 </div>
-                <div id="notes-container"></div>
             </section>
 
+            <!-- PANEL: IMPORTAR -->
+            <section id="importarPanel" class="content-panel">
+                <div class="card" style="max-width: 650px; margin: 0 auto;">
+                    <h2><i class="fas fa-file-import" style="color: var(--primary);"></i> Importar Texto</h2>
+                    <textarea id="importText" rows="10" placeholder="Pega el reporte aquí..."></textarea>
+                    <button id="btnProcesar" class="btn btn-primary" style="width: 100%; justify-content: center;">Procesar e Importar</button>
+                </div>
+            </section>
+
+            <!-- PANEL: AYUDA -->
             <section id="ayudaPanel" class="content-panel">
-                <div class="form-container">
-                    <span class="close-ayuda">&times;</span>
-                    <h2>Guía de Uso</h2>
-                    <p style="text-align: center;">Sigue estos pasos para llevar un registro ordenado.</p>
-                    <hr style="margin: 20px 0; border-color: var(--border-color);">
-                    <h3><i class="fas fa-plus-circle"></i>Paso 1: Agrega tus Recaudaciones</h3>
-                    <p>El primer paso es registrar todo el dinero que entra.</p>
-                    <ol>
-                        <li>Ve a la pestaña <strong>"Agregar Dato"</strong>.</li>
-                        <li>Completa el formulario con el tipo, la fecha y el monto.</li>
-                        <li>Haz clic en "Agregar".</li>
-                    </ol>
-                    <h3><i class="fas fa-history"></i>Paso 2: Revisa y Gestiona tu Historial</h3>
-                    <p>En la pestaña <strong>"Historial"</strong> podrás ver y administrar tus registros. Solo el Administrador puede editar y borrar cualquier registro.</p>
-                    <ul>
-                        <li><strong>Editar:</strong> Se utiliza para corregir montos o tipos.</li>
-                        <li><strong>Borrar:</strong> Elimina permanentemente el registro.</li>
-                    </ul>
-                    <h3><i class="fas fa-sticky-note"></i>Paso 3: Bloc de Notas</h3>
-                    <p>La sección de <strong>"Notas"</strong> sirve como un tablero de comunicación. Si hay una nota nueva que no has leído, verás un <strong>punto rojo</strong> en el menú y un <strong>icono parpadeante</strong> en la esquina.</p>
-                    <ul>
-                        <li>Para que las notificaciones desaparezcan, solo tienes que hacer clic en la pestaña "Notas".</li>
-                        <li>El Administrador puede borrar cualquier nota.</li>
-                    </ul>
-                    <h3><i class="fas fa-divide"></i>Paso 4: Divisor Diario y Total General</h3>
-                    <p>Esta es una herramienta para hacer cálculos rápidos sobre el total de un día.</p>
-                    <ul>
-                        <li>En la tabla del <strong>Historial</strong>, cada día tiene una casilla: <strong>"Dividir total por:"</strong>.</li>
-                        <li>Ingresa un número en esa casilla (por ejemplo, la cantidad de personas) y el resultado de la división aparecerá al instante.</li>
-                        <li>El <strong>"Total General División"</strong> que ves arriba de la tabla es la suma de todos los resultados de estas divisiones diarias.</li>
-                    </ul>
-                    <h3><i class="fas fa-cogs"></i>Paso 5: Funciones Avanzadas</h3>
-                    <p>En la vista expandida del Historial, encontrarás botones para gestionar tus datos.</p>
-                    <ul>
-                        <li><strong>Exportar JSON:</strong> Crea una copia de seguridad de todos tus datos (recaudaciones, notas, divisores) en un archivo. Es muy recomendable hacerlo periódicamente.</li>
-                        <li><strong>Importar JSON:</strong> <strong style="color: var(--danger-color);">¡CUIDADO!</strong> Esta acción borra todos los datos actuales y los reemplaza con los del archivo que selecciones. Úsalo solo para restaurar una copia de seguridad.</li>
-                        <li><strong>Importar Texto:</strong> Permite pegar datos copiados desde otra aplicación (como WhatsApp), siempre que sigan el formato correcto.</li>
-                    </ul>
+                <div class="card">
+                    <h2><i class="fas fa-book" style="color: var(--primary);"></i> Manual Profesional</h2>
+                    <div style="display: grid; gap: 2.5rem;">
+                        <div><h4 style="color:var(--primary); margin-bottom:10px;">Identidad de Usuario</h4><p style="color: var(--text-muted); font-size: 0.9rem;">Debe elegir entre "Mesas" o "Máquinas" al entrar. Esto permite que todas las notas lleven su firma automática para un mejor control del equipo.</p></div>
+                        <div><h4 style="color:var(--primary); margin-bottom:10px;">Divisor de Puntos</h4><p style="color: var(--text-muted); font-size: 0.9rem;">Ingrese el número de personas en "Cant. Pers. Ptos." dentro del historial. El sistema sumará automáticamente el resultado de esta división en el contador global.</p></div>
+                        <div><h4 style="color:var(--primary); margin-bottom:10px;">Seguridad de Datos</h4><p style="color: var(--text-muted); font-size: 0.9rem;">Utilice "Exportar Backup" semanalmente. Es su única garantía de poder restaurar toda la información en caso de una falla externa.</p></div>
+                    </div>
                 </div>
             </section>
-            
-            <div class="fab-container">
-                <button id="notesFabBtn" class="fab" title="Nuevas Notas"><i class="fas fa-sticky-note"></i></button>
-                <button id="ayudaFabBtn" class="fab" title="Ayuda"><i class="fas fa-question-circle"></i></button>
-                <button id="themeToggle" class="fab theme-toggle" title="Cambiar Tema"><i class="fas fa-moon"></i></button>
-                <button id="scrollToTopBtn" class="fab scroll-to-top" title="Ir al inicio"><i class="fas fa-arrow-up"></i></button>
-            </div>
-            
-            <footer><p>CarlosPN Interactive®</p></footer>
-        </div>
-    </div> 
 
-    <div id="editModal" class="modal"><div class="modal-content"><span class="close">&times;</span><h2>Editar Datos</h2><form id="editarForm"><label for="editarTipo">Tipo:</label><select id="editarTipo" name="editarTipo"><option value="Máquinas">Máquinas</option><option value="Mesas">Mesas</option><option value="Otras">Otras</option></select><label for="editarFecha">Fecha:</label><input type="date" id="editarFecha" name="editarFecha" required><label for="editarMonto">Monto Recaudado:</label><input type="tel" id="editarMonto" name="editarMonto" oninput="formatearMonto(this)" required><button type="submit"><i class="fas fa-save"></i> Guardar</button></form></div></div>
-    <div id="alertModal" class="modal"><div class="modal-content" style="max-width: 400px;"><span class="close">&times;</span><p id="alertMessage" style="text-align: center; margin-top: 20px; font-size: 1.1em;"></p><button id="alertOkBtn" class="button-reset" style="display: block; margin: 20px auto 0 auto; min-width: 100px;">OK</button></div></div>
-    <div id="confirmModal" class="modal"><div class="modal-content" style="max-width: 400px;"><p id="confirmMessage" style="text-align: center; margin: 20px 0; font-size: 1.1em; white-space: pre-wrap;"></p><div style="display: flex; justify-content: center; gap: 20px;"><button id="confirmOkBtn" style="min-width: 100px;">Confirmar</button><button id="confirmCancelBtn" class="button-delete" style="min-width: 100px;">Cancelar</button></div></div></div>
-    
-    <div id="exportModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Descargar Respaldo</h2>
-            <p>El respaldo está listo. Haz clic en el botón para guardarlo.</p>
-            <div id="exportLinkContainer" style="margin-top: 20px;"></div>
+            <footer> CarlosPN Interactive® — 2026<br><small>Sistema Profesional de Gestión</small></footer>
         </div>
     </div>
 
+    <!-- MODAL EDITAR -->
+    <div id="editModal" class="modal"><div class="modal-content">
+        <h3>Editar Registro</h3><br>
+        <select id="edTipo"><option>Máquinas</option><option>Mesas</option><option>Otras</option></select>
+        <input type="date" id="edFecha">
+        <input type="tel" id="edMonto" oninput="formatearMonto(this)">
+        <div style="display:flex; gap:12px;"><button id="btnSaveEd" class="btn btn-primary" style="flex:1">Actualizar</button><button onclick="document.getElementById('editModal').style.display='none'" class="btn btn-outline" style="flex:1">Cerrar</button></div>
+    </div></div>
+
+    <!-- MODAL CONFIRMACIÓN -->
+    <div id="confirmModal" class="modal"><div class="modal-content" style="text-align: center;">
+        <div style="background: rgba(239, 68, 68, 0.1); color: var(--danger); width: 60px; height: 60px; border-radius: 50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 1.5rem; font-size: 1.5rem;"><i class="fas fa-triangle-exclamation"></i></div>
+        <h3 id="confirmTitle">¿Confirmar Acción?</h3><p id="confirmMsg" style="color: var(--text-muted); margin-bottom: 2rem;"></p>
+        <div style="display:flex; gap:12px;"><button id="confirmBtnYes" class="btn btn-primary" style="flex:1; background: var(--danger)">Confirmar</button><button id="confirmBtnNo" class="btn btn-outline" style="flex:1">Cancelar</button></div>
+    </div></div>
+
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const VALID_USERNAME = 'croupier';
-        const VALID_PASSWORD = '1234';
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz_kCb4aEe437zHGbRqnjCibw1NtAqfCbTNmsVPn9jaZOPBFaZ6-FwmiTLqVxq39X1P/exec';
+        let datos = [], notes = [], divisores = {}, editIndex = -1, minimizado = true, sortOrder = 'desc', currentPanel = 'agregarPanel', currentUser = '';
 
-        let currentUserRole = null; 
-        let lastSeenKey = '';
-        let datos = [];
-        let notes = [];
-        let divisores = {}; 
-        let saldoInicialGuardado = { fecha: null, monto: null };
-        let minimizado = true;
-        let ordenFecha = 'desc';
-        let editIndex = -1;
-        let debounceTimer;
-        let notesUpdateInterval = null;
-        let dataUpdateInterval = null;
-        let currentExportUrl = null;
-        
-        let inactivityTimer;
-        // El tiempo de inactividad es de 15 minutos (900000 ms).
-        const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
-
-        // ** CORRECCIÓN: Función logout optimizada para limpieza total **
-        function logout() {
-            // Detener todos los intervalos para evitar problemas tras el reload
-            if (notesUpdateInterval) clearInterval(notesUpdateInterval);
-            if (dataUpdateInterval) clearInterval(dataUpdateInterval);
-            sessionStorage.clear();
-            
-            // Forzar una recarga limpia
-            location.reload(true); 
+        // --- SISTEMA DE UI ---
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-circle-xmark'}" style="color:${type === 'success' ? 'var(--secondary)' : 'var(--danger)'}"></i> ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 3000);
         }
 
-        // ** CORRECCIÓN: Función para manejar la inactividad **
-        function resetInactivityTimer() {
-            clearTimeout(inactivityTimer);
-            if (document.visibilityState === 'visible') {
-                inactivityTimer = setTimeout(logout, INACTIVITY_TIMEOUT);
-            }
-        }
-        
-        // ** NUEVA CONFIGURACIÓN: Intervalos separados para eliminar parpadeo **
-        const startUpdateIntervals = () => {
-             // Limpiar intervalos existentes por si acaso
-            if (dataUpdateInterval) clearInterval(dataUpdateInterval);
-            if (notesUpdateInterval) clearInterval(notesUpdateInterval);
-            
-            // 1. INTERVALO DE DATOS PRINCIPALES (Tabla, Totales, Divisores)
-            // Se ejecuta cada 5 MINUTOS (300000 ms) para evitar parpadeos molestos
-            dataUpdateInterval = setInterval(() => {
-                if (document.visibilityState === 'visible') {
-                    fetchFromScript({ action: 'get' }).then(res => { 
-                        if(res.status === 'success') {
-                            datos = res.data; 
-                            renderizarTabla(); 
-                            actualizarUI();
-                            // También actualizamos divisores para asegurar sincronización de totales
-                            fetchFromScript({ action: 'getDivisores' }).then(r => {
-                                if(r.status === 'success') { 
-                                    divisores = r.data;
-                                    renderizarTabla(); // Re-renderizar si es necesario para totales
-                                    actualizarTotalGeneralDivision();
-                                }
-                            });
-                        } 
-                    });
-                }
-            }, 300000); // 5 Minutos
-
-            // 2. INTERVALO DE NOTAS (Indicador rojo)
-            // Se ejecuta cada 15 SEGUNDOS para mantener la alerta activa
-            notesUpdateInterval = setInterval(() => {
-                 if (document.visibilityState === 'visible') {
-                    fetchFromScript({ action: 'getNotes' }).then(res => { 
-                        if(res.status === 'success') {
-                            notes = res.data; 
-                            checkUnreadNotes(); 
-                            // Opcional: Si el usuario está viendo el panel de notas, refrescar la lista
-                            if (document.getElementById('notasPanel').classList.contains('active')) {
-                                renderizarNotas();
-                            }
-                        }
-                    });
-                 }
-            }, 15000); // 15 Segundos
-        };
-
-        const mainContent = document.getElementById('mainContent');
-        const loginOverlay = document.getElementById('loginOverlay');
-        const globalLoader = document.getElementById('globalLoaderOverlay');
-        const globalLoaderMessage = document.getElementById('globalLoaderMessage');
-        const sideMenu = document.getElementById('sideMenu');
-        const menuToggle = document.getElementById('menuToggle');
-
-        const showGlobalLoader = (message = 'Procesando...') => { globalLoaderMessage.textContent = message; globalLoader.classList.add('show'); };
-        const hideGlobalLoader = () => globalLoader.classList.remove('show');
-        const showModal = (id) => document.getElementById(id).style.display = 'block';
-        const hideModal = (id) => {
-            document.getElementById(id).style.display = 'none';
-            if (id === 'exportModal' && currentExportUrl) {
-                URL.revokeObjectURL(currentExportUrl);
-                currentExportUrl = null;
-                document.getElementById('exportLinkContainer').innerHTML = '';
-            }
-        };
-        
-        const showAlert = (message) => { document.getElementById('alertMessage').textContent = message; showModal('alertModal'); };
-        const showConfirm = (message, onConfirm) => {
-            const okBtn = document.getElementById('confirmOkBtn');
-            const newOkBtn = okBtn.cloneNode(true);
-            okBtn.parentNode.replaceChild(newOkBtn, okBtn);
-            document.getElementById('confirmMessage').textContent = message;
-            newOkBtn.onclick = () => { hideModal('confirmModal'); onConfirm(); };
-            document.getElementById('confirmCancelBtn').onclick = () => hideModal('confirmModal');
-            showModal('confirmModal');
-        };
-
-        const getDayOfWeek = (fechaStr) => {
-            if (!fechaStr) return '';
-            const date = new Date(fechaStr + 'T12:00:00'); 
-            const options = { weekday: 'long', timeZone: 'America/Santiago' };
-            let day = date.toLocaleDateString('es-ES', options);
-            return day.charAt(0).toUpperCase() + day.slice(1);
-        };
-        
-        const formatearFecha = (fechaStr, includeTime = false) => {
-            if (!fechaStr) return 'N/A';
-            const date = includeTime ? new Date(fechaStr) : new Date(fechaStr + 'T12:00:00');
-            const options = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Santiago' };
-            if (includeTime) { 
-                options.hour = '2-digit'; 
-                options.minute = '2-digit'; 
-            }
-            
-            let formattedDate = date.toLocaleString('es-ES', options);
-            
-            if (!includeTime) {
-                const dayOfWeek = getDayOfWeek(fechaStr);
-                formattedDate = `${dayOfWeek}, ${formattedDate}`;
-            }
-            
-            return formattedDate;
-        };
-        
-        const formatearNumero = (num) => isNaN(num) || num === null ? '$0' : `$${Math.ceil(num).toLocaleString('es-ES')}`;
-        window.formatearMonto = (input) => {
-            let valor = input.value.replace(/\D/g, '');
-            input.value = valor ? parseInt(valor, 10).toLocaleString('es-ES') : '';
-        };
-
-        async function fetchFromScript(params, retries = 2, delay = 1500) {
-            const url = new URL(SCRIPT_URL);
-            url.searchParams.append('v', new Date().getTime());
-            Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
-                const result = await response.json();
-                if (result.status === 'error') throw new Error(result.message);
-                return result;
-            } catch (error) {
-                if (retries > 0) {
-                    await new Promise(res => setTimeout(res, delay));
-                    return fetchFromScript(params, retries - 1, delay);
-                } else {
-                    showAlert(`Error de Conexión persistente: ${error.message}.`);
-                    return { status: 'error', message: error.message };
-                }
-            }
-        }
-
-        async function postToScript(data, retries = 2, delay = 1500) {
-            const url = new URL(SCRIPT_URL);
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(data),
-                });
-                if (!response.ok) throw new Error(`Error de red: ${response.statusText}`);
-                const result = await response.json();
-                if (result.status === 'error') throw new Error(result.message);
-                return result;
-            } catch (error) {
-                if (retries > 0) {
-                    await new Promise(res => setTimeout(res, delay));
-                    return postToScript(data, retries - 1, delay);
-                } else {
-                    showAlert(`Error persistente al enviar datos: ${error.message}.`);
-                    return { status: 'error', message: error.message };
-                }
-            }
-        }
-        
-        const setupMenu = () => {
-            sideMenu.innerHTML = `<div class="menu-header">Menú</div><div class="menu-links-container"></div>`;
-            const container = sideMenu.querySelector('.menu-links-container');
-            const menuItems = [
-                { id: 'agregarPanel', title: 'Agregar Dato', icon: 'fa-plus-circle' },
-                { id: 'historialPanel', title: 'Historial', icon: 'fa-history' },
-                { id: 'importarPanel', title: 'Importar Texto', icon: 'fa-file-import' },
-                { id: 'notasPanel', title: 'Notas', icon: 'fa-sticky-note' }
-            ];
-            let menuHtml = '';
-            menuItems.forEach(item => {
-                menuHtml += `<a href="#" class="menu-link" data-target="${item.id}"><i class="fas ${item.icon}"></i> ${item.title} ${item.id === 'notasPanel' ? '<span class="unread-indicator" id="notes-indicator"></span>' : ''}</a>`;
+        function customConfirm(title, msg) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('confirmModal');
+                document.getElementById('confirmTitle').textContent = title;
+                document.getElementById('confirmMsg').textContent = msg;
+                modal.style.display = 'flex';
+                document.getElementById('confirmBtnYes').onclick = () => { modal.style.display = 'none'; resolve(true); };
+                document.getElementById('confirmBtnNo').onclick = () => { modal.style.display = 'none'; resolve(false); };
             });
-            container.innerHTML = menuHtml;
-            sideMenu.innerHTML += `<a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>`;
-        };
-        
-        const actualizarUI = () => {
-            const totalRecaudado = datos.reduce((sum, d) => sum + d.monto, 0);
-            document.querySelectorAll('#totalRecaudadoHistorial, #totalRecaudadoAgregar').forEach(el => el.textContent = formatearNumero(totalRecaudado));
-            actualizarTotalGeneralDivision();
-        };
+        }
 
-        const actualizarTotalGeneralDivision = () => {
-            const totalesPorDia = datos.reduce((acc, dato) => {
-                acc[dato.fecha] = (acc[dato.fecha] || 0) + dato.monto;
-                return acc;
-            }, {});
-
-            const totalGeneral = Object.keys(totalesPorDia).reduce((sum, fecha) => {
-                const divisor = divisores[fecha];
-                return divisor > 0 ? sum + (totalesPorDia[fecha] / divisor) : sum;
-            }, 0);
-            document.getElementById('totalGeneralDivisionHistorial').textContent = formatearNumero(totalGeneral);
-            document.getElementById('totalGeneralDivisionAgregar').textContent = formatearNumero(totalGeneral);
-        };
-        
-        const renderizarTabla = () => {
-            const filtro = document.getElementById('filtroFechas').value.trim();
-            const datosFiltrados = filtro ? datos.filter(d => filtro.split(',').map(f => f.trim()).includes(d.fecha)) : datos;
-
-            const tablaContainer = document.getElementById('tablaContainer');
-            tablaContainer.innerHTML = '';
-            const datosPorFecha = datosFiltrados.reduce((acc, dato) => {
-                (acc[dato.fecha] = acc[dato.fecha] || []).push(dato);
-                return acc;
-            }, {});
-
-            const fechasOrdenadas = Object.keys(datosPorFecha).sort((a,b) => ordenFecha === 'asc' ? new Date(a) - new Date(b) : new Date(b) - new Date(a));
-            if (fechasOrdenadas.length === 0) {
-                tablaContainer.innerHTML = '<p style="text-align:center; padding:20px;">No hay datos para mostrar.</p>';
-                return;
+        // --- NAVEGACIÓN ---
+        function switchPanel(targetId) {
+            currentPanel = targetId;
+            document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active-link'));
+            document.getElementById(targetId).classList.add('active');
+            const link = document.querySelector(`.menu-link[data-target="${targetId}"]`);
+            if (link) link.classList.add('active-link');
+            if (window.innerWidth < 992) document.getElementById('sideMenu').classList.remove('open');
+            if (targetId === 'notasPanel') { 
+                localStorage.setItem('lastNote', Date.now()); 
+                checkNotesInd(); 
             }
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
 
-            fechasOrdenadas.forEach((fecha, i) => {
-                if (minimizado && fechasOrdenadas.length > 1 && fecha !== fechasOrdenadas[0]) return;
-                
-                const totalDia = datosPorFecha[fecha].reduce((sum, d) => sum + d.monto, 0);
-                const divisor = divisores[fecha] || '';
-                const resultadoDivision = divisor > 0 ? totalDia / divisor : 0; 
-                
-                let tbodyHtml = '';
-                const isAdmin = currentUserRole === 'admin'; 
+        document.querySelectorAll('.menu-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchPanel(link.dataset.target);
+            });
+        });
 
-                datosPorFecha[fecha].forEach(dato => {
-                    let accionesHtml = '';
-                    if (isAdmin) {
-                        accionesHtml += `<button class="edit-btn" data-index="${dato.originalIndex}" title="Editar"><i class="fas fa-pencil-alt"></i></button>`;
-                        accionesHtml += `<button class="delete-btn" data-index="${dato.originalIndex}" title="Eliminar"><i class="fas fa-trash-alt"></i></button>`;
+        const btnUp = document.getElementById('btnScrollUp');
+        const btnNotesFab = document.getElementById('btnNotesFab');
+        window.onscroll = () => { btnUp.style.display = (window.scrollY > 400) ? "flex" : "none"; };
+        btnUp.onclick = () => window.scrollTo({top: 0, behavior: 'smooth'});
+        btnNotesFab.onclick = () => switchPanel('notasPanel');
+
+        document.getElementById('menuToggle').onclick = () => document.getElementById('sideMenu').classList.toggle('open');
+
+        // --- CORE ---
+        const showLoad = (s, msg = "Sincronizando...") => { 
+            document.getElementById('loaderMsg').textContent = msg;
+            document.getElementById('globalLoader').style.display = s ? 'flex' : 'none'; 
+        };
+        const formatearMonto = (input) => {
+            let v = input.value.replace(/\D/g, '');
+            input.value = v ? parseInt(v).toLocaleString('es-ES') : '';
+        };
+        window.formatearMonto = formatearMonto;
+        const fNum = (n) => `$${Math.ceil(n || 0).toLocaleString('es-ES')}`;
+        const fFec = (f) => {
+            const d = new Date(f + 'T12:00:00');
+            return d.toLocaleDateString('es-ES', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
+        };
+
+        // --- API ---
+        async function api(params) {
+            const url = new URL(SCRIPT_URL);
+            Object.keys(params).forEach(k => url.searchParams.append(k, params[k]));
+            return fetch(url).then(r => r.json());
+        }
+        async function post(data) {
+            return fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(data) }).then(r => r.json());
+        }
+
+        async function cargar(loader = true) {
+            if(loader) showLoad(true);
+            try {
+                const [d, n, div] = await Promise.all([api({action:'get'}), api({action:'getNotes'}), api({action:'getDivisores'})]);
+                datos = d.data || []; notes = n.data || []; divisores = div.data || {};
+                render(); checkNotesInd();
+            } finally { if(loader) showLoad(false); }
+        }
+
+        // REVISAR NOTAS AUTOMÁTICAMENTE
+        setInterval(async () => {
+            if (document.visibilityState === 'visible' && currentUser) {
+                const nRes = await api({action:'getNotes'});
+                if (nRes.status === 'success') {
+                    const oldLen = notes.length;
+                    notes = nRes.data;
+                    if (notes.length > oldLen && currentPanel !== 'notasPanel') {
+                        showToast("Mensaje nuevo de " + (notes[0].autor || 'Sistema'));
                     }
-                    tbodyHtml += `<tr><td data-label="Fecha">${formatearFecha(dato.fecha)}</td><td data-label="Tipo">${dato.tipo}</td><td data-label="Monto">${formatearNumero(dato.monto)}</td><td data-label="Acciones">${accionesHtml}</td></tr>`;
-                });
-
-                const tablaHtml = `
-                    <table class="${i % 2 === 0 ? 'fecha-par' : 'fecha-impar'}">
-                        <thead><tr><th>Fecha</th><th>Tipo</th><th>Monto</th><th>Acciones</th></tr></thead>
-                        <tbody>${tbodyHtml}</tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="2"><strong>Total Día:</strong></td>
-                                <td>${formatearNumero(totalDia)}</td>
-                                <td><button class="copy-btn" data-fecha="${fecha}" title="Copiar datos del día"><i class="fas fa-copy"></i></button></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <strong>Dividir total por:</strong>
-                                    <input type="number" min="1" class="divisor-input" value="${divisor}" data-fecha="${fecha}">
-                                </td>
-                                <td><strong id="resultado-division-${fecha}">${formatearNumero(resultadoDivision)}</strong></td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
-                    </table>`;
-                tablaContainer.innerHTML += tablaHtml;
-            });
-        };
-
-        const renderizarNotas = () => {
-            const container = document.getElementById('notes-container');
-            const lastSeen = localStorage.getItem(lastSeenKey) || 0;
-
-            if (!notes || notes.length === 0) {
-                container.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-secondary);">Aún no hay notas.</p>';
-                return;
-            }
-            
-            const notasOrdenadas = notes.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-            const isAdmin = currentUserRole === 'admin';
-
-            const notesHtml = notasOrdenadas.map(nota => {
-                let deleteBtn = '';
-                if (isAdmin) {
-                    deleteBtn = `<button class="note-delete-btn" data-index="${nota.originalIndex}" title="Eliminar nota"><i class="fas fa-trash-alt"></i></button>`;
+                    checkNotesInd();
+                    if (currentPanel === 'notasPanel') renderNotes();
                 }
+            }
+        }, 30000);
 
-                const isUnread = nota.autor !== currentUserRole && new Date(nota.fecha).getTime() > lastSeen;
-                
-                return `
-                    <div class="note-card ${isUnread ? 'note-unread' : ''}">
-                        ${deleteBtn}
-                        <div class="note-header">Por <span class="author">${nota.autor || 'Desconocido'}</span> el ${formatearFecha(nota.fecha, true)}</div>
-                        <div class="note-body">${nota.mensaje}</div>
+        function checkNotesInd() {
+            const last = parseInt(localStorage.getItem('lastNote')) || 0;
+            const hasNew = notes.some(n => new Date(n.fecha).getTime() > last);
+            document.getElementById('ind-notas').style.display = hasNew ? 'block' : 'none';
+            document.getElementById('btnNotesFab').style.display = (hasNew && currentPanel !== 'notasPanel') ? 'flex' : 'none';
+        }
+
+        function render() {
+            const totalRec = datos.reduce((s, d) => s + d.monto, 0);
+            document.getElementById('tot-rec').textContent = fNum(totalRec);
+            const grouped = datos.reduce((acc, d) => { (acc[d.fecha] = acc[d.fecha] || []).push(d); return acc; }, {});
+            const sorted = Object.keys(grouped).sort((a,b) => sortOrder === 'desc' ? new Date(b) - new Date(a) : new Date(a) - new Date(b));
+            let totDiv = 0;
+            const container = document.getElementById('tablaContainer');
+            container.innerHTML = '';
+            sorted.forEach((fecha, i) => {
+                const diaTot = grouped[fecha].reduce((s,d) => s + d.monto, 0);
+                const divVal = divisores[fecha] || 0;
+                const resDiv = divVal > 0 ? diaTot / divVal : 0;
+                totDiv += resDiv;
+                const filtroVal = document.getElementById('filtro').value;
+                if (filtroVal && !fecha.includes(filtroVal)) return;
+                if (minimizado && i > 0 && !filtroVal) return;
+                let rows = grouped[fecha].map(d => `
+                    <tr><td style="font-weight:700; color: var(--primary)">${d.tipo}</td><td><strong>${fNum(d.monto)}</strong></td>
+                    <td style="text-align:right">
+                        <button onclick="abrirEd(${d.originalIndex})" class="btn btn-outline" style="padding:6px 12px;"><i class="fas fa-pencil"></i></button>
+                        <button onclick="borrar(${d.originalIndex})" class="btn btn-danger" style="padding:6px 12px;"><i class="fas fa-trash"></i></button>
+                    </td></tr>`).join('');
+                container.innerHTML += `
+                    <div class="day-group">
+                        <div class="day-header"><strong>${fFec(fecha)}</strong>
+                        <button onclick="copyRep('${fecha}')" class="btn btn-outline btn-sm"><i class="fas fa-copy"></i> Copiar</button></div>
+                        <div class="table-res"><table><tbody>${rows}</tbody></table></div>
+                        <div class="day-footer"><div class="footer-row">
+                            <div><span style="font-size:0.75rem; color:var(--text-muted); font-weight:800;">TOTAL NOCHE</span><br><strong>${fNum(diaTot)}</strong></div>
+                            <div class="divisor-box"><span style="font-size: 0.8rem; font-weight:700;">Cant. Pers. Ptos.:</span><input type="number" class="divisor-input" value="${divVal||''}" onchange="updDiv('${fecha}', this.value)"></div>
+                            <div style="text-align:right"><span style="font-size:0.75rem; color:var(--secondary); font-weight:800;">RESULTADO NOCHE</span><br><strong style="color:var(--secondary); font-size:1.2rem">${fNum(resDiv)}</strong></div>
+                        </div></div>
                     </div>`;
-            }).join('');
-
-            container.innerHTML = notesHtml;
-        };
-        
-        async function cargarDatosIniciales(showLoader = true) {
-            if(showLoader) showGlobalLoader('Cargando datos...');
-            try {
-                const [loadedDatos, loadedSaldo, loadedNotas, loadedDivisores] = await Promise.all([
-                    fetchFromScript({ action: 'get' }), 
-                    fetchFromScript({ action: 'getSaldo' }), 
-                    fetchFromScript({ action: 'getNotes' }), 
-                    fetchFromScript({ action: 'getDivisores' })
-                ]);
-                
-                if (loadedDatos.status === 'success') datos = loadedDatos.data || [];
-                if (loadedNotas.status === 'success') notes = loadedNotas.data || [];
-                if (loadedSaldo.status === 'success') saldoInicialGuardado = loadedSaldo.data || { fecha: null, monto: null };
-                if (loadedDivisores.status === 'success') divisores = loadedDivisores.data || {};
-                
-                actualizarUI();
-                renderizarTabla();
-                renderizarNotas();
-                checkUnreadNotes();
-            } catch(error) {
-                console.error("Falla en la carga inicial de datos:", error);
-            } finally {
-                if(showLoader) hideGlobalLoader();
-            }
+            });
+            document.getElementById('tot-div').textContent = fNum(totDiv);
+            renderNotes();
         }
 
-        const checkUnreadNotes = () => {
-            const lastSeen = localStorage.getItem(lastSeenKey) || 0;
-            const hasUnread = notes.some(n => n.autor !== currentUserRole && new Date(n.fecha).getTime() > lastSeen);
-            const notesIndicator = document.getElementById('notes-indicator');
-            if (notesIndicator) notesIndicator.classList.toggle('show', hasUnread);
-            document.getElementById('notesFabBtn').style.display = hasUnread ? 'flex' : 'none';
-        };
+        function renderNotes() {
+            const last = parseInt(localStorage.getItem('lastNote')) || 0;
+            const sortedNotes = [...notes].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            document.getElementById('notesContainer').innerHTML = sortedNotes.map(n => `
+                <div class="card note-card" style="border-left-color: ${new Date(n.fecha).getTime() > last ? 'var(--warning)' : 'var(--primary)'}">
+                    <button onclick="borrarNota(${n.originalIndex})" class="note-btn-del"><i class="fas fa-trash"></i></button>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.6rem; font-weight:600;">Por <span class="note-author">${n.autor || 'Desconocido'}</span> - ${new Date(n.fecha).toLocaleString()}</div>
+                    <div style="font-size:1rem; line-height:1.5;">${n.mensaje}</div>
+                </div>`).join('') || '<p style="text-align:center; color:var(--text-muted);">Sin notas guardadas.</p>';
+        }
 
-        const markNotesAsRead = () => {
-            // Se marca como leído al momento de entrar a la pestaña, no a la última nota.
-            localStorage.setItem(lastSeenKey, new Date().getTime());
-            renderizarNotas();
-            checkUnreadNotes();
-        };
-
-        const setupAppEventListeners = () => {
-            menuToggle.onclick = (e) => { e.stopPropagation(); sideMenu.classList.toggle('open'); menuToggle.classList.toggle('active'); };
-            document.querySelector('.main-container').onclick = () => {
-                if (sideMenu.classList.contains('open')) {
-                    sideMenu.classList.remove('open');
-                    menuToggle.classList.remove('active');
-                }
-            };
-            
-            window.addEventListener('resize', () => {
-                if (window.innerWidth >= 992 && sideMenu.classList.contains('open')) {
-                    sideMenu.classList.remove('open');
-                    menuToggle.classList.remove('active');
-                }
-            });
-
-            document.querySelectorAll('.modal .close, #alertOkBtn').forEach(el => el.onclick = (e) => hideModal(e.target.closest('.modal').id));
-            window.onclick = (e) => { if (e.target.classList.contains('modal')) hideModal(e.target.id); };
-            
-            const ayudaPanel = document.getElementById('ayudaPanel');
-            document.getElementById('ayudaFabBtn').onclick = () => ayudaPanel.classList.add('open');
-            const closeAyudaBtn = document.querySelector('#ayudaPanel .close-ayuda');
-            if(closeAyudaBtn) closeAyudaBtn.onclick = () => ayudaPanel.classList.remove('open');
-            
-            // ** CORRECCIÓN: Manejo de visibilidad para pausar/reiniciar temporizadores **
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible') {
-                    resetInactivityTimer(); // Reinicia el temporizador de inactividad
-                    cargarDatosIniciales(false); // Forzar actualización de datos al volver
-                    startUpdateIntervals(); // Reiniciar los intervalos
-                } else {
-                    clearTimeout(inactivityTimer); // Detener el temporizador de inactividad
-                    if (dataUpdateInterval) clearInterval(dataUpdateInterval); // Detener actualizaciones automáticas
-                    if (notesUpdateInterval) clearInterval(notesUpdateInterval); // Detener actualizaciones de notas
-                }
-            });
-
-            const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-            activityEvents.forEach(event => {
-                window.addEventListener(event, resetInactivityTimer, true); // Reiniciar timer con actividad
-            });
-            // Fin de corrección de manejo de visibilidad/inactividad.
-
-            document.addEventListener('click', async (e) => {
-                const target = e.target.closest('button, a');
-                if (!target) return;
-
-                const isDownload = target.classList.contains('download-link');
-                
-                if (target.closest('form') === null && !isDownload) {
-                     e.preventDefault();
-                }
-
-                if (target.closest('.note-delete-btn')) {
-                    const index = parseInt(target.closest('.note-delete-btn').dataset.index);
-                    showConfirm('¿Borrar esta nota permanentemente?', async () => {
-                        showGlobalLoader('Borrando nota...');
-                        const response = await postToScript({ action: 'deleteNote', index: index });
-                        if (response.status === 'success') {
-                           await cargarDatosIniciales(false);
-                        }
-                        hideGlobalLoader();
-                    });
-                    return;
-                }
-                
-                if (target.id === 'logoutBtn') { logout(); }
-                if (target.matches('.menu-link')) {
-                    document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
-                    document.getElementById(target.dataset.target).classList.add('active');
-                    document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active-link'));
-                    target.classList.add('active-link');
-                    sessionStorage.setItem('activeTab', target.dataset.target);
-                    if (target.dataset.target === 'notasPanel') markNotesAsRead();
-                    if (window.innerWidth < 992) {
-                        sideMenu.classList.remove('open');
-                        menuToggle.classList.remove('active');
-                    }
-                }
-                if (target.matches('.edit-btn')) {
-                    const index = parseInt(target.dataset.index);
-                    const dato = datos.find(d => d.originalIndex === index);
-                    if (dato) {
-                        editIndex = index;
-                        document.getElementById('editarTipo').value = dato.tipo;
-                        document.getElementById('editarFecha').value = dato.fecha;
-                        document.getElementById('editarMonto').value = String(dato.monto);
-                        window.formatearMonto(document.getElementById('editarMonto'));
-                        showModal('editModal');
-                    }
-                }
-                if (target.matches('.delete-btn')) {
-                    const index = parseInt(target.dataset.index);
-                    showConfirm('¿Borrar este dato permanentemente?', async () => {
-                        showGlobalLoader('Borrando...');
-                        const response = await postToScript({ action: 'delete', index: index });
-                        if (response.status === 'success') await cargarDatosIniciales(false);
-                        hideGlobalLoader();
-                    });
-                }
-                 if (target.matches('.copy-btn')) {
-                    const fecha = target.dataset.fecha;
-                    const datosDelDia = datos.filter(d => d.fecha === fecha);
-                    let texto = `Datos de Recaudación del Día ${getDayOfWeek(fecha)} ${formatearFecha(fecha).split(', ')[1]}:\n`;
-                    let total = 0;
-                    const porTipo = {};
-                    datosDelDia.forEach(d => { porTipo[d.tipo] = (porTipo[d.tipo] || 0) + d.monto; total += d.monto; });
-                    for (const tipo in porTipo) { texto += `- ${tipo}: ${formatearNumero(porTipo[tipo])}\n`; }
-                    texto += `Total del Día: ${formatearNumero(total)}\n`;
-                    navigator.clipboard.writeText(texto).then(() => showAlert('Datos copiados!')).catch(() => showAlert('Error al copiar.'));
-                }
-                 if (target.id === 'btnAgregarNota') {
-                    const mensaje = document.getElementById('notaMensaje').value.trim();
-                    if (mensaje) {
-                        showGlobalLoader('Guardando nota...');
-                        const response = await postToScript({ action: 'addNote', autor: currentUserRole, mensaje });
-                        if (response.status === 'success') {
-                            document.getElementById('notaMensaje').value = '';
-                            await cargarDatosIniciales(false);
-                        }
-                        hideGlobalLoader();
-                    } else { showAlert('Escribe un mensaje.'); }
-                }
-                if (target.id === 'btnReiniciarMes') {
-                    showConfirm('¿Borrar TODOS los datos de recaudación y divisores?\nLas notas se conservarán.', async () => {
-                        showGlobalLoader('Reiniciando mes...');
-                        if ((await postToScript({ action: 'clearAll' })).status === 'success') await cargarDatosIniciales(false);
-                        hideGlobalLoader();
-                    });
-                }
-                if (target.id === 'btnExportarJson') {
-                     try {
-                        const dataToExport = {
-                            recaudaciones: datos,
-                            notas: notes,
-                            divisores: divisores,
-                            valorPunto: saldoInicialGuardado
-                        };
-                        const jsonString = JSON.stringify(dataToExport, null, 2);
-                        const blob = new Blob([jsonString], { type: 'application/json' });
-                        currentExportUrl = URL.createObjectURL(blob);
-                        
-                        const exportLinkContainer = document.getElementById('exportLinkContainer');
-                        exportLinkContainer.innerHTML = ''; 
-                        
-                        const a = document.createElement('a');
-                        a.href = currentExportUrl;
-                        a.download = `recaudacion_backup_${new Date().toISOString().slice(0, 10)}.json`;
-                        a.textContent = 'Descargar Respaldo';
-                        a.className = 'download-link';
-                        
-                        exportLinkContainer.appendChild(a);
-                        showModal('exportModal');
-                    } catch (error) {
-                       showAlert('Error al generar el respaldo.');
-                       console.error(error);
-                    }
-                }
-                if (target.id === 'btnImportarJsonTrigger') {
-                    // ** CORRECCIÓN: En lugar de una variable global, solo se fuerza el reinicio del timer al volver. **
-                    document.getElementById('jsonFileInput').click();
-                }
-            });
-
-            document.getElementById('jsonFileInput').onchange = (event) => {
-                const file = event.target.files[0];
-                if (!file) { return; }
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const content = e.target.result;
-                        if (!content) throw new Error("El archivo de respaldo está vacío.");
-
-                        const rawImportedData = JSON.parse(content);
-                        if (!rawImportedData || typeof rawImportedData !== 'object') {
-                            throw new Error("El archivo de respaldo no es un objeto JSON válido.");
-                        }
-                        
-                        const dataToImport = {
-                            recaudaciones: rawImportedData.recaudaciones || rawImportedData.datos || [],
-                            valorPunto: rawImportedData.valorPunto || rawImportedData.saldoInicialGuardado || {},
-                            notas: rawImportedData.notas || rawImportedData.notes || [],
-                            divisores: rawImportedData.divisores || {}
-                        };
-
-                        if (!Array.isArray(dataToImport.recaudaciones)) {
-                            throw new Error('El archivo de respaldo es inválido o no contiene datos de recaudación.');
-                        }
-                        
-                        const confirmMessage = '¡ADVERTENCIA!\n\nEsto reemplazará TODOS los datos actuales con el contenido del archivo. Esta acción no se puede deshacer.\n\n¿Estás seguro de que quieres continuar?';
-                        
-                        showConfirm(confirmMessage, async () => {
-                            showGlobalLoader('Importando datos...');
-                            const response = await postToScript({
-                                action: 'importAll',
-                                data: dataToImport
-                            });
-
-                            if (response.status === 'success') {
-                                await cargarDatosIniciales(true);
-                                showAlert('Datos restaurados correctamente.');
-                            } else {
-                                const errorMessage = response.message || 'Error desconocido del servidor.';
-                                showAlert(`No se pudieron importar los datos: ${errorMessage}`);
-                            }
-                            hideGlobalLoader();
-                        });
-
-                    } catch (error) {
-                        showAlert(`Error al procesar el archivo: ${error.message}`);
-                    } finally {
-                        event.target.value = '';
-                    }
-                };
-                reader.onerror = () => {
-                    showAlert('Error: No se pudo leer el archivo seleccionado.');
-                    event.target.value = '';
-                };
-                reader.readAsText(file);
-            };
-
-            document.addEventListener('input', e => {
-                if (e.target.matches('.divisor-input')) {
-                    const fecha = e.target.dataset.fecha;
-                    const valor = e.target.value;
-                    clearTimeout(debounceTimer);
-                    debounceTimer = setTimeout(async () => {
-                        divisores[fecha] = valor > 0 ? valor : undefined;
-                        // No es necesario recargar el DOM completo, solo los totales y la tabla
-                        await postToScript({ action: 'updateDivisor', fecha, divisor: divisores[fecha] || null }); 
-                        actualizarTotalGeneralDivision();
-                        renderizarTabla(); 
-                    }, 500);
-                }
-            });
-            
-            document.getElementById('agregarForm').onsubmit = e => {
-                e.preventDefault();
-                const performAdd = async () => {
-                    const tipo = document.getElementById('tipo').value;
-                    const fecha = document.getElementById('fecha').value;
-                    // Elimina los puntos de miles antes de parsear a número
-                    const monto = parseFloat(document.getElementById('monto').value.replace(/\./g, '')); 
-                    
-                    if (!fecha || isNaN(monto) || monto <= 0) { 
-                        showAlert('Datos de fecha o monto inválidos. Asegúrate de ingresar un monto mayor a cero.'); 
-                        return; 
-                    }
-                    
-                    showGlobalLoader('Agregando dato...');
-                    
-                    const response = await postToScript({ action: 'add', fecha, tipo, monto });
-                    
-                    hideGlobalLoader();
-                    
-                    if (response.status === 'success') {
-                        document.getElementById('agregarForm').reset();
-                        document.getElementById('fecha').value = new Date().toISOString().slice(0,10); 
-                        
-                        await cargarDatosIniciales(false); 
-                        showAlert('¡Dato agregado con éxito!'); 
-                    } else {
-                        showAlert('Error al agregar el dato: ' + (response.message || 'Error desconocido.'));
-                    }
-                };
-                performAdd();
-            };
-            
-            document.getElementById('editarForm').onsubmit = async e => {
-                e.preventDefault();
-                const tipo = document.getElementById('editarTipo').value;
-                const fecha = document.getElementById('editarFecha').value;
-                const monto = parseFloat(document.getElementById('editarMonto').value.replace(/\./g, ''));
-                if (!fecha || isNaN(monto)) { showAlert('Datos inválidos.'); return; }
-                showGlobalLoader('Guardando...');
-                const response = await postToScript({ action: 'update', sheetIndex: editIndex, fecha, tipo, monto });
-                if (response.status === 'success') {
-                    hideModal('editModal');
-                    await cargarDatosIniciales(false);
-                }
-                hideGlobalLoader();
-            };
-            
-            document.getElementById('btnMinimizarTabla').onclick = () => { minimizado = !minimizado; document.getElementById('btnMinimizarTabla').textContent = minimizado ? 'Maximizar Tabla' : 'Minimizar Tabla'; renderizarTabla(); };
-            document.getElementById('btnOrdenarFechaAsc').onclick = () => { ordenFecha = 'asc'; renderizarTabla(); };
-            document.getElementById('btnOrdenarFechaDesc').onclick = () => { ordenFecha = 'desc'; renderizarTabla(); };
-            document.getElementById('filtroFechas').oninput = () => renderizarTabla();
-            document.getElementById('btnReiniciarFiltros').onclick = () => { document.getElementById('filtroFechas').value = ''; minimizado = true; document.getElementById('btnMinimizarTabla').textContent = 'Maximizar Tabla'; ordenFecha = 'desc'; renderizarTabla(); };
-            document.getElementById('themeToggle').onclick = () => {
-                const isDark = document.body.classList.toggle('dark-mode');
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            };
-            document.getElementById('scrollToTopBtn').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-            window.onscroll = () => document.getElementById('scrollToTopBtn').classList.toggle('show', window.scrollY > 200);
-            
-            document.getElementById('notesFabBtn').onclick = () => {
-                const targetId = 'notasPanel';
-                const link = document.querySelector(`.menu-link[data-target="${targetId}"]`);
-                if (!link) return;
-                document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
-                document.getElementById(targetId).classList.add('active');
-                document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active-link'));
-                link.classList.add('active-link');
-                sessionStorage.setItem('activeTab', targetId);
-                markNotesAsRead();
-                if (window.innerWidth < 992) {
-                    sideMenu.classList.remove('open');
-                    menuToggle.classList.remove('active');
-                }
-            };
-            
-            document.getElementById('btnProcesarImportacion').onclick = async () => {
-                 const texto = document.getElementById('importDataTextarea').value;
-                if (!texto) { showAlert('Pega el texto de los datos.'); return; }
-                const lineas = texto.split('\n').map(l => l.trim()).filter(Boolean);
-                const nuevasEntradas = [];
-                let fechaActual = null;
-                const regexFecha = /Día (\d{2}\/\d{2}\/\d{4})/;
-                const regexMonto = /^- (Máquinas|Mesas|Otras|Otros):\s*\$?([\d.,]+)/;
-                for (const linea of lineas) {
-                    const matchFecha = linea.match(regexFecha);
-                    if (matchFecha) {
-                        const [day, month, year] = matchFecha[1].split('/');
-                        fechaActual = `${year}-${month}-${day}`;
-                        continue;
-                    }
-                    const matchMonto = linea.match(regexMonto);
-                    if (matchMonto && fechaActual) {
-                        let tipo = matchMonto[1];
-                        if (tipo === 'Otros') tipo = 'Otras';
-                        const monto = parseFloat(matchMonto[2].replace(/\./g, '').replace(',', '.'));
-                        if (!isNaN(monto)) nuevasEntradas.push({ fecha: fechaActual, tipo, monto });
-                    }
-                }
-                if (nuevasEntradas.length > 0) {
-                    showGlobalLoader('Importando...');
-                    for (const entrada of nuevasEntradas) { await postToScript({ action: 'add', ...entrada }); }
-                    await cargarDatosIniciales(false);
-                    hideGlobalLoader();
-                    document.querySelector('.menu-link[data-target="historialPanel"]').click();
-                } else { showAlert('No se encontraron datos válidos.'); }
-            };
-        };
-
-        const initializeApp = async () => {
-            loginOverlay.classList.add('hidden');
-            mainContent.style.display = 'block';
-            menuToggle.style.display = 'flex';
-            document.body.classList.add('loggedin');
-            lastSeenKey = `lastSeenNote_${currentUserRole}`; 
-            document.body.classList.toggle('dark-mode', localStorage.getItem('theme') === 'dark');
-
-            setupMenu();
-            setupAppEventListeners();
-            await cargarDatosIniciales();
-            
-            const savedTabId = sessionStorage.getItem('activeTab') || 'agregarPanel';
-            const linkToActivate = document.querySelector(`.menu-link[data-target="${savedTabId}"]`);
-            if (linkToActivate) {
-                linkToActivate.click();
+        window.borrarNota = async (idx) => {
+            if(await customConfirm("¿Eliminar?", "¿Borrar este mensaje para siempre?")) {
+                showLoad(true, "Borrando...");
+                await post({ action: 'deleteNote', index: idx });
+                showToast("Nota eliminada");
+                await cargar();
             }
-            
-            // Iniciar el temporizador y los intervalos solo si la pestaña es visible
-            resetInactivityTimer();
-            startUpdateIntervals();
         };
 
-        const setupLoginListeners = () => {
-            document.getElementById('loginForm').onsubmit = (e) => {
-                e.preventDefault();
-                const user = document.getElementById('username').value;
-                const pass = document.getElementById('password').value;
-                if (user === VALID_USERNAME && pass === VALID_PASSWORD) {
-                    sessionStorage.setItem('userRole', 'admin');
-                    currentUserRole = 'admin'; 
-                    initializeApp();
-                } else {
-                    document.getElementById('loginMessage').textContent = 'Datos incorrectos.';
-                    document.getElementById('loginMessage').style.display = 'block';
+        window.updDiv = async (fecha, val) => {
+            divisores[fecha] = val; render();
+            await post({ action:'updateDivisor', fecha, divisor: val });
+        };
+
+        window.copyRep = (fecha) => {
+            const ds = datos.filter(x => x.fecha === fecha);
+            const total = ds.reduce((s, d) => s + d.monto, 0);
+            const div = divisores[fecha] || 0;
+            const res = div > 0 ? total / div : 0;
+            let txt = `📊 REPORTE: ${fFec(fecha)}\n--------------------------------\n`;
+            ds.forEach(x => txt += `• ${x.tipo}: ${fNum(x.monto)}\n`);
+            txt += `--------------------------------\n💰 TOTAL DÍA: ${fNum(total)}\n👥 Cant. Pers. Ptos.: ${div}\n✅ RESULTADO: ${fNum(res)}\n--------------------------------\nEmitido por: ${currentUser.toUpperCase()}\nCarlosPN Interactive®`;
+            navigator.clipboard.writeText(txt).then(() => showToast("Reporte copiado"));
+        };
+
+        document.getElementById('btnSortDesc').onclick = () => { sortOrder = 'desc'; render(); };
+        document.getElementById('btnSortAsc').onclick = () => { sortOrder = 'asc'; render(); };
+        document.getElementById('btnMin').onclick = () => { minimizado = !minimizado; render(); };
+        document.getElementById('filtro').oninput = render;
+
+        document.getElementById('btnNota').onclick = async () => {
+            const msg = document.getElementById('notaMsg').value.trim();
+            if (!msg) return;
+            showLoad(true, "Enviando...");
+            await post({ action: 'addNote', autor: currentUser, mensaje: msg });
+            document.getElementById('notaMsg').value = '';
+            showToast("Mensaje publicado");
+            await cargar();
+        };
+
+        document.getElementById('agregarForm').onsubmit = async (e) => {
+            e.preventDefault();
+            showLoad(true, "Guardando...");
+            const tipo = document.querySelector('input[name="tipo"]:checked').value;
+            await post({ 
+                action: 'add', tipo: tipo,
+                fecha: document.getElementById('fecha').value,
+                monto: parseInt(document.getElementById('monto').value.replace(/\./g,''))
+            });
+            document.getElementById('agregarForm').reset();
+            document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+            showToast("Dato registrado");
+            await cargar();
+        };
+
+        window.abrirEd = (idx) => {
+            editIndex = idx;
+            const d = datos.find(x => x.originalIndex === idx);
+            document.getElementById('edTipo').value = d.tipo;
+            document.getElementById('edFecha').value = d.fecha;
+            document.getElementById('edMonto').value = d.monto.toLocaleString('es-ES');
+            document.getElementById('editModal').style.display = 'flex';
+        };
+
+        document.getElementById('btnSaveEd').onclick = async () => {
+            showLoad(true, "Actualizando...");
+            await post({
+                action: 'update', sheetIndex: editIndex,
+                tipo: document.getElementById('edTipo').value,
+                fecha: document.getElementById('edFecha').value,
+                monto: parseInt(document.getElementById('edMonto').value.replace(/\./g,''))
+            });
+            document.getElementById('editModal').style.display = 'none';
+            showToast("Actualizado con éxito");
+            await cargar();
+        };
+
+        window.borrar = async (idx) => {
+            if(await customConfirm("¿Eliminar?", "¿Borrar este registro?")) {
+                showLoad(true, "Borrando...");
+                await post({ action:'delete', index: idx });
+                showToast("Borrado");
+                await cargar();
+            }
+        };
+
+        document.getElementById('btnExport').onclick = () => {
+            const blob = new Blob([JSON.stringify({datos, notes, divisores}, null, 2)], {type:'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `backup_${currentUser}_${new Date().toLocaleDateString()}.json`; a.click();
+            showToast("Backup generado");
+        };
+
+        document.getElementById('btnImportTrigger').onclick = () => document.getElementById('jsonInput').click();
+        document.getElementById('jsonInput').onchange = (e) => {
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                const content = JSON.parse(ev.target.result);
+                if(await customConfirm("¿Restaurar?", "Se borrarán los datos actuales para cargar el backup.")) {
+                    showLoad(true, "Restaurando...");
+                    await post({ action: 'importAll', data: content });
+                    showToast("Carga completa");
+                    await cargar();
                 }
             };
-            
-            document.getElementById('togglePassword').onclick = function() {
-                const passInput = document.getElementById('password');
-                passInput.type = passInput.type === 'password' ? 'text' : 'password';
-                this.classList.toggle('fa-eye-slash');
-            };
+            reader.readAsText(e.target.files[0]);
         };
 
-        const checkLogin = () => {
-            if (sessionStorage.getItem('userRole') === 'admin') {
-                currentUserRole = 'admin';
-                initializeApp();
+        document.getElementById('btnProcesar').onclick = async () => {
+            const txt = document.getElementById('importText').value;
+            const lines = txt.split('\n');
+            let curDate = null;
+            showLoad(true, "Procesando...");
+            for(let l of lines) {
+                const fMatch = l.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                if(fMatch) curDate = `${fMatch[3]}-${fMatch[2]}-${fMatch[1]}`;
+                const mMatch = l.match(/- (Máquinas|Mesas|Otras|Otros):\s*\$?([\d.]+)/);
+                if(mMatch && curDate) {
+                    await post({ action:'add', fecha:curDate, tipo:mMatch[1].replace('Otros','Otras'), monto:parseFloat(mMatch[2].replace(/\./g,'')) });
+                }
+            }
+            showToast("Importación finalizada");
+            await cargar();
+            switchPanel('historialPanel');
+        };
+
+        document.getElementById('logoutBtn').onclick = () => { 
+            sessionStorage.clear(); 
+            location.reload(); 
+        };
+
+        // --- LOGIN LOGIC ---
+        document.getElementById('loginForm').onsubmit = (e) => {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if(!user) { showToast("Elija un usuario", "danger"); return; }
+
+            if((user === 'mesas' || user === 'maquinas') && pass === '1234') {
+                currentUser = user;
+                sessionStorage.setItem('user', user);
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'flex';
+                document.body.classList.add('loggedin');
+                document.getElementById('activeUserBadge').textContent = "SESIÓN: " + user.toUpperCase();
+                document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+                cargar();
             } else {
-                loginOverlay.classList.remove('hidden');
-                setupLoginListeners();
+                showToast("Clave incorrecta", "danger");
             }
         };
-        
-        checkLogin();
+
+        document.getElementById('toggleLoginPassword').onclick = function() {
+            const p = document.getElementById('password');
+            const isP = p.type === 'password';
+            p.type = isP ? 'text' : 'password';
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        };
+
+        const savedUser = sessionStorage.getItem('user');
+        if(savedUser) {
+            currentUser = savedUser;
+            document.getElementById('username').value = savedUser;
+            document.getElementById('password').value = '1234';
+            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+        }
     });
     </script>
 </body>
