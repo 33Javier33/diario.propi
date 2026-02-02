@@ -51,7 +51,6 @@
             letter-spacing: 1px;
         }
         
-        /* Etiqueta de Usuario Activo */
         .user-status {
             padding: 12px; margin: 15px 20px; border-radius: 12px;
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
@@ -99,7 +98,6 @@
 
         .card { background: var(--bg-card); border-radius: var(--radius); padding: 1.8rem; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 1.5rem; position: relative; }
 
-        /* --- CATEGORÍAS (RADIO CARDS) --- */
         .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.5rem; }
         .category-option { position: relative; }
         .category-option input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
@@ -129,7 +127,6 @@
         .divisor-box { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 10px 18px; border-radius: 14px; border: 1px solid var(--border); }
         .divisor-input { width: 70px; padding: 6px; text-align: center; font-weight: 800; border: 2px solid var(--primary); border-radius: 10px; background: transparent; color: var(--text-main); font-size: 1rem; }
 
-        /* --- BOTONES --- */
         .btn { padding: 0.9rem 1.5rem; border-radius: 16px; border: none; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 10px; transition: all 0.3s; font-size: 0.95rem; }
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
@@ -139,7 +136,6 @@
         input, select, textarea { width: 100%; padding: 0.9rem 1.2rem; border-radius: 14px; border: 1.5px solid var(--border); background: var(--bg-main); color: var(--text-main); margin-bottom: 1.2rem; transition: 0.3s; font-size: 1rem; }
         input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
 
-        /* --- FABS --- */
         .fab-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; }
         .fab-btn { width: 56px; height: 56px; border-radius: 18px; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         #btnScrollUp { background: var(--bg-card); color: var(--text-main); display: none; border: 1px solid var(--border); }
@@ -151,13 +147,10 @@
             100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
         }
 
-        /* --- LOGIN --- */
         #loginOverlay { position: fixed; inset: 0; background: var(--bg-main); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .password-container { position: relative; }
         .toggle-password { position: absolute; right: 15px; top: 15px; cursor: pointer; color: var(--text-muted); font-size: 1.1rem; }
-        .login-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 1.5rem; line-height: 1.4; padding: 0 10px; }
 
-        /* --- UI HELPERS --- */
         #globalLoader { position: fixed; inset: 0; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); z-index: 10000; display: none; align-items: center; justify-content: center; }
         .spinner { width: 50px; height: 50px; border: 5px solid rgba(99, 102, 241, 0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -169,7 +162,6 @@
         .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
         .modal-content { background: var(--bg-card); padding: 2.5rem; border-radius: 24px; width: 100%; max-width: 480px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid var(--border); }
 
-        /* --- NOTAS --- */
         .note-card { border-left: 6px solid var(--primary); position: relative; }
         .note-author { color: var(--primary); font-weight: 800; text-transform: capitalize; }
         .note-btn-del { position: absolute; top: 1.2rem; right: 1.2rem; background: rgba(239, 68, 68, 0.05); color: var(--danger); width: 36px; height: 36px; border-radius: 10px; border: none; cursor: pointer; }
@@ -182,13 +174,11 @@
             .category-card { padding: 12px 5px; }
             .footer-row { flex-direction: column; align-items: stretch; text-align: center; }
             .divisor-box { justify-content: center; }
-            .fab-container { bottom: 20px; right: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Cargador Global -->
     <div id="globalLoader">
         <div style="text-align: center;">
             <div class="spinner"></div>
@@ -198,20 +188,17 @@
 
     <div id="toast-container"></div>
     
-    <!-- Botones Flotantes -->
     <div class="fab-container">
         <button id="btnNotesFab" class="fab-btn" title="Notas nuevas"><i class="fas fa-sticky-note"></i></button>
         <button id="btnScrollUp" class="fab-btn" title="Subir"><i class="fas fa-chevron-up"></i></button>
     </div>
 
-    <!-- LOGIN CON SELECTOR DE USUARIO -->
     <div id="loginOverlay">
         <div class="card" style="width: 100%; max-width: 420px; text-align: center; padding: 3rem;">
             <div style="background: var(--primary); color:white; width: 64px; height: 64px; border-radius: 20px; display:flex; align-items:center; justify-content:center; margin: 0 auto 1.5rem; font-size: 1.5rem;">
                 <i class="fas fa-user-shield"></i>
             </div>
             <h2 style="margin-bottom: 0.5rem;">Acceso al Sistema</h2>
-            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Seleccione su identidad de trabajo</p>
             <form id="loginForm">
                 <select id="username" style="font-weight: 700; text-align: center; cursor: pointer; background: var(--bg-main);">
                     <option value="" disabled selected>Elegir Usuario...</option>
@@ -223,12 +210,10 @@
                     <i class="fas fa-eye toggle-password" id="toggleLoginPassword"></i>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Ingresar</button>
-                <p class="login-note">Las credenciales y clave de seguridad deben ser solicitadas al administrador.</p>
             </form>
         </div>
     </div>
 
-    <!-- SIDEBAR -->
     <nav id="sideMenu" class="side-menu">
         <div class="menu-header">SISTEMA GESTIÓN</div>
         <div id="activeUserBadge" class="user-status">Iniciando...</div>
@@ -247,13 +232,11 @@
 
         <div id="mainContent" style="display: none; flex: 1; flex-direction: column;">
             
-            <!-- Totales Superiores -->
             <div class="stats-grid">
                 <div class="stat-card"><span class="label">Recaudación Total</span><div class="value" id="tot-rec">$0</div></div>
                 <div class="stat-card"><span class="label">Total Valor por Punto</span><div class="value" id="tot-div">$0</div></div>
             </div>
 
-            <!-- PANEL: AGREGAR -->
             <section id="agregarPanel" class="content-panel active">
                 <div class="card" style="max-width: 500px; margin: 0 auto;">
                     <h2 style="margin-bottom: 2rem;"><i class="fas fa-circle-plus" style="color: var(--primary);"></i> Nuevo Registro</h2>
@@ -282,7 +265,6 @@
                 </div>
             </section>
 
-            <!-- PANEL: HISTORIAL -->
             <section id="historialPanel" class="content-panel">
                 <div class="card">
                     <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 2rem;">
@@ -304,7 +286,6 @@
                 </div>
             </section>
 
-            <!-- PANEL: NOTAS -->
             <section id="notasPanel" class="content-panel">
                 <div class="card">
                     <h2><i class="fas fa-note-sticky" style="color: var(--primary);"></i> Bloc de Notas</h2>
@@ -316,7 +297,6 @@
                 </div>
             </section>
 
-            <!-- PANEL: IMPORTAR -->
             <section id="importarPanel" class="content-panel">
                 <div class="card" style="max-width: 650px; margin: 0 auto;">
                     <h2><i class="fas fa-file-import" style="color: var(--primary);"></i> Importar Texto</h2>
@@ -325,15 +305,10 @@
                 </div>
             </section>
 
-            <!-- PANEL: AYUDA -->
             <section id="ayudaPanel" class="content-panel">
                 <div class="card">
-                    <h2><i class="fas fa-book" style="color: var(--primary);"></i> Manual Profesional</h2>
-                    <div style="display: grid; gap: 2.5rem;">
-                        <div><h4 style="color:var(--primary); margin-bottom:10px;">Identidad de Usuario</h4><p style="color: var(--text-muted); font-size: 0.9rem;">Debe elegir entre "Mesas" o "Máquinas" al entrar. Esto permite que todas las notas lleven su firma automática para un mejor control del equipo.</p></div>
-                        <div><h4 style="color:var(--primary); margin-bottom:10px;">Divisor de Puntos</h4><p style="color: var(--text-muted); font-size: 0.9rem;">Ingrese el número de personas en "Cant. Pers. Ptos." dentro del historial. El sistema sumará automáticamente el resultado de esta división en el contador global.</p></div>
-                        <div><h4 style="color:var(--primary); margin-bottom:10px;">Seguridad de Datos</h4><p style="color: var(--text-muted); font-size: 0.9rem;">Utilice "Exportar Backup" semanalmente. Es su única garantía de poder restaurar toda la información en caso de una falla externa.</p></div>
-                    </div>
+                    <h2><i class="fas fa-book" style="color: var(--primary);"></i> Ayuda</h2>
+                    <p>Use la sección historial para gestionar los registros y el bloc de notas para comunicarse con su equipo.</p>
                 </div>
             </section>
 
@@ -352,7 +327,6 @@
 
     <!-- MODAL CONFIRMACIÓN -->
     <div id="confirmModal" class="modal"><div class="modal-content" style="text-align: center;">
-        <div style="background: rgba(239, 68, 68, 0.1); color: var(--danger); width: 60px; height: 60px; border-radius: 50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 1.5rem; font-size: 1.5rem;"><i class="fas fa-triangle-exclamation"></i></div>
         <h3 id="confirmTitle">¿Confirmar Acción?</h3><p id="confirmMsg" style="color: var(--text-muted); margin-bottom: 2rem;"></p>
         <div style="display:flex; gap:12px;"><button id="confirmBtnYes" class="btn btn-primary" style="flex:1; background: var(--danger)">Confirmar</button><button id="confirmBtnNo" class="btn btn-outline" style="flex:1">Cancelar</button></div>
     </div></div>
@@ -362,7 +336,6 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz_kCb4aEe437zHGbRqnjCibw1NtAqfCbTNmsVPn9jaZOPBFaZ6-FwmiTLqVxq39X1P/exec';
         let datos = [], notes = [], divisores = {}, editIndex = -1, minimizado = true, sortOrder = 'desc', currentPanel = 'agregarPanel', currentUser = '';
 
-        // --- SISTEMA DE UI ---
         function showToast(msg, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -383,7 +356,6 @@
             });
         }
 
-        // --- NAVEGACIÓN ---
         function switchPanel(targetId) {
             currentPanel = targetId;
             document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
@@ -414,28 +386,29 @@
 
         document.getElementById('menuToggle').onclick = () => document.getElementById('sideMenu').classList.toggle('open');
 
-        // --- CORE ---
         const showLoad = (s, msg = "Sincronizando...") => { 
             document.getElementById('loaderMsg').textContent = msg;
             document.getElementById('globalLoader').style.display = s ? 'flex' : 'none'; 
         };
+
         const formatearMonto = (input) => {
             let v = input.value.replace(/\D/g, '');
             input.value = v ? parseInt(v).toLocaleString('es-ES') : '';
         };
         window.formatearMonto = formatearMonto;
+
         const fNum = (n) => `$${Math.ceil(n || 0).toLocaleString('es-ES')}`;
         const fFec = (f) => {
             const d = new Date(f + 'T12:00:00');
             return d.toLocaleDateString('es-ES', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
         };
 
-        // --- API ---
         async function api(params) {
             const url = new URL(SCRIPT_URL);
             Object.keys(params).forEach(k => url.searchParams.append(k, params[k]));
             return fetch(url).then(r => r.json());
         }
+
         async function post(data) {
             return fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(data) }).then(r => r.json());
         }
@@ -449,7 +422,6 @@
             } finally { if(loader) showLoad(false); }
         }
 
-        // REVISAR NOTAS AUTOMÁTICAMENTE
         setInterval(async () => {
             if (document.visibilityState === 'visible' && currentUser) {
                 const nRes = await api({action:'getNotes'});
@@ -521,6 +493,21 @@
                 </div>`).join('') || '<p style="text-align:center; color:var(--text-muted);">Sin notas guardadas.</p>';
         }
 
+        window.copyRep = (fecha) => {
+            const ds = datos.filter(x => x.fecha === fecha);
+            const total = ds.reduce((s, d) => s + d.monto, 0);
+            const div = divisores[fecha] || 0;
+            const res = div > 0 ? total / div : 0;
+            
+            let txt = `📊 REPORTE: ${fFec(fecha)}\n--------------------------------\n`;
+            ds.forEach(x => txt += `• ${x.tipo}: ${fNum(x.monto)}\n`);
+            txt += `--------------------------------\n`;
+            txt += `💰 TOTAL DÍA: ${fNum(total)}\n`;
+            txt += `✅ RESULTADO NOCHE: ${fNum(res)}`;
+            
+            navigator.clipboard.writeText(txt).then(() => showToast("Reporte copiado"));
+        };
+
         window.borrarNota = async (idx) => {
             if(await customConfirm("¿Eliminar?", "¿Borrar este mensaje para siempre?")) {
                 showLoad(true, "Borrando...");
@@ -533,17 +520,6 @@
         window.updDiv = async (fecha, val) => {
             divisores[fecha] = val; render();
             await post({ action:'updateDivisor', fecha, divisor: val });
-        };
-
-        window.copyRep = (fecha) => {
-            const ds = datos.filter(x => x.fecha === fecha);
-            const total = ds.reduce((s, d) => s + d.monto, 0);
-            const div = divisores[fecha] || 0;
-            const res = div > 0 ? total / div : 0;
-            let txt = `📊 REPORTE: ${fFec(fecha)}\n--------------------------------\n`;
-            ds.forEach(x => txt += `• ${x.tipo}: ${fNum(x.monto)}\n`);
-            txt += `--------------------------------\n💰 TOTAL DÍA: ${fNum(total)}\n👥 Cant. Pers. Ptos.: ${div}\n✅ RESULTADO: ${fNum(res)}\n--------------------------------\nEmitido por: ${currentUser.toUpperCase()}\nCarlosPN Interactive®`;
-            navigator.clipboard.writeText(txt).then(() => showToast("Reporte copiado"));
         };
 
         document.getElementById('btnSortDesc').onclick = () => { sortOrder = 'desc'; render(); };
@@ -652,14 +628,11 @@
             location.reload(); 
         };
 
-        // --- LOGIN LOGIC ---
         document.getElementById('loginForm').onsubmit = (e) => {
             e.preventDefault();
             const user = document.getElementById('username').value;
             const pass = document.getElementById('password').value;
-
             if(!user) { showToast("Elija un usuario", "danger"); return; }
-
             if((user === 'mesas' || user === 'maquinas') && pass === '1234') {
                 currentUser = user;
                 sessionStorage.setItem('user', user);
