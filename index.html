@@ -410,7 +410,7 @@
         };
         window.formatearMonto = formatearMonto;
 
-        const fNum = (n) => `$${Math.ceil(n || 0).toLocaleString('es-ES')}`;
+        const fNum = (n) => `$${Math.floor(n || 0).toLocaleString('es-ES')}`;
         const fFec = (f) => {
             const d = new Date(f + 'T12:00:00');
             return d.toLocaleDateString('es-ES', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
