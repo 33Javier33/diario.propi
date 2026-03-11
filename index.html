@@ -410,7 +410,10 @@
         };
         window.formatearMonto = formatearMonto;
 
-        const fNum = (n) => `$${Math.floor(n || 0).toLocaleString('es-ES')}`;
+        // AQUÍ ESTÁ LA MAGIA IGUAL QUE EN TU OTRO CÓDIGO
+        // Usamos Math.round para que redondee SÓLO cuando va a pintar el número en pantalla.
+        const fNum = (n) => `$${Math.round(n || 0).toLocaleString('es-ES')}`;
+        
         const fFec = (f) => {
             const d = new Date(f + 'T12:00:00');
             return d.toLocaleDateString('es-ES', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
@@ -462,14 +465,20 @@
             document.getElementById('tot-rec').textContent = fNum(totalRec);
             const grouped = datos.reduce((acc, d) => { (acc[d.fecha] = acc[d.fecha] || []).push(d); return acc; }, {});
             const sorted = Object.keys(grouped).sort((a,b) => sortOrder === 'desc' ? new Date(b) - new Date(a) : new Date(a) - new Date(b));
-            let totDiv = 0;
+            
+            let totDiv = 0; // Aquí acumularemos los decimales puros, igual que en Gestión de Propina
+            
             const container = document.getElementById('tablaContainer');
             container.innerHTML = '';
+            
             sorted.forEach((fecha, i) => {
                 const diaTot = grouped[fecha].reduce((s,d) => s + d.monto, 0);
                 const divVal = divisores[fecha] || 0;
-                const resDiv = divVal > 0 ? diaTot / divVal : 0;
-                totDiv += resDiv;
+                
+                // Mantenemos el decimal puro y exacto. Sin redondear aquí adentro.
+                const resDiv = divVal > 0 ? diaTot / divVal : 0; 
+                totDiv += resDiv; // Sumamos el decimal puro.
+                
                 const filtroVal = document.getElementById('filtro').value;
                 if (filtroVal && !fecha.includes(filtroVal)) return;
                 if (minimizado && i > 0 && !filtroVal) return;
@@ -479,6 +488,8 @@
                         <button onclick="abrirEd(${d.originalIndex})" class="btn btn-outline" style="padding:6px 12px;"><i class="fas fa-pencil"></i></button>
                         <button onclick="borrar(${d.originalIndex})" class="btn btn-danger" style="padding:6px 12px;"><i class="fas fa-trash"></i></button>
                     </td></tr>`).join('');
+                
+                // Al llamar a fNum(resDiv) abajo, ahí es cuando se redondea visualmente para el usuario.
                 container.innerHTML += `
                     <div class="day-group">
                         <div class="day-header"><strong>${fFec(fecha)}</strong>
@@ -491,6 +502,8 @@
                         </div></div>
                     </div>`;
             });
+            
+            // Finalmente aplicamos fNum (que tiene Math.round) al total acumulado puro.
             document.getElementById('tot-div').textContent = fNum(totDiv);
             renderNotes();
         }
@@ -510,13 +523,15 @@
             const ds = datos.filter(x => x.fecha === fecha);
             const total = ds.reduce((s, d) => s + d.monto, 0);
             const div = divisores[fecha] || 0;
-            const res = div > 0 ? total / div : 0;
+            
+            // Calculamos puro y lo mandamos a redondear con fNum
+            const res = div > 0 ? total / div : 0; 
             
             let txt = `📊 REPORTE: ${fFec(fecha)}\n--------------------------------\n`;
             ds.forEach(x => txt += `• ${x.tipo}: ${fNum(x.monto)}\n`);
             txt += `--------------------------------\n`;
             txt += `💰 TOTAL DÍA: ${fNum(total)}\n`;
-            txt += `✅ RESULTADO NOCHE: ${fNum(res)}`;
+            txt += `✅ RESULTADO NOCHE: ${fNum(res)}`; // Redondea al copiar
             
             navigator.clipboard.writeText(txt).then(() => showToast("Reporte copiado"));
         };
