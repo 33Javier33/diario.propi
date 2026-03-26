@@ -103,7 +103,7 @@
 
         .card { background: var(--bg-card); border-radius: var(--radius); padding: 1.8rem; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 1.5rem; position: relative; }
 
-        .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+        .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 1.5rem; }
         .category-option { position: relative; }
         .category-option input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
         .category-card { 
@@ -249,16 +249,20 @@
                         <label style="display:block; margin-bottom:12px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">SELECCIONE CATEGORÍA</label>
                         <div class="category-grid">
                             <label class="category-option">
-                                <input type="radio" name="tipo" value="Máquinas" checked>
-                                <div class="category-card"><i class="fas fa-coins"></i><span>Máquinas</span></div>
+                                <input type="radio" name="tipo" value="TarjetaMDA" checked>
+                                <div class="category-card"><i class="fas fa-credit-card"></i><span>TarjetaMDA</span></div>
                             </label>
                             <label class="category-option">
-                                <input type="radio" name="tipo" value="Mesas">
-                                <div class="category-card"><i class="fas fa-dice"></i><span>Mesas</span></div>
+                                <input type="radio" name="tipo" value="EfectivoMDA">
+                                <div class="category-card"><i class="fas fa-money-bill-1-wave"></i><span>EfectivoMDA</span></div>
                             </label>
                             <label class="category-option">
-                                <input type="radio" name="tipo" value="Otras">
-                                <div class="category-card"><i class="fas fa-ellipsis"></i><span>Otras</span></div>
+                                <input type="radio" name="tipo" value="SalaDeJuegos">
+                                <div class="category-card"><i class="fas fa-gamepad"></i><span>SalaDeJuegos</span></div>
+                            </label>
+                            <label class="category-option">
+                                <input type="radio" name="tipo" value="Boveda">
+                                <div class="category-card"><i class="fas fa-vault"></i><span>Boveda</span></div>
                             </label>
                         </div>
                         <label style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">FECHA DEL REGISTRO</label>
@@ -324,7 +328,12 @@
     <!-- MODAL EDITAR -->
     <div id="editModal" class="modal"><div class="modal-content">
         <h3>Editar Registro</h3><br>
-        <select id="edTipo"><option>Máquinas</option><option>Mesas</option><option>Otras</option></select>
+        <select id="edTipo">
+            <option>TarjetaMDA</option>
+            <option>EfectivoMDA</option>
+            <option>SalaDeJuegos</option>
+            <option>Boveda</option>
+        </select>
         <input type="date" id="edFecha">
         <input type="tel" id="edMonto" oninput="formatearMonto(this)">
         <div style="display:flex; gap:12px;"><button id="btnSaveEd" class="btn btn-primary" style="flex:1">Actualizar</button><button onclick="document.getElementById('editModal').style.display='none'" class="btn btn-outline" style="flex:1">Cerrar</button></div>
@@ -410,8 +419,6 @@
         };
         window.formatearMonto = formatearMonto;
 
-        // AQUÍ ESTÁ LA MAGIA IGUAL QUE EN TU OTRO CÓDIGO
-        // Usamos Math.round para que redondee SÓLO cuando va a pintar el número en pantalla.
         const fNum = (n) => `$${Math.round(n || 0).toLocaleString('es-ES')}`;
         
         const fFec = (f) => {
@@ -466,18 +473,15 @@
             const grouped = datos.reduce((acc, d) => { (acc[d.fecha] = acc[d.fecha] || []).push(d); return acc; }, {});
             const sorted = Object.keys(grouped).sort((a,b) => sortOrder === 'desc' ? new Date(b) - new Date(a) : new Date(a) - new Date(b));
             
-            let totDiv = 0; // Aquí acumularemos los decimales puros, igual que en Gestión de Propina
-            
+            let totDiv = 0;
             const container = document.getElementById('tablaContainer');
             container.innerHTML = '';
             
             sorted.forEach((fecha, i) => {
                 const diaTot = grouped[fecha].reduce((s,d) => s + d.monto, 0);
                 const divVal = divisores[fecha] || 0;
-                
-                // Mantenemos el decimal puro y exacto. Sin redondear aquí adentro.
                 const resDiv = divVal > 0 ? diaTot / divVal : 0; 
-                totDiv += resDiv; // Sumamos el decimal puro.
+                totDiv += resDiv;
                 
                 const filtroVal = document.getElementById('filtro').value;
                 if (filtroVal && !fecha.includes(filtroVal)) return;
@@ -489,7 +493,6 @@
                         <button onclick="borrar(${d.originalIndex})" class="btn btn-danger" style="padding:6px 12px;"><i class="fas fa-trash"></i></button>
                     </td></tr>`).join('');
                 
-                // Al llamar a fNum(resDiv) abajo, ahí es cuando se redondea visualmente para el usuario.
                 container.innerHTML += `
                     <div class="day-group">
                         <div class="day-header"><strong>${fFec(fecha)}</strong>
@@ -503,7 +506,6 @@
                     </div>`;
             });
             
-            // Finalmente aplicamos fNum (que tiene Math.round) al total acumulado puro.
             document.getElementById('tot-div').textContent = fNum(totDiv);
             renderNotes();
         }
@@ -523,15 +525,13 @@
             const ds = datos.filter(x => x.fecha === fecha);
             const total = ds.reduce((s, d) => s + d.monto, 0);
             const div = divisores[fecha] || 0;
-            
-            // Calculamos puro y lo mandamos a redondear con fNum
             const res = div > 0 ? total / div : 0; 
             
             let txt = `📊 REPORTE: ${fFec(fecha)}\n--------------------------------\n`;
             ds.forEach(x => txt += `• ${x.tipo}: ${fNum(x.monto)}\n`);
             txt += `--------------------------------\n`;
             txt += `💰 TOTAL DÍA: ${fNum(total)}\n`;
-            txt += `✅ RESULTADO NOCHE: ${fNum(res)}`; // Redondea al copiar
+            txt += `✅ RESULTADO NOCHE: ${fNum(res)}`; 
             
             navigator.clipboard.writeText(txt).then(() => showToast("Reporte copiado"));
         };
@@ -641,9 +641,9 @@
             for(let l of lines) {
                 const fMatch = l.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                 if(fMatch) curDate = `${fMatch[3]}-${fMatch[2]}-${fMatch[1]}`;
-                const mMatch = l.match(/- (Máquinas|Mesas|Otras|Otros):\s*\$?([\d.]+)/);
+                const mMatch = l.match(/- (TarjetaMDA|EfectivoMDA|SalaDeJuegos|Boveda):\s*\$?([\d.]+)/);
                 if(mMatch && curDate) {
-                    await post({ action:'add', fecha:curDate, tipo:mMatch[1].replace('Otros','Otras'), monto:parseFloat(mMatch[2].replace(/\./g,'')) });
+                    await post({ action:'add', fecha:curDate, tipo:mMatch[1], monto:parseFloat(mMatch[2].replace(/\./g,'')) });
                 }
             }
             showToast("Importación finalizada");
