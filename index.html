@@ -4,208 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recaudación Pro - Gestión Profesional</title>
-    
-    <!-- CONEXIÓN AL MANIFEST Y COLOR DEL TEMA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#6366f1">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --secondary: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --bg-main: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --radius: 20px;
-            --sidebar-width: 280px;
-            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            --shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-        }
-
-        body.dark-mode {
-            --bg-main: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --border: #334155;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); transition: background-color 0.3s; scroll-behavior: smooth; overflow-x: hidden; }
-
-        /* --- SIDEBAR --- */
-        .side-menu { 
-            position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-width); 
-            background: #1e293b; color: white; z-index: 1001; 
-            transform: translateX(-100%); transition: var(--transition);
-            display: flex; flex-direction: column; box-shadow: 10px 0 30px rgba(0,0,0,0.2);
-        }
-        .side-menu.open { transform: translateX(0); }
-        .menu-header { 
-            padding: 2.5rem 1.5rem; font-size: 1.2rem; font-weight: 800; 
-            background: linear-gradient(135deg, var(--primary), #a855f7);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);
-            letter-spacing: 1px;
-        }
-        
-        .user-status {
-            padding: 12px; margin: 15px 20px; border-radius: 12px;
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            text-align: center; font-size: 0.75rem; color: var(--secondary);
-            font-weight: 700; text-transform: uppercase;
-        }
-
-        .menu-links-container { flex: 1; padding: 1rem; }
-        .side-menu a { 
-            color: #cbd5e1; text-decoration: none; padding: 1rem 1.2rem; 
-            display: flex; align-items: center; border-radius: 14px;
-            margin-bottom: 0.5rem; transition: var(--transition); font-weight: 500;
-            position: relative;
-        }
-        .side-menu a i { width: 28px; font-size: 1.2rem; }
-        .side-menu a:hover, .side-menu a.active-link { background: rgba(255,255,255,0.08); color: white; transform: translateX(5px); }
-        .side-menu a.active-link { background: var(--primary); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); }
-
-        .ind-notas { 
-            width: 10px; height: 10px; background: var(--warning); 
-            border-radius: 50%; position: absolute; right: 15px; 
-            display: none; box-shadow: 0 0 10px var(--warning);
-        }
-
-        .menu-toggle { 
-            position: fixed; top: 1.2rem; left: 1.2rem; z-index: 1002; 
-            width: 48px; height: 48px; border-radius: 14px; background: var(--primary);
-            border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3); transition: 0.3s;
-        }
-
-        /* --- CONTENIDO --- */
-        .main-container { padding: 2rem; transition: var(--transition); max-width: 1200px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
-        @media (min-width: 992px) { body.loggedin { padding-left: var(--sidebar-width); } .side-menu { transform: translateX(0); } .menu-toggle { display: none; } }
-
-        .content-panel { display: none; animation: panelFade 0.5s cubic-bezier(0.4, 0, 0.2, 1); flex: 1; }
-        .content-panel.active { display: block; }
-        @keyframes panelFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- ESTADÍSTICAS --- */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .stat-card { background: var(--bg-card); padding: 1.8rem; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); position: relative; }
-        .stat-card .label { color: var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; }
-        .stat-card .value { font-size: 2rem; font-weight: 800; color: var(--primary); margin-top: 0.5rem; }
-
-        .card { background: var(--bg-card); border-radius: var(--radius); padding: 1.8rem; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 1.5rem; position: relative; }
-
-        .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 1.5rem; }
-        .category-option { position: relative; }
-        .category-option input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
-        .category-card { 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 15px 10px; background: var(--bg-main); border: 2px solid var(--border);
-            border-radius: 16px; cursor: pointer; transition: all 0.3s; gap: 8px;
-        }
-        .category-card i { font-size: 1.5rem; color: var(--text-muted); transition: 0.3s; }
-        .category-card span { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
-        .category-option input:checked + .category-card { 
-            border-color: var(--primary); background: rgba(99, 102, 241, 0.05); 
-            transform: translateY(-3px); box-shadow: 0 8px 15px rgba(99, 102, 241, 0.1);
-        }
-        .category-option input:checked + .category-card i { color: var(--primary); }
-        .category-option input:checked + .category-card span { color: var(--primary); }
-
-        .monto-wrapper { position: relative; }
-        .monto-wrapper i { position: absolute; left: 18px; top: 18px; color: var(--primary); font-weight: 700; font-style: normal; }
-        .monto-wrapper input { padding-left: 35px; font-weight: 800; font-size: 1.2rem; color: var(--primary); }
-
-        /* --- HISTORIAL --- */
-        .day-group { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 2rem; background: var(--bg-card); box-shadow: var(--shadow); }
-        .day-header { background: var(--bg-main); padding: 1.2rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        .day-footer { padding: 1.5rem; background: var(--bg-main); border-top: 2px solid var(--border); }
-        .footer-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .divisor-box { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 10px 18px; border-radius: 14px; border: 1px solid var(--border); }
-        .divisor-input { width: 70px; padding: 6px; text-align: center; font-weight: 800; border: 2px solid var(--primary); border-radius: 10px; background: transparent; color: var(--text-main); font-size: 1rem; }
-
-        .btn { padding: 0.9rem 1.5rem; border-radius: 16px; border: none; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 10px; transition: all 0.3s; font-size: 0.95rem; }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
-        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
-        .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text-main); }
-        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-
-        input, select, textarea { width: 100%; padding: 0.9rem 1.2rem; border-radius: 14px; border: 1.5px solid var(--border); background: var(--bg-main); color: var(--text-main); margin-bottom: 1.2rem; transition: 0.3s; font-size: 1rem; }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
-
-        .fab-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column; gap: 15px; z-index: 1000; }
-        .fab-btn { width: 56px; height: 56px; border-radius: 18px; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        #btnScrollUp { background: var(--bg-card); color: var(--text-main); display: none; border: 1px solid var(--border); }
-        #btnNotesFab { background: var(--warning); color: white; display: none; animation: pulse-warn 1.5s infinite; }
-
-        @keyframes pulse-warn { 
-            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-        }
-
-        #loginOverlay { position: fixed; inset: 0; background: var(--bg-main); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .password-container { position: relative; }
-        .toggle-password { position: absolute; right: 15px; top: 15px; cursor: pointer; color: var(--text-muted); font-size: 1.1rem; }
-
-        #globalLoader { position: fixed; inset: 0; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(4px); z-index: 10000; display: none; align-items: center; justify-content: center; }
-        .spinner { width: 50px; height: 50px; border: 5px solid rgba(99, 102, 241, 0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: #1e293b; color: white; padding: 12px 24px; border-radius: 14px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px; animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; }
-        @keyframes toastIn { from { opacity: 0; transform: translateY(100px); } to { opacity: 1; transform: translateY(0); } }
-
-        .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
-        .modal-content { background: var(--bg-card); padding: 2.5rem; border-radius: 24px; width: 100%; max-width: 480px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); border: 1px solid var(--border); }
-
-        .note-card { border-left: 6px solid var(--primary); position: relative; }
-        .note-author { color: var(--primary); font-weight: 800; text-transform: capitalize; }
-        .note-btn-del { position: absolute; top: 1.2rem; right: 1.2rem; background: rgba(239, 68, 68, 0.05); color: var(--danger); width: 36px; height: 36px; border-radius: 10px; border: none; cursor: pointer; }
-
-        footer { margin-top: auto; padding: 3rem 1rem; text-align: center; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
-
-        @media (max-width: 600px) {
-            .main-container { padding: 1.2rem; padding-top: 5.5rem; }
-            .category-grid { gap: 8px; }
-            .category-card { padding: 12px 5px; }
-            .footer-row { flex-direction: column; align-items: stretch; text-align: center; }
-            .divisor-box { justify-content: center; }
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
+    <!-- LOADER GLOBAL -->
     <div id="globalLoader">
-        <div style="text-align: center;">
+        <div style="text-align:center;">
             <div class="spinner"></div>
-            <p id="loaderMsg" style="margin-top: 15px; font-weight: 700; color: var(--primary);">Sincronizando...</p>
+            <p id="loaderMsg" style="margin-top:15px; font-weight:700; color:var(--primary);">Sincronizando...</p>
         </div>
     </div>
 
+    <!-- TOASTS -->
     <div id="toast-container"></div>
-    
+
+    <!-- FAB BUTTONS -->
     <div class="fab-container">
         <button id="btnNotesFab" class="fab-btn" title="Notas nuevas"><i class="fas fa-sticky-note"></i></button>
         <button id="btnScrollUp" class="fab-btn" title="Subir"><i class="fas fa-chevron-up"></i></button>
     </div>
 
+    <!-- LOGIN -->
     <div id="loginOverlay">
-        <div class="card" style="width: 100%; max-width: 420px; text-align: center; padding: 3rem;">
-            <div style="background: var(--primary); color:white; width: 64px; height: 64px; border-radius: 20px; display:flex; align-items:center; justify-content:center; margin: 0 auto 1.5rem; font-size: 1.5rem;">
+        <div class="card" style="width:100%; max-width:420px; text-align:center; padding:3rem;">
+            <div style="background:var(--primary); color:white; width:64px; height:64px; border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; font-size:1.5rem;">
                 <i class="fas fa-user-shield"></i>
             </div>
-            <h2 style="margin-bottom: 0.5rem;">Acceso al Sistema</h2>
+            <h2 style="margin-bottom:1.5rem;">Acceso al Sistema</h2>
             <form id="loginForm">
-                <select id="username" style="font-weight: 700; text-align: center; cursor: pointer; background: var(--bg-main);">
+                <select id="username" style="font-weight:700; text-align:center; cursor:pointer; background:var(--bg-main);">
                     <option value="" disabled selected>Elegir Usuario...</option>
                     <option value="mesas">USUARIO: MESAS</option>
                     <option value="maquinas">USUARIO: MÁQUINAS</option>
@@ -214,37 +46,83 @@
                     <input type="password" id="password" placeholder="Clave de Seguridad" required>
                     <i class="fas fa-eye toggle-password" id="toggleLoginPassword"></i>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Ingresar</button>
+                <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Ingresar</button>
             </form>
         </div>
     </div>
 
+    <!-- SIDEBAR (Desktop ≥992px) -->
     <nav id="sideMenu" class="side-menu">
         <div class="menu-header">SISTEMA GESTIÓN</div>
         <div id="activeUserBadge" class="user-status">Iniciando...</div>
         <div class="menu-links-container">
-            <a href="#" class="menu-link active-link" data-target="agregarPanel"><i class="fas fa-plus-circle"></i> Agregar Dato</a>
-            <a href="#" class="menu-link" data-target="historialPanel"><i class="fas fa-history"></i> Historial</a>
-            <a href="#" class="menu-link" data-target="notasPanel"><i class="fas fa-sticky-note"></i> Bloc de Notas <span id="ind-notas" class="ind-notas"></span></a>
-            <a href="#" class="menu-link" data-target="importarPanel"><i class="fas fa-file-import"></i> Importar Texto</a>
-            <a href="#" class="menu-link" data-target="ayudaPanel"><i class="fas fa-question-circle"></i> Ayuda</a>
+            <a href="#" class="menu-link active-link" data-target="agregarPanel">
+                <i class="fas fa-plus-circle"></i> Agregar Dato
+            </a>
+            <a href="#" class="menu-link" data-target="historialPanel">
+                <i class="fas fa-history"></i> Historial
+            </a>
+            <a href="#" class="menu-link" data-target="notasPanel">
+                <i class="fas fa-sticky-note"></i> Bloc de Notas
+                <span id="ind-notas" class="ind-notas"></span>
+            </a>
+            <a href="#" class="menu-link" data-target="importarPanel">
+                <i class="fas fa-file-import"></i> Importar Texto
+            </a>
+            <a href="#" class="menu-link" data-target="ayudaPanel">
+                <i class="fas fa-question-circle"></i> Ayuda
+            </a>
         </div>
-        <a href="#" id="logoutBtn" style="color: #f87171; margin-top:auto; padding: 2rem; border-top: 1px solid rgba(255,255,255,0.05);"><i class="fas fa-power-off"></i> Cerrar Sesión</a>
+        <a href="#" id="logoutBtn" style="color:#f87171; margin-top:auto; padding:2rem; border-top:1px solid rgba(255,255,255,0.05);">
+            <i class="fas fa-power-off"></i> Cerrar Sesión
+        </a>
     </nav>
 
-    <div class="main-container">
-        <button id="menuToggle" class="menu-toggle"><i class="fas fa-bars-staggered"></i></button>
+    <!-- BOTTOM NAV (Mobile <992px) -->
+    <nav id="bottomNav" class="bottom-nav">
+        <a href="#" class="bottom-nav-link active-link" data-target="agregarPanel">
+            <i class="fas fa-plus-circle"></i>
+            <span>Agregar</span>
+        </a>
+        <a href="#" class="bottom-nav-link" data-target="historialPanel">
+            <i class="fas fa-history"></i>
+            <span>Historial</span>
+        </a>
+        <a href="#" class="bottom-nav-link" data-target="notasPanel">
+            <i class="fas fa-sticky-note"></i>
+            <span>Notas</span>
+            <span id="ind-notas-bottom" class="ind-notas-bottom"></span>
+        </a>
+        <a href="#" class="bottom-nav-link" data-target="importarPanel">
+            <i class="fas fa-file-import"></i>
+            <span>Importar</span>
+        </a>
+        <a href="#" class="bottom-nav-link" data-target="ayudaPanel">
+            <i class="fas fa-question-circle"></i>
+            <span>Ayuda</span>
+        </a>
+    </nav>
 
-        <div id="mainContent" style="display: none; flex: 1; flex-direction: column;">
-            
+    <!-- MAIN CONTENT -->
+    <div class="main-container">
+        <div id="mainContent" style="display:none; flex:1; flex-direction:column;">
+
+            <!-- STATS -->
             <div class="stats-grid">
-                <div class="stat-card"><span class="label">Recaudación Total</span><div class="value" id="tot-rec">$0</div></div>
-                <div class="stat-card"><span class="label">Total Valor por Punto</span><div class="value" id="tot-div">$0</div></div>
+                <div class="stat-card">
+                    <span class="label">Recaudación Total</span>
+                    <div class="value" id="tot-rec">$0</div>
+                </div>
+                <div class="stat-card">
+                    <span class="label">Total Valor por Punto</span>
+                    <div class="value" id="tot-div">$0</div>
+                </div>
             </div>
 
+            <!-- PANEL: AGREGAR -->
             <section id="agregarPanel" class="content-panel active">
-                <div class="card" style="max-width: 500px; margin: 0 auto;">
-                    <h2 style="margin-bottom: 2rem;"><i class="fas fa-circle-plus" style="color: var(--primary);"></i> Nuevo Registro</h2>
+                <div class="card" style="max-width:500px; margin:0 auto;">
+                    <h2 style="margin-bottom:2rem;"><i class="fas fa-circle-plus" style="color:var(--primary);"></i> Nuevo Registro</h2>
                     <form id="agregarForm">
                         <label style="display:block; margin-bottom:12px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">SELECCIONE CATEGORÍA</label>
                         <div class="category-grid">
@@ -268,17 +146,23 @@
                         <label style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">FECHA DEL REGISTRO</label>
                         <input type="date" id="fecha" required>
                         <label style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">MONTO RECAUDADO</label>
-                        <div class="monto-wrapper"><i>$</i><input type="tel" id="monto" oninput="formatearMonto(this)" placeholder="0" required></div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">Guardar Registro</button>
+                        <div class="monto-wrapper">
+                            <i>$</i>
+                            <input type="tel" id="monto" oninput="formatearMonto(this)" placeholder="0" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:1rem;">
+                            <i class="fas fa-floppy-disk"></i> Guardar Registro
+                        </button>
                     </form>
                 </div>
             </section>
 
+            <!-- PANEL: HISTORIAL -->
             <section id="historialPanel" class="content-panel">
                 <div class="card">
-                    <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 2rem;">
-                        <h2><i class="fas fa-clock-rotate-left" style="color: var(--primary);"></i> Historial</h2>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <div style="display:flex; flex-direction:column; gap:15px; margin-bottom:2rem;">
+                        <h2><i class="fas fa-clock-rotate-left" style="color:var(--primary);"></i> Historial</h2>
+                        <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
                             <button id="btnMin" class="btn btn-outline btn-sm">Expandir/Min</button>
                             <button id="btnSortDesc" class="btn btn-outline btn-sm">Reciente</button>
                             <button id="btnSortAsc" class="btn btn-outline btn-sm">Antiguo</button>
@@ -286,7 +170,7 @@
                         </div>
                     </div>
                     <div id="tablaContainer"></div>
-                    <div style="margin-top: 2rem; display: flex; gap: 12px; flex-wrap: wrap; padding-top: 2rem; border-top: 1.5px solid var(--border);">
+                    <div style="margin-top:2rem; display:flex; gap:12px; flex-wrap:wrap; padding-top:2rem; border-top:1.5px solid var(--border);">
                         <button id="btnExport" class="btn btn-outline">Exportar Backup</button>
                         <button id="btnImportTrigger" class="btn btn-outline" style="color:var(--warning)">Restaurar JSON</button>
                         <button id="btnLimpiar" class="btn btn-danger">Vaciar Todo</button>
@@ -295,402 +179,234 @@
                 </div>
             </section>
 
+            <!-- PANEL: NOTAS -->
             <section id="notasPanel" class="content-panel">
                 <div class="card">
-                    <h2><i class="fas fa-note-sticky" style="color: var(--primary);"></i> Bloc de Notas</h2>
-                    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 2.5rem;">
+                    <h2 style="margin-bottom:1.5rem;"><i class="fas fa-note-sticky" style="color:var(--primary);"></i> Bloc de Notas</h2>
+                    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:2.5rem;">
                         <textarea id="notaMsg" rows="3" placeholder="Escribe un mensaje para el otro turno..."></textarea>
-                        <button id="btnNota" class="btn btn-primary" style="align-self: flex-end;">Publicar Nota</button>
+                        <button id="btnNota" class="btn btn-primary" style="align-self:flex-end;">
+                            <i class="fas fa-paper-plane"></i> Publicar Nota
+                        </button>
                     </div>
-                    <div id="notesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;"></div>
+                    <div id="notesContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:1.5rem;"></div>
                 </div>
             </section>
 
+            <!-- PANEL: IMPORTAR -->
             <section id="importarPanel" class="content-panel">
-                <div class="card" style="max-width: 650px; margin: 0 auto;">
-                    <h2><i class="fas fa-file-import" style="color: var(--primary);"></i> Importar Texto</h2>
-                    <textarea id="importText" rows="10" placeholder="Pega el reporte aquí..."></textarea>
-                    <button id="btnProcesar" class="btn btn-primary" style="width: 100%; justify-content: center;">Procesar e Importar</button>
+                <div class="card" style="max-width:650px; margin:0 auto;">
+                    <h2 style="margin-bottom:1.5rem;"><i class="fas fa-file-import" style="color:var(--primary);"></i> Importar Texto</h2>
+                    <p style="color:var(--text-muted); margin-bottom:1.2rem; font-size:0.9rem;">Pega un reporte en texto para cargar múltiples registros de una vez. Ver la sección <strong>Ayuda</strong> para el formato esperado.</p>
+                    <textarea id="importText" rows="10" placeholder="Pega el reporte aquí...&#10;&#10;Ejemplo:&#10;📅 01/05/2025&#10;- TarjetaMDA: $1.500.000&#10;- EfectivoMDA: $800.000"></textarea>
+                    <button id="btnProcesar" class="btn btn-primary" style="width:100%; justify-content:center;">
+                        <i class="fas fa-gears"></i> Procesar e Importar
+                    </button>
                 </div>
             </section>
 
+            <!-- PANEL: AYUDA -->
             <section id="ayudaPanel" class="content-panel">
                 <div class="card">
-                    <h2><i class="fas fa-book" style="color: var(--primary);"></i> Ayuda</h2>
-                    <p>Use la sección historial para gestionar los registros y el bloc de notas para comunicarse con su equipo.</p>
+                    <h2 style="margin-bottom:2rem;"><i class="fas fa-book" style="color:var(--primary);"></i> Manual de Uso</h2>
+
+                    <!-- 1. Agregar Dato -->
+                    <div class="help-section">
+                        <div class="help-section-header">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>1. Agregar Dato</span>
+                        </div>
+                        <div class="help-section-body">
+                            <p style="margin-bottom:1rem;">Desde aquí registras los ingresos diarios de cada categoría. Es la pantalla principal.</p>
+                            <div class="help-step">
+                                <div class="help-step-num">1</div>
+                                <div>
+                                    <strong>Selecciona la categoría</strong> tocando una de las cuatro opciones:
+                                    <span class="help-badge">TarjetaMDA</span>
+                                    <span class="help-badge">EfectivoMDA</span>
+                                    <span class="help-badge">SalaDeJuegos</span>
+                                    <span class="help-badge">Boveda</span>
+                                </div>
+                            </div>
+                            <div class="help-step">
+                                <div class="help-step-num">2</div>
+                                <div><strong>Fecha del registro:</strong> Se asigna automáticamente la fecha de hoy. Puedes cambiarla si necesitas registrar un día anterior.</div>
+                            </div>
+                            <div class="help-step">
+                                <div class="help-step-num">3</div>
+                                <div><strong>Monto recaudado:</strong> Escribe el valor. El sistema formatea los números automáticamente (ej: escribes <code>1500000</code> y se muestra <code>1.500.000</code>).</div>
+                            </div>
+                            <div class="help-step">
+                                <div class="help-step-num">4</div>
+                                <div>Pulsa <span class="help-badge">Guardar Registro</span>. El dato se sube a la nube y aparece de inmediato en el Historial.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Historial -->
+                    <div class="help-section">
+                        <div class="help-section-header">
+                            <i class="fas fa-clock-rotate-left"></i>
+                            <span>2. Historial</span>
+                        </div>
+                        <div class="help-section-body">
+                            <p style="margin-bottom:1rem;">Muestra todos los registros agrupados por día, con totales automáticos y cálculo de puntos.</p>
+
+                            <p style="margin-bottom:0.7rem;"><strong>Controles de visualización:</strong></p>
+                            <ul class="help-list" style="margin-bottom:1.2rem;">
+                                <li><span class="help-badge">Expandir/Min</span> — Alterna entre ver solo el día más reciente o todos los días registrados.</li>
+                                <li><span class="help-badge">Reciente</span> / <span class="help-badge">Antiguo</span> — Ordena los días del más nuevo al más viejo o viceversa.</li>
+                                <li><strong>Buscar fecha:</strong> Filtra por texto. Por ejemplo, escribir <code>2025-05</code> muestra solo los registros de mayo 2025.</li>
+                            </ul>
+
+                            <p style="margin-bottom:0.7rem;"><strong>Dentro de cada día encontrarás:</strong></p>
+                            <ul class="help-list" style="margin-bottom:1.2rem;">
+                                <li>Las categorías ingresadas con su monto individual.</li>
+                                <li><span class="help-badge warning">TOTAL NOCHE</span> — Suma de todos los montos del día.</li>
+                                <li><strong>Cant. Pers. Ptos.:</strong> Campo para ingresar cuántas personas o puntos participan. El sistema calcula automáticamente el valor por punto.</li>
+                                <li><span class="help-badge success">RESULTADO NOCHE</span> — Resultado de dividir el Total entre la cantidad ingresada.</li>
+                                <li>Botón <strong><i class="fas fa-copy"></i> Copiar</strong> — Genera un reporte con formato listo para pegar en WhatsApp u otro canal.</li>
+                            </ul>
+
+                            <p style="margin-bottom:0.7rem;"><strong>Editar o eliminar registros:</strong></p>
+                            <ul class="help-list" style="margin-bottom:1.2rem;">
+                                <li>Botón <i class="fas fa-pencil"></i> <strong>Editar</strong> — Abre un formulario para corregir el tipo, la fecha o el monto de un registro.</li>
+                                <li>Botón <i class="fas fa-trash"></i> <strong>Eliminar</strong> — Borra el registro. Siempre pide confirmación antes de borrar.</li>
+                            </ul>
+
+                            <p style="margin-bottom:0.7rem;"><strong>Copia de seguridad:</strong></p>
+                            <ul class="help-list">
+                                <li><span class="help-badge">Exportar Backup</span> — Descarga un archivo <code>.json</code> con todos los datos. Guárdalo en un lugar seguro.</li>
+                                <li><span class="help-badge warning">Restaurar JSON</span> — Carga un backup guardado anteriormente. <strong>Reemplaza todos los datos actuales.</strong></li>
+                                <li><span class="help-badge danger">Vaciar Todo</span> — Elimina absolutamente todos los datos del sistema. Usar solo en caso necesario.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 3. Bloc de Notas -->
+                    <div class="help-section">
+                        <div class="help-section-header">
+                            <i class="fas fa-sticky-note"></i>
+                            <span>3. Bloc de Notas</span>
+                        </div>
+                        <div class="help-section-body">
+                            <p style="margin-bottom:1rem;">Sistema de mensajería interna entre turnos. Perfecto para dejar avisos al equipo que viene a continuación.</p>
+                            <div class="help-step">
+                                <div class="help-step-num">1</div>
+                                <div>Escribe tu mensaje en el campo de texto.</div>
+                            </div>
+                            <div class="help-step">
+                                <div class="help-step-num">2</div>
+                                <div>Pulsa <span class="help-badge">Publicar Nota</span>. El mensaje queda guardado y visible para todos los usuarios del sistema.</div>
+                            </div>
+                            <div class="help-step">
+                                <div class="help-step-num">3</div>
+                                <div>Las notas nuevas (no vistas) aparecen con borde <span style="color:var(--warning); font-weight:800;">amarillo</span>. Al entrar a la sección, se marcan automáticamente como leídas.</div>
+                            </div>
+                            <p style="margin-top:1rem;">
+                                <strong>Indicadores de nota nueva:</strong> El punto <span style="color:var(--warning); font-size:1rem;">●</span> naranja aparece sobre el ícono de Notas en el menú cuando hay mensajes sin leer. El sistema revisa si hay notas nuevas cada 30 segundos de forma automática.
+                            </p>
+                            <p style="margin-top:0.8rem;">Para eliminar una nota, pulsa el botón <i class="fas fa-trash"></i> que aparece en la esquina de cada mensaje.</p>
+                        </div>
+                    </div>
+
+                    <!-- 4. Importar Texto -->
+                    <div class="help-section">
+                        <div class="help-section-header">
+                            <i class="fas fa-file-import"></i>
+                            <span>4. Importar Texto</span>
+                        </div>
+                        <div class="help-section-body">
+                            <p style="margin-bottom:1rem;">Permite cargar múltiples registros de una sola vez pegando un reporte en formato de texto. Útil para migrar datos históricos.</p>
+                            <p style="margin-bottom:0.7rem;"><strong>Formato que reconoce el sistema:</strong></p>
+                            <div class="help-code-block">
+                                📅 01/05/2025<br>
+                                - TarjetaMDA: $1.500.000<br>
+                                - EfectivoMDA: $800.000<br>
+                                <br>
+                                📅 02/05/2025<br>
+                                - SalaDeJuegos: $350.000<br>
+                                - Boveda: $120.000
+                            </div>
+                            <ul class="help-list">
+                                <li>Las fechas deben estar en formato <code>DD/MM/AAAA</code>.</li>
+                                <li>Las categorías válidas son exactamente: <code>TarjetaMDA</code>, <code>EfectivoMDA</code>, <code>SalaDeJuegos</code>, <code>Boveda</code>.</li>
+                                <li>Los registros importados se <strong>agregan</strong> a los existentes, no los reemplazan.</li>
+                                <li>Después de importar, el sistema te lleva automáticamente al Historial para verificar los datos.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 5. Info General -->
+                    <div class="help-section">
+                        <div class="help-section-header">
+                            <i class="fas fa-circle-info"></i>
+                            <span>5. Información General del Sistema</span>
+                        </div>
+                        <div class="help-section-body">
+                            <ul class="help-list">
+                                <li>
+                                    <strong>Usuarios disponibles:</strong>
+                                    <span class="help-badge">MESAS</span> y <span class="help-badge">MÁQUINAS</span>.
+                                    Cada uno inicia sesión por separado, pero comparten los mismos datos y el bloc de notas.
+                                </li>
+                                <li><strong>Clave de acceso:</strong> <code>1234</code> para ambos usuarios.</li>
+                                <li>
+                                    <strong>Estadísticas en la parte superior:</strong>
+                                    <span class="help-badge">Recaudación Total</span> muestra la suma de todos los registros del sistema.
+                                    <span class="help-badge">Total Valor por Punto</span> es la suma acumulada de todos los resultados de noche calculados.
+                                </li>
+                                <li>
+                                    <strong>Sincronización automática:</strong> Los datos se actualizan cada 30 segundos mientras la app está abierta y con conexión a internet.
+                                </li>
+                                <li>
+                                    <strong>Instalar en el celular (PWA):</strong> Puedes agregar esta app a la pantalla de inicio de tu teléfono como si fuera una aplicación. En Android, toca el menú del navegador y selecciona "Agregar a pantalla de inicio". En iPhone, usa el botón Compartir y luego "Agregar a pantalla de inicio".
+                                </li>
+                                <li>
+                                    <strong>Modo sin conexión:</strong> Si instalas la app como PWA, podrás abrirla aunque no tengas internet y verás los últimos datos sincronizados.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
                 </div>
             </section>
 
-            <footer> CarlosPN Interactive® — 2026<br><small>Sistema Profesional de Gestión</small></footer>
+            <footer>CarlosPN Interactive® — 2026<br><small>Sistema Profesional de Gestión</small></footer>
         </div>
     </div>
 
-    <!-- MODAL EDITAR -->
-    <div id="editModal" class="modal"><div class="modal-content">
-        <h3>Editar Registro</h3><br>
-        <select id="edTipo">
-            <option>TarjetaMDA</option>
-            <option>EfectivoMDA</option>
-            <option>SalaDeJuegos</option>
-            <option>Boveda</option>
-        </select>
-        <input type="date" id="edFecha">
-        <input type="tel" id="edMonto" oninput="formatearMonto(this)">
-        <div style="display:flex; gap:12px;"><button id="btnSaveEd" class="btn btn-primary" style="flex:1">Actualizar</button><button onclick="document.getElementById('editModal').style.display='none'" class="btn btn-outline" style="flex:1">Cerrar</button></div>
-    </div></div>
+    <!-- MODAL: EDITAR REGISTRO -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:1.5rem;">Editar Registro</h3>
+            <select id="edTipo">
+                <option>TarjetaMDA</option>
+                <option>EfectivoMDA</option>
+                <option>SalaDeJuegos</option>
+                <option>Boveda</option>
+            </select>
+            <input type="date" id="edFecha">
+            <input type="tel" id="edMonto" oninput="formatearMonto(this)" placeholder="Monto">
+            <div style="display:flex; gap:12px;">
+                <button id="btnSaveEd" class="btn btn-primary" style="flex:1"><i class="fas fa-floppy-disk"></i> Actualizar</button>
+                <button onclick="document.getElementById('editModal').style.display='none'" class="btn btn-outline" style="flex:1">Cancelar</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- MODAL CONFIRMACIÓN -->
-    <div id="confirmModal" class="modal"><div class="modal-content" style="text-align: center;">
-        <h3 id="confirmTitle">¿Confirmar Acción?</h3><p id="confirmMsg" style="color: var(--text-muted); margin-bottom: 2rem;"></p>
-        <div style="display:flex; gap:12px;"><button id="confirmBtnYes" class="btn btn-primary" style="flex:1; background: var(--danger)">Confirmar</button><button id="confirmBtnNo" class="btn btn-outline" style="flex:1">Cancelar</button></div>
-    </div></div>
+    <!-- MODAL: CONFIRMAR ACCIÓN -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content" style="text-align:center;">
+            <h3 id="confirmTitle" style="margin-bottom:0.8rem;">¿Confirmar Acción?</h3>
+            <p id="confirmMsg" style="color:var(--text-muted); margin-bottom:2rem;"></p>
+            <div style="display:flex; gap:12px;">
+                <button id="confirmBtnYes" class="btn btn-primary" style="flex:1; background:var(--danger)">Confirmar</button>
+                <button id="confirmBtnNo" class="btn btn-outline" style="flex:1">Cancelar</button>
+            </div>
+        </div>
+    </div>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- CONEXIÓN SERVICE WORKER ---
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(() => console.log('Service Worker Registrado Exitosamente'))
-                .catch(err => console.log('Fallo registro SW:', err));
-        }
-        // --------------------------------
-
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz_kCb4aEe437zHGbRqnjCibw1NtAqfCbTNmsVPn9jaZOPBFaZ6-FwmiTLqVxq39X1P/exec';
-        let datos = [], notes = [], divisores = {}, editIndex = -1, minimizado = true, sortOrder = 'desc', currentPanel = 'agregarPanel', currentUser = '';
-
-        function showToast(msg, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast`;
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-circle-xmark'}" style="color:${type === 'success' ? 'var(--secondary)' : 'var(--danger)'}"></i> ${msg}`;
-            container.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 3000);
-        }
-
-        function customConfirm(title, msg) {
-            return new Promise((resolve) => {
-                const modal = document.getElementById('confirmModal');
-                document.getElementById('confirmTitle').textContent = title;
-                document.getElementById('confirmMsg').textContent = msg;
-                modal.style.display = 'flex';
-                document.getElementById('confirmBtnYes').onclick = () => { modal.style.display = 'none'; resolve(true); };
-                document.getElementById('confirmBtnNo').onclick = () => { modal.style.display = 'none'; resolve(false); };
-            });
-        }
-
-        function switchPanel(targetId) {
-            currentPanel = targetId;
-            document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active-link'));
-            document.getElementById(targetId).classList.add('active');
-            const link = document.querySelector(`.menu-link[data-target="${targetId}"]`);
-            if (link) link.classList.add('active-link');
-            if (window.innerWidth < 992) document.getElementById('sideMenu').classList.remove('open');
-            if (targetId === 'notasPanel') { 
-                localStorage.setItem('lastNote', Date.now()); 
-                checkNotesInd(); 
-            }
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-
-        document.querySelectorAll('.menu-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                switchPanel(link.dataset.target);
-            });
-        });
-
-        const btnUp = document.getElementById('btnScrollUp');
-        const btnNotesFab = document.getElementById('btnNotesFab');
-        window.onscroll = () => { btnUp.style.display = (window.scrollY > 400) ? "flex" : "none"; };
-        btnUp.onclick = () => window.scrollTo({top: 0, behavior: 'smooth'});
-        btnNotesFab.onclick = () => switchPanel('notasPanel');
-
-        document.getElementById('menuToggle').onclick = () => document.getElementById('sideMenu').classList.toggle('open');
-
-        const showLoad = (s, msg = "Sincronizando...") => { 
-            document.getElementById('loaderMsg').textContent = msg;
-            document.getElementById('globalLoader').style.display = s ? 'flex' : 'none'; 
-        };
-
-        const formatearMonto = (input) => {
-            let v = input.value.replace(/\D/g, '');
-            input.value = v ? parseInt(v).toLocaleString('es-ES') : '';
-        };
-        window.formatearMonto = formatearMonto;
-
-        const fNum = (n) => `$${Math.round(n || 0).toLocaleString('es-ES')}`;
-        
-        const fFec = (f) => {
-            const d = new Date(f + 'T12:00:00');
-            return d.toLocaleDateString('es-ES', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
-        };
-
-        async function api(params) {
-            const url = new URL(SCRIPT_URL);
-            Object.keys(params).forEach(k => url.searchParams.append(k, params[k]));
-            return fetch(url).then(r => r.json());
-        }
-
-        async function post(data) {
-            return fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(data) }).then(r => r.json());
-        }
-
-        async function cargar(loader = true) {
-            if(loader) showLoad(true);
-            try {
-                const [d, n, div] = await Promise.all([api({action:'get'}), api({action:'getNotes'}), api({action:'getDivisores'})]);
-                datos = d.data || []; notes = n.data || []; divisores = div.data || {};
-                render(); checkNotesInd();
-            } finally { if(loader) showLoad(false); }
-        }
-
-        setInterval(async () => {
-            if (document.visibilityState === 'visible' && currentUser) {
-                const nRes = await api({action:'getNotes'});
-                if (nRes.status === 'success') {
-                    const oldLen = notes.length;
-                    notes = nRes.data;
-                    if (notes.length > oldLen && currentPanel !== 'notasPanel') {
-                        showToast("Mensaje nuevo de " + (notes[0].autor || 'Sistema'));
-                    }
-                    checkNotesInd();
-                    if (currentPanel === 'notasPanel') renderNotes();
-                }
-            }
-        }, 30000);
-
-        function checkNotesInd() {
-            const last = parseInt(localStorage.getItem('lastNote')) || 0;
-            const hasNew = notes.some(n => new Date(n.fecha).getTime() > last);
-            document.getElementById('ind-notas').style.display = hasNew ? 'block' : 'none';
-            document.getElementById('btnNotesFab').style.display = (hasNew && currentPanel !== 'notasPanel') ? 'flex' : 'none';
-        }
-
-        function render() {
-            const totalRec = datos.reduce((s, d) => s + d.monto, 0);
-            document.getElementById('tot-rec').textContent = fNum(totalRec);
-            const grouped = datos.reduce((acc, d) => { (acc[d.fecha] = acc[d.fecha] || []).push(d); return acc; }, {});
-            const sorted = Object.keys(grouped).sort((a,b) => sortOrder === 'desc' ? new Date(b) - new Date(a) : new Date(a) - new Date(b));
-            
-            let totDiv = 0;
-            const container = document.getElementById('tablaContainer');
-            container.innerHTML = '';
-            
-            sorted.forEach((fecha, i) => {
-                const diaTot = grouped[fecha].reduce((s,d) => s + d.monto, 0);
-                const divVal = divisores[fecha] || 0;
-                const resDiv = divVal > 0 ? diaTot / divVal : 0; 
-                totDiv += resDiv;
-                
-                const filtroVal = document.getElementById('filtro').value;
-                if (filtroVal && !fecha.includes(filtroVal)) return;
-                if (minimizado && i > 0 && !filtroVal) return;
-                let rows = grouped[fecha].map(d => `
-                    <tr><td style="font-weight:700; color: var(--primary)">${d.tipo}</td><td><strong>${fNum(d.monto)}</strong></td>
-                    <td style="text-align:right">
-                        <button onclick="abrirEd(${d.originalIndex})" class="btn btn-outline" style="padding:6px 12px;"><i class="fas fa-pencil"></i></button>
-                        <button onclick="borrar(${d.originalIndex})" class="btn btn-danger" style="padding:6px 12px;"><i class="fas fa-trash"></i></button>
-                    </td></tr>`).join('');
-                
-                container.innerHTML += `
-                    <div class="day-group">
-                        <div class="day-header"><strong>${fFec(fecha)}</strong>
-                        <button onclick="copyRep('${fecha}')" class="btn btn-outline btn-sm"><i class="fas fa-copy"></i> Copiar</button></div>
-                        <div class="table-res"><table><tbody>${rows}</tbody></table></div>
-                        <div class="day-footer"><div class="footer-row">
-                            <div><span style="font-size:0.75rem; color:var(--text-muted); font-weight:800;">TOTAL NOCHE</span><br><strong>${fNum(diaTot)}</strong></div>
-                            <div class="divisor-box"><span style="font-size: 0.8rem; font-weight:700;">Cant. Pers. Ptos.:</span><input type="number" class="divisor-input" value="${divVal||''}" onchange="updDiv('${fecha}', this.value)"></div>
-                            <div style="text-align:right"><span style="font-size:0.75rem; color:var(--secondary); font-weight:800;">RESULTADO NOCHE</span><br><strong style="color:var(--secondary); font-size:1.2rem">${fNum(resDiv)}</strong></div>
-                        </div></div>
-                    </div>`;
-            });
-            
-            document.getElementById('tot-div').textContent = fNum(totDiv);
-            renderNotes();
-        }
-
-        function renderNotes() {
-            const last = parseInt(localStorage.getItem('lastNote')) || 0;
-            const sortedNotes = [...notes].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-            document.getElementById('notesContainer').innerHTML = sortedNotes.map(n => `
-                <div class="card note-card" style="border-left-color: ${new Date(n.fecha).getTime() > last ? 'var(--warning)' : 'var(--primary)'}">
-                    <button onclick="borrarNota(${n.originalIndex})" class="note-btn-del"><i class="fas fa-trash"></i></button>
-                    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.6rem; font-weight:600;">Por <span class="note-author">${n.autor || 'Desconocido'}</span> - ${new Date(n.fecha).toLocaleString()}</div>
-                    <div style="font-size:1rem; line-height:1.5;">${n.mensaje}</div>
-                </div>`).join('') || '<p style="text-align:center; color:var(--text-muted);">Sin notas guardadas.</p>';
-        }
-
-        window.copyRep = (fecha) => {
-            const ds = datos.filter(x => x.fecha === fecha);
-            const total = ds.reduce((s, d) => s + d.monto, 0);
-            const div = divisores[fecha] || 0;
-            const res = div > 0 ? total / div : 0; 
-            
-            let txt = `📊 REPORTE: ${fFec(fecha)}\n--------------------------------\n`;
-            ds.forEach(x => txt += `• ${x.tipo}: ${fNum(x.monto)}\n`);
-            txt += `--------------------------------\n`;
-            txt += `💰 TOTAL DÍA: ${fNum(total)}\n`;
-            txt += `✅ RESULTADO NOCHE: ${fNum(res)}`; 
-            
-            navigator.clipboard.writeText(txt).then(() => showToast("Reporte copiado"));
-        };
-
-        window.borrarNota = async (idx) => {
-            if(await customConfirm("¿Eliminar?", "¿Borrar este mensaje para siempre?")) {
-                showLoad(true, "Borrando...");
-                await post({ action: 'deleteNote', index: idx });
-                showToast("Nota eliminada");
-                await cargar();
-            }
-        };
-
-        window.updDiv = async (fecha, val) => {
-            divisores[fecha] = val; render();
-            await post({ action:'updateDivisor', fecha, divisor: val });
-        };
-
-        document.getElementById('btnSortDesc').onclick = () => { sortOrder = 'desc'; render(); };
-        document.getElementById('btnSortAsc').onclick = () => { sortOrder = 'asc'; render(); };
-        document.getElementById('btnMin').onclick = () => { minimizado = !minimizado; render(); };
-        document.getElementById('filtro').oninput = render;
-
-        document.getElementById('btnNota').onclick = async () => {
-            const msg = document.getElementById('notaMsg').value.trim();
-            if (!msg) return;
-            showLoad(true, "Enviando...");
-            await post({ action: 'addNote', autor: currentUser, mensaje: msg });
-            document.getElementById('notaMsg').value = '';
-            showToast("Mensaje publicado");
-            await cargar();
-        };
-
-        document.getElementById('agregarForm').onsubmit = async (e) => {
-            e.preventDefault();
-            showLoad(true, "Guardando...");
-            const tipo = document.querySelector('input[name="tipo"]:checked').value;
-            await post({ 
-                action: 'add', tipo: tipo,
-                fecha: document.getElementById('fecha').value,
-                monto: parseInt(document.getElementById('monto').value.replace(/\./g,''))
-            });
-            document.getElementById('agregarForm').reset();
-            document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
-            showToast("Dato registrado");
-            await cargar();
-        };
-
-        window.abrirEd = (idx) => {
-            editIndex = idx;
-            const d = datos.find(x => x.originalIndex === idx);
-            document.getElementById('edTipo').value = d.tipo;
-            document.getElementById('edFecha').value = d.fecha;
-            document.getElementById('edMonto').value = d.monto.toLocaleString('es-ES');
-            document.getElementById('editModal').style.display = 'flex';
-        };
-
-        document.getElementById('btnSaveEd').onclick = async () => {
-            showLoad(true, "Actualizando...");
-            await post({
-                action: 'update', sheetIndex: editIndex,
-                tipo: document.getElementById('edTipo').value,
-                fecha: document.getElementById('edFecha').value,
-                monto: parseInt(document.getElementById('edMonto').value.replace(/\./g,''))
-            });
-            document.getElementById('editModal').style.display = 'none';
-            showToast("Actualizado con éxito");
-            await cargar();
-        };
-
-        window.borrar = async (idx) => {
-            if(await customConfirm("¿Eliminar?", "¿Borrar este registro?")) {
-                showLoad(true, "Borrando...");
-                await post({ action:'delete', index: idx });
-                showToast("Borrado");
-                await cargar();
-            }
-        };
-
-        document.getElementById('btnExport').onclick = () => {
-            const blob = new Blob([JSON.stringify({datos, notes, divisores}, null, 2)], {type:'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `backup_${currentUser}_${new Date().toLocaleDateString()}.json`; a.click();
-            showToast("Backup generado");
-        };
-
-        document.getElementById('btnImportTrigger').onclick = () => document.getElementById('jsonInput').click();
-        document.getElementById('jsonInput').onchange = (e) => {
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-                const content = JSON.parse(ev.target.result);
-                if(await customConfirm("¿Restaurar?", "Se borrarán los datos actuales para cargar el backup.")) {
-                    showLoad(true, "Restaurando...");
-                    await post({ action: 'importAll', data: content });
-                    showToast("Carga completa");
-                    await cargar();
-                }
-            };
-            reader.readAsText(e.target.files[0]);
-        };
-
-        document.getElementById('btnProcesar').onclick = async () => {
-            const txt = document.getElementById('importText').value;
-            const lines = txt.split('\n');
-            let curDate = null;
-            showLoad(true, "Procesando...");
-            for(let l of lines) {
-                const fMatch = l.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                if(fMatch) curDate = `${fMatch[3]}-${fMatch[2]}-${fMatch[1]}`;
-                const mMatch = l.match(/- (TarjetaMDA|EfectivoMDA|SalaDeJuegos|Boveda):\s*\$?([\d.]+)/);
-                if(mMatch && curDate) {
-                    await post({ action:'add', fecha:curDate, tipo:mMatch[1], monto:parseFloat(mMatch[2].replace(/\./g,'')) });
-                }
-            }
-            showToast("Importación finalizada");
-            await cargar();
-            switchPanel('historialPanel');
-        };
-
-        document.getElementById('logoutBtn').onclick = () => { 
-            sessionStorage.clear(); 
-            location.reload(); 
-        };
-
-        document.getElementById('loginForm').onsubmit = (e) => {
-            e.preventDefault();
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            if(!user) { showToast("Elija un usuario", "danger"); return; }
-            if((user === 'mesas' || user === 'maquinas') && pass === '1234') {
-                currentUser = user;
-                sessionStorage.setItem('user', user);
-                document.getElementById('loginOverlay').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'flex';
-                document.body.classList.add('loggedin');
-                document.getElementById('activeUserBadge').textContent = "SESIÓN: " + user.toUpperCase();
-                document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
-                cargar();
-            } else {
-                showToast("Clave incorrecta", "danger");
-            }
-        };
-
-        document.getElementById('toggleLoginPassword').onclick = function() {
-            const p = document.getElementById('password');
-            const isP = p.type === 'password';
-            p.type = isP ? 'text' : 'password';
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-        };
-
-        const savedUser = sessionStorage.getItem('user');
-        if(savedUser) {
-            currentUser = savedUser;
-            document.getElementById('username').value = savedUser;
-            document.getElementById('password').value = '1234';
-            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
-        }
-    });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
