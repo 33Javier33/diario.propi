@@ -159,25 +159,27 @@
             <!-- PANEL: HISTORIAL -->
             <section id="historialPanel" class="content-panel">
                 <div class="card">
-                    <div style="display:flex; flex-direction:column; gap:15px; margin-bottom:2rem;">
+                    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:2rem;">
                         <h2><i class="fas fa-clock-rotate-left" style="color:var(--primary);"></i> Historial</h2>
+                        <!-- Controles de vista -->
                         <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
                             <button id="btnMin" class="btn btn-outline btn-sm">Expandir/Min</button>
                             <button id="btnSortDesc" class="btn btn-outline btn-sm">Reciente</button>
                             <button id="btnSortAsc" class="btn btn-outline btn-sm">Antiguo</button>
                             <input type="text" id="filtro" placeholder="Buscar fecha..." style="margin-bottom:0; flex:1; min-width:150px;">
                         </div>
+                        <!-- Botones de datos -->
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top:12px; border-top:1px solid var(--border);">
+                            <button id="btnExport" class="btn btn-outline btn-sm">Exportar Backup</button>
+                            <button id="btnImportTrigger" class="btn btn-outline btn-sm" style="color:var(--warning)">Restaurar JSON</button>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <button id="btnLimpiar" class="btn btn-danger btn-sm">Vaciar Todo</button>
+                                <button type="button" class="help-tip-btn" onclick="showHelpTip('vaciarTodo')">?</button>
+                            </div>
+                            <input type="file" id="jsonInput" style="display:none;" accept=".json">
+                        </div>
                     </div>
                     <div id="tablaContainer"></div>
-                    <div style="margin-top:2rem; display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top:2rem; border-top:1.5px solid var(--border);">
-                        <button id="btnExport" class="btn btn-outline">Exportar Backup</button>
-                        <button id="btnImportTrigger" class="btn btn-outline" style="color:var(--warning)">Restaurar JSON</button>
-                        <div style="display:flex; align-items:center; gap:6px;">
-                            <button id="btnLimpiar" class="btn btn-danger">Vaciar Todo</button>
-                            <button type="button" class="help-tip-btn" onclick="showHelpTip('vaciarTodo')">?</button>
-                        </div>
-                        <input type="file" id="jsonInput" style="display:none;" accept=".json">
-                    </div>
                 </div>
             </section>
 
