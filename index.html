@@ -178,6 +178,15 @@
                             </div>
                             <input type="file" id="jsonInput" style="display:none;" accept=".json">
                         </div>
+                        <!-- Cierre de período -->
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top:12px; border-top:1px solid var(--border);">
+                            <i class="fas fa-calendar-check" style="color:var(--warning); font-size:0.85rem;"></i>
+                            <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted); flex:1; letter-spacing:0.4px;">CIERRE DE PERÍODO</span>
+                            <button id="btnCerrarPeriodo" class="btn btn-outline btn-sm" style="color:var(--warning); border-color:rgba(251,191,36,0.5);">
+                                <i class="fas fa-box-archive"></i> Guardar Período
+                            </button>
+                            <button type="button" class="help-tip-btn" onclick="showHelpTip('cerrarPeriodo')">?</button>
+                        </div>
                     </div>
                     <div id="tablaContainer"></div>
                 </div>

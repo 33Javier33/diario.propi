@@ -84,6 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
             title: '⚠️ Acción Irreversible',
             content: `Este botón elimina <strong>absolutamente todos los datos</strong> del sistema: registros, notas y divisores guardados.<br><br>
                 Antes de continuar, asegúrate de haber descargado un <strong>Backup</strong> con el botón "Exportar Backup" para conservar una copia de seguridad.`
+        },
+        cerrarPeriodo: {
+            title: 'Guardar Período',
+            content: `Archiva todos los datos del período actual en una <strong>nueva pestaña de Google Sheets</strong> con el nombre del período (ej: <em>15 Abr - 14 May 2026</em>).<br><br>
+                Luego <strong>borra los registros</strong> de trabajo (datos, divisores, saldo) para comenzar el siguiente período en limpio.<br><br>
+                Los períodos van del <strong>día 15 de un mes al 14 del siguiente</strong>. Usa este botón cuando termines el ciclo.`
         }
     };
 
@@ -375,6 +381,55 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         reader.readAsText(e.target.files[0]);
+    };
+
+    // --- CLEAR ALL ---
+    document.getElementById('btnLimpiar').onclick = async () => {
+        if (await customConfirm('⚠️ Vaciar Todo', '¿Eliminar TODOS los datos del sistema? Esta acción no se puede deshacer.')) {
+            showLoad(true, 'Vaciando...');
+            await post({ action: 'clearAll' });
+            showToast('Todos los datos fueron eliminados');
+            await cargar();
+        }
+    };
+
+    // --- CLOSE PERIOD ---
+    function getPeriodo() {
+        const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        const now = new Date();
+        const day = now.getDate();
+        let ini, fin;
+        if (day < 15) {
+            ini = new Date(now.getFullYear(), now.getMonth() - 1, 15);
+            fin = new Date(now.getFullYear(), now.getMonth(), 14);
+        } else {
+            ini = new Date(now.getFullYear(), now.getMonth(), 15);
+            fin = new Date(now.getFullYear(), now.getMonth() + 1, 14);
+        }
+        return `${ini.getDate()} ${MESES[ini.getMonth()]} - ${fin.getDate()} ${MESES[fin.getMonth()]} ${fin.getFullYear()}`;
+    }
+
+    document.getElementById('btnCerrarPeriodo').onclick = async () => {
+        const periodo = getPeriodo();
+        if (await customConfirm(
+            'Guardar Período',
+            `¿Archivar el período "${periodo}"?\n\nSe creará una pestaña en Google Sheets con todos los datos actuales y se borrarán los registros para comenzar el siguiente período.`
+        )) {
+            showLoad(true, 'Archivando período...');
+            try {
+                const res = await post({ action: 'closePeriod' });
+                if (res.status === 'success') {
+                    showToast(`Período "${res.data.periodo}" archivado con éxito`);
+                    await cargar();
+                } else {
+                    showLoad(false);
+                    showToast(res.message || 'Error al cerrar período', 'danger');
+                }
+            } catch (e) {
+                showLoad(false);
+                showToast('Error de conexión', 'danger');
+            }
+        }
     };
 
     // --- LOGOUT ---
