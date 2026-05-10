@@ -66,9 +66,6 @@
                 <i class="fas fa-sticky-note"></i> Bloc de Notas
                 <span id="ind-notas" class="ind-notas"></span>
             </a>
-            <a href="#" class="menu-link" data-target="importarPanel">
-                <i class="fas fa-file-import"></i> Importar Texto
-            </a>
             <a href="#" class="menu-link" data-target="ayudaPanel">
                 <i class="fas fa-question-circle"></i> Ayuda
             </a>
@@ -78,7 +75,7 @@
         </a>
     </nav>
 
-    <!-- BOTTOM NAV (Mobile <992px) -->
+    <!-- BOTTOM NAV (Mobile <992px) — 4 tabs -->
     <nav id="bottomNav" class="bottom-nav">
         <a href="#" class="bottom-nav-link active-link" data-target="agregarPanel">
             <i class="fas fa-plus-circle"></i>
@@ -92,10 +89,6 @@
             <i class="fas fa-sticky-note"></i>
             <span>Notas</span>
             <span id="ind-notas-bottom" class="ind-notas-bottom"></span>
-        </a>
-        <a href="#" class="bottom-nav-link" data-target="importarPanel">
-            <i class="fas fa-file-import"></i>
-            <span>Importar</span>
         </a>
         <a href="#" class="bottom-nav-link" data-target="ayudaPanel">
             <i class="fas fa-question-circle"></i>
@@ -114,7 +107,10 @@
                     <div class="value" id="tot-rec">$0</div>
                 </div>
                 <div class="stat-card">
-                    <span class="label">Total Valor por Punto</span>
+                    <span class="label">
+                        Total Valor por Punto
+                        <button class="help-tip-btn" onclick="showHelpTip('valorPunto')">?</button>
+                    </span>
                     <div class="value" id="tot-div">$0</div>
                 </div>
             </div>
@@ -124,7 +120,10 @@
                 <div class="card" style="max-width:500px; margin:0 auto;">
                     <h2 style="margin-bottom:2rem;"><i class="fas fa-circle-plus" style="color:var(--primary);"></i> Nuevo Registro</h2>
                     <form id="agregarForm">
-                        <label style="display:block; margin-bottom:12px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">SELECCIONE CATEGORÍA</label>
+                        <label style="display:flex; align-items:center; gap:6px; margin-bottom:12px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">
+                            SELECCIONE CATEGORÍA
+                            <button type="button" class="help-tip-btn" onclick="showHelpTip('categorias')">?</button>
+                        </label>
                         <div class="category-grid">
                             <label class="category-option">
                                 <input type="radio" name="tipo" value="TarjetaMDA" checked>
@@ -170,10 +169,13 @@
                         </div>
                     </div>
                     <div id="tablaContainer"></div>
-                    <div style="margin-top:2rem; display:flex; gap:12px; flex-wrap:wrap; padding-top:2rem; border-top:1.5px solid var(--border);">
+                    <div style="margin-top:2rem; display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top:2rem; border-top:1.5px solid var(--border);">
                         <button id="btnExport" class="btn btn-outline">Exportar Backup</button>
                         <button id="btnImportTrigger" class="btn btn-outline" style="color:var(--warning)">Restaurar JSON</button>
-                        <button id="btnLimpiar" class="btn btn-danger">Vaciar Todo</button>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <button id="btnLimpiar" class="btn btn-danger">Vaciar Todo</button>
+                            <button type="button" class="help-tip-btn" onclick="showHelpTip('vaciarTodo')">?</button>
+                        </div>
                         <input type="file" id="jsonInput" style="display:none;" accept=".json">
                     </div>
                 </div>
@@ -193,31 +195,21 @@
                 </div>
             </section>
 
-            <!-- PANEL: IMPORTAR -->
-            <section id="importarPanel" class="content-panel">
-                <div class="card" style="max-width:650px; margin:0 auto;">
-                    <h2 style="margin-bottom:1.5rem;"><i class="fas fa-file-import" style="color:var(--primary);"></i> Importar Texto</h2>
-                    <p style="color:var(--text-muted); margin-bottom:1.2rem; font-size:0.9rem;">Pega un reporte en texto para cargar múltiples registros de una vez. Ver la sección <strong>Ayuda</strong> para el formato esperado.</p>
-                    <textarea id="importText" rows="10" placeholder="Pega el reporte aquí...&#10;&#10;Ejemplo:&#10;📅 01/05/2025&#10;- TarjetaMDA: $1.500.000&#10;- EfectivoMDA: $800.000"></textarea>
-                    <button id="btnProcesar" class="btn btn-primary" style="width:100%; justify-content:center;">
-                        <i class="fas fa-gears"></i> Procesar e Importar
-                    </button>
-                </div>
-            </section>
-
             <!-- PANEL: AYUDA -->
             <section id="ayudaPanel" class="content-panel">
                 <div class="card">
-                    <h2 style="margin-bottom:2rem;"><i class="fas fa-book" style="color:var(--primary);"></i> Manual de Uso</h2>
+                    <h2 style="margin-bottom:0.5rem;"><i class="fas fa-book" style="color:var(--primary);"></i> Manual de Uso</h2>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:2rem;">
+                        En las secciones del sistema encontrarás el botón <button class="help-tip-btn" style="cursor:default;">?</button> para obtener una explicación rápida sin salir de donde estás.
+                    </p>
 
-                    <!-- 1. Agregar Dato -->
                     <div class="help-section">
                         <div class="help-section-header">
                             <i class="fas fa-plus-circle"></i>
                             <span>1. Agregar Dato</span>
                         </div>
                         <div class="help-section-body">
-                            <p style="margin-bottom:1rem;">Desde aquí registras los ingresos diarios de cada categoría. Es la pantalla principal.</p>
+                            <p style="margin-bottom:1rem;">Desde aquí registras los ingresos diarios de cada categoría. Es la pantalla principal del sistema.</p>
                             <div class="help-step">
                                 <div class="help-step-num">1</div>
                                 <div>
@@ -225,25 +217,25 @@
                                     <span class="help-badge">TarjetaMDA</span>
                                     <span class="help-badge">EfectivoMDA</span>
                                     <span class="help-badge">SalaDeJuegos</span>
-                                    <span class="help-badge">Boveda</span>
+                                    <span class="help-badge">Boveda</span>.
+                                    Pulsa el <button class="help-tip-btn" style="cursor:default;">?</button> junto al título para ver qué representa cada categoría.
                                 </div>
                             </div>
                             <div class="help-step">
                                 <div class="help-step-num">2</div>
-                                <div><strong>Fecha del registro:</strong> Se asigna automáticamente la fecha de hoy. Puedes cambiarla si necesitas registrar un día anterior.</div>
+                                <div><strong>Fecha:</strong> Se asigna automáticamente la fecha de hoy. Puedes cambiarla si necesitas registrar un día anterior.</div>
                             </div>
                             <div class="help-step">
                                 <div class="help-step-num">3</div>
-                                <div><strong>Monto recaudado:</strong> Escribe el valor. El sistema formatea los números automáticamente (ej: escribes <code>1500000</code> y se muestra <code>1.500.000</code>).</div>
+                                <div><strong>Monto:</strong> Escribe el valor. Los puntos se formatean automáticamente (ej: <code>1500000</code> → <code>1.500.000</code>).</div>
                             </div>
                             <div class="help-step">
                                 <div class="help-step-num">4</div>
-                                <div>Pulsa <span class="help-badge">Guardar Registro</span>. El dato se sube a la nube y aparece de inmediato en el Historial.</div>
+                                <div>Pulsa <span class="help-badge">Guardar Registro</span>. El dato sube a la nube y aparece en el Historial.</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 2. Historial -->
                     <div class="help-section">
                         <div class="help-section-header">
                             <i class="fas fa-clock-rotate-left"></i>
@@ -251,120 +243,71 @@
                         </div>
                         <div class="help-section-body">
                             <p style="margin-bottom:1rem;">Muestra todos los registros agrupados por día, con totales automáticos y cálculo de puntos.</p>
-
                             <p style="margin-bottom:0.7rem;"><strong>Controles de visualización:</strong></p>
                             <ul class="help-list" style="margin-bottom:1.2rem;">
-                                <li><span class="help-badge">Expandir/Min</span> — Alterna entre ver solo el día más reciente o todos los días registrados.</li>
-                                <li><span class="help-badge">Reciente</span> / <span class="help-badge">Antiguo</span> — Ordena los días del más nuevo al más viejo o viceversa.</li>
-                                <li><strong>Buscar fecha:</strong> Filtra por texto. Por ejemplo, escribir <code>2025-05</code> muestra solo los registros de mayo 2025.</li>
+                                <li><span class="help-badge">Expandir/Min</span> — Alterna entre ver solo el día más reciente o todos los días.</li>
+                                <li><span class="help-badge">Reciente</span> / <span class="help-badge">Antiguo</span> — Ordena del día más nuevo al más viejo o viceversa.</li>
+                                <li><strong>Buscar fecha:</strong> Filtra por texto, por ejemplo <code>2025-05</code> muestra solo mayo 2025.</li>
                             </ul>
-
-                            <p style="margin-bottom:0.7rem;"><strong>Dentro de cada día encontrarás:</strong></p>
+                            <p style="margin-bottom:0.7rem;"><strong>Dentro de cada día:</strong></p>
                             <ul class="help-list" style="margin-bottom:1.2rem;">
                                 <li>Las categorías ingresadas con su monto individual.</li>
                                 <li><span class="help-badge warning">TOTAL NOCHE</span> — Suma de todos los montos del día.</li>
-                                <li><strong>Cant. Pers. Ptos.:</strong> Campo para ingresar cuántas personas o puntos participan. El sistema calcula automáticamente el valor por punto.</li>
-                                <li><span class="help-badge success">RESULTADO NOCHE</span> — Resultado de dividir el Total entre la cantidad ingresada.</li>
-                                <li>Botón <strong><i class="fas fa-copy"></i> Copiar</strong> — Genera un reporte con formato listo para pegar en WhatsApp u otro canal.</li>
+                                <li><strong>Cant. Pers. Ptos. <button class="help-tip-btn" onclick="showHelpTip('divisor')" style="vertical-align:middle;">?</button></strong> — Ingresa cuántos participantes hay para calcular el valor por punto.</li>
+                                <li><span class="help-badge success">RESULTADO NOCHE</span> — Total dividido entre la cantidad ingresada.</li>
+                                <li>Botón <strong><i class="fas fa-copy"></i> Copiar</strong> — Genera un reporte formateado listo para compartir por WhatsApp.</li>
                             </ul>
-
-                            <p style="margin-bottom:0.7rem;"><strong>Editar o eliminar registros:</strong></p>
+                            <p style="margin-bottom:0.7rem;"><strong>Editar o eliminar:</strong></p>
                             <ul class="help-list" style="margin-bottom:1.2rem;">
-                                <li>Botón <i class="fas fa-pencil"></i> <strong>Editar</strong> — Abre un formulario para corregir el tipo, la fecha o el monto de un registro.</li>
-                                <li>Botón <i class="fas fa-trash"></i> <strong>Eliminar</strong> — Borra el registro. Siempre pide confirmación antes de borrar.</li>
+                                <li><i class="fas fa-pencil"></i> <strong>Editar</strong> — Corrige el tipo, fecha o monto de un registro.</li>
+                                <li><i class="fas fa-trash"></i> <strong>Eliminar</strong> — Borra el registro. Siempre pide confirmación.</li>
                             </ul>
-
                             <p style="margin-bottom:0.7rem;"><strong>Copia de seguridad:</strong></p>
                             <ul class="help-list">
-                                <li><span class="help-badge">Exportar Backup</span> — Descarga un archivo <code>.json</code> con todos los datos. Guárdalo en un lugar seguro.</li>
-                                <li><span class="help-badge warning">Restaurar JSON</span> — Carga un backup guardado anteriormente. <strong>Reemplaza todos los datos actuales.</strong></li>
-                                <li><span class="help-badge danger">Vaciar Todo</span> — Elimina absolutamente todos los datos del sistema. Usar solo en caso necesario.</li>
+                                <li><span class="help-badge">Exportar Backup</span> — Descarga un archivo <code>.json</code> con todos los datos.</li>
+                                <li><span class="help-badge warning">Restaurar JSON</span> — Carga un backup guardado (reemplaza todos los datos actuales).</li>
+                                <li><span class="help-badge danger">Vaciar Todo</span> — Elimina todos los datos. Pulsa el <button class="help-tip-btn" onclick="showHelpTip('vaciarTodo')" style="vertical-align:middle;">?</button> junto al botón antes de usarlo.</li>
                             </ul>
                         </div>
                     </div>
 
-                    <!-- 3. Bloc de Notas -->
                     <div class="help-section">
                         <div class="help-section-header">
                             <i class="fas fa-sticky-note"></i>
                             <span>3. Bloc de Notas</span>
                         </div>
                         <div class="help-section-body">
-                            <p style="margin-bottom:1rem;">Sistema de mensajería interna entre turnos. Perfecto para dejar avisos al equipo que viene a continuación.</p>
+                            <p style="margin-bottom:1rem;">Mensajería interna entre turnos. Para dejar avisos al equipo que viene a continuación.</p>
                             <div class="help-step">
                                 <div class="help-step-num">1</div>
                                 <div>Escribe tu mensaje en el campo de texto.</div>
                             </div>
                             <div class="help-step">
                                 <div class="help-step-num">2</div>
-                                <div>Pulsa <span class="help-badge">Publicar Nota</span>. El mensaje queda guardado y visible para todos los usuarios del sistema.</div>
+                                <div>Pulsa <span class="help-badge">Publicar Nota</span>. El mensaje queda visible para todos los usuarios.</div>
                             </div>
                             <div class="help-step">
                                 <div class="help-step-num">3</div>
-                                <div>Las notas nuevas (no vistas) aparecen con borde <span style="color:var(--warning); font-weight:800;">amarillo</span>. Al entrar a la sección, se marcan automáticamente como leídas.</div>
+                                <div>Las notas sin leer aparecen con borde <span style="color:var(--warning); font-weight:800;">amarillo</span>. Al entrar a la sección se marcan como leídas.</div>
                             </div>
                             <p style="margin-top:1rem;">
-                                <strong>Indicadores de nota nueva:</strong> El punto <span style="color:var(--warning); font-size:1rem;">●</span> naranja aparece sobre el ícono de Notas en el menú cuando hay mensajes sin leer. El sistema revisa si hay notas nuevas cada 30 segundos de forma automática.
+                                El punto <span style="color:var(--warning); font-size:1rem;">●</span> en el ícono de Notas indica mensajes sin leer. El sistema verifica automáticamente cada 30 segundos.
                             </p>
-                            <p style="margin-top:0.8rem;">Para eliminar una nota, pulsa el botón <i class="fas fa-trash"></i> que aparece en la esquina de cada mensaje.</p>
                         </div>
                     </div>
 
-                    <!-- 4. Importar Texto -->
-                    <div class="help-section">
-                        <div class="help-section-header">
-                            <i class="fas fa-file-import"></i>
-                            <span>4. Importar Texto</span>
-                        </div>
-                        <div class="help-section-body">
-                            <p style="margin-bottom:1rem;">Permite cargar múltiples registros de una sola vez pegando un reporte en formato de texto. Útil para migrar datos históricos.</p>
-                            <p style="margin-bottom:0.7rem;"><strong>Formato que reconoce el sistema:</strong></p>
-                            <div class="help-code-block">
-                                📅 01/05/2025<br>
-                                - TarjetaMDA: $1.500.000<br>
-                                - EfectivoMDA: $800.000<br>
-                                <br>
-                                📅 02/05/2025<br>
-                                - SalaDeJuegos: $350.000<br>
-                                - Boveda: $120.000
-                            </div>
-                            <ul class="help-list">
-                                <li>Las fechas deben estar en formato <code>DD/MM/AAAA</code>.</li>
-                                <li>Las categorías válidas son exactamente: <code>TarjetaMDA</code>, <code>EfectivoMDA</code>, <code>SalaDeJuegos</code>, <code>Boveda</code>.</li>
-                                <li>Los registros importados se <strong>agregan</strong> a los existentes, no los reemplazan.</li>
-                                <li>Después de importar, el sistema te lleva automáticamente al Historial para verificar los datos.</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- 5. Info General -->
                     <div class="help-section">
                         <div class="help-section-header">
                             <i class="fas fa-circle-info"></i>
-                            <span>5. Información General del Sistema</span>
+                            <span>4. Información General</span>
                         </div>
                         <div class="help-section-body">
                             <ul class="help-list">
-                                <li>
-                                    <strong>Usuarios disponibles:</strong>
-                                    <span class="help-badge">MESAS</span> y <span class="help-badge">MÁQUINAS</span>.
-                                    Cada uno inicia sesión por separado, pero comparten los mismos datos y el bloc de notas.
-                                </li>
+                                <li><strong>Usuarios:</strong> <span class="help-badge">MESAS</span> y <span class="help-badge">MÁQUINAS</span>. Sesiones independientes, pero comparten los mismos datos y notas.</li>
                                 <li><strong>Clave de acceso:</strong> <code>1234</code> para ambos usuarios.</li>
-                                <li>
-                                    <strong>Estadísticas en la parte superior:</strong>
-                                    <span class="help-badge">Recaudación Total</span> muestra la suma de todos los registros del sistema.
-                                    <span class="help-badge">Total Valor por Punto</span> es la suma acumulada de todos los resultados de noche calculados.
-                                </li>
-                                <li>
-                                    <strong>Sincronización automática:</strong> Los datos se actualizan cada 30 segundos mientras la app está abierta y con conexión a internet.
-                                </li>
-                                <li>
-                                    <strong>Instalar en el celular (PWA):</strong> Puedes agregar esta app a la pantalla de inicio de tu teléfono como si fuera una aplicación. En Android, toca el menú del navegador y selecciona "Agregar a pantalla de inicio". En iPhone, usa el botón Compartir y luego "Agregar a pantalla de inicio".
-                                </li>
-                                <li>
-                                    <strong>Modo sin conexión:</strong> Si instalas la app como PWA, podrás abrirla aunque no tengas internet y verás los últimos datos sincronizados.
-                                </li>
+                                <li><strong>Estadísticas:</strong> <span class="help-badge">Recaudación Total</span> = suma de todos los registros. <span class="help-badge">Total Valor por Punto <button class="help-tip-btn" onclick="showHelpTip('valorPunto')" style="vertical-align:middle;">?</button></span> = suma de todos los resultados de noche.</li>
+                                <li><strong>Sincronización:</strong> Los datos se actualizan cada 30 segundos con conexión a internet.</li>
+                                <li><strong>Instalar en el celular (PWA):</strong> En Android, menú del navegador → "Agregar a pantalla de inicio". En iPhone, botón Compartir → "Agregar a pantalla de inicio". La app funciona sin internet mostrando los últimos datos sincronizados.</li>
                             </ul>
                         </div>
                     </div>
@@ -404,6 +347,22 @@
                 <button id="confirmBtnYes" class="btn btn-primary" style="flex:1; background:var(--danger)">Confirmar</button>
                 <button id="confirmBtnNo" class="btn btn-outline" style="flex:1">Cancelar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL: AYUDA CONTEXTUAL -->
+    <div id="helpTipModal" class="modal">
+        <div class="modal-content" style="max-width:400px;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:1.2rem;">
+                <div style="background:rgba(99,102,241,0.1); color:var(--primary); width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">
+                    <i class="fas fa-circle-info"></i>
+                </div>
+                <h3 id="helpTipTitle">Ayuda</h3>
+            </div>
+            <div id="helpTipContent" style="color:var(--text-muted); line-height:1.75; font-size:0.9rem; margin-bottom:1.5rem;"></div>
+            <button onclick="document.getElementById('helpTipModal').style.display='none'" class="btn btn-primary" style="width:100%; justify-content:center;">
+                <i class="fas fa-check"></i> Entendido
+            </button>
         </div>
     </div>
 
