@@ -251,6 +251,21 @@ body {
 .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text-main); }
 .btn-danger { background: rgba(239,68,68,0.1); color: var(--danger); }
 
+.help-tip-btn {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(99,102,241,0.12);
+    color: var(--primary);
+    border: 1.5px solid rgba(99,102,241,0.3);
+    cursor: pointer;
+    font-size: 0.65rem; font-weight: 800;
+    transition: all 0.2s;
+    flex-shrink: 0; vertical-align: middle; line-height: 1;
+}
+.help-tip-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.1); }
+
 input, select, textarea {
     width: 100%; padding: 0.9rem 1.2rem;
     border-radius: 14px; border: 1.5px solid var(--border);

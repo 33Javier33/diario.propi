@@ -59,6 +59,41 @@ document.addEventListener('DOMContentLoaded', () => {
     btnUp.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
     btnNotesFab.onclick = () => switchPanel('notasPanel');
 
+    // --- CONTEXTUAL HELP TIPS ---
+    const HELP_TIPS = {
+        valorPunto: {
+            title: 'Total Valor por Punto',
+            content: `Es la suma acumulada de todos los <strong>Resultados de Noche</strong> del historial.<br><br>
+                Cada resultado se obtiene dividiendo el <em>Total Noche</em> de un día entre la cantidad de personas o puntos que ingresaste para ese día.`
+        },
+        categorias: {
+            title: 'Categorías de Recaudación',
+            content: `Selecciona el tipo de ingreso que estás registrando:<br><br>
+                <strong>TarjetaMDA</strong> — Ingresos por pago con tarjeta.<br>
+                <strong>EfectivoMDA</strong> — Ingresos en efectivo.<br>
+                <strong>SalaDeJuegos</strong> — Recaudación de la sala de juegos.<br>
+                <strong>Boveda</strong> — Fondos de bóveda o caja fuerte.`
+        },
+        divisor: {
+            title: 'Cantidad de Personas / Puntos',
+            content: `Ingresa cuántas personas o puntos participan en la distribución de esa noche.<br><br>
+                El sistema divide el <strong>Total Noche</strong> entre este número y muestra el resultado en <strong>Resultado Noche</strong>.<br><br>
+                El valor que ingresas aquí se guarda automáticamente en la nube.`
+        },
+        vaciarTodo: {
+            title: '⚠️ Acción Irreversible',
+            content: `Este botón elimina <strong>absolutamente todos los datos</strong> del sistema: registros, notas y divisores guardados.<br><br>
+                Antes de continuar, asegúrate de haber descargado un <strong>Backup</strong> con el botón "Exportar Backup" para conservar una copia de seguridad.`
+        }
+    };
+
+    window.showHelpTip = (key) => {
+        const tip = HELP_TIPS[key];
+        document.getElementById('helpTipTitle').textContent = tip.title;
+        document.getElementById('helpTipContent').innerHTML = tip.content;
+        document.getElementById('helpTipModal').style.display = 'flex';
+    };
+
     // --- LOADER ---
     const showLoad = (s, msg = 'Sincronizando...') => {
         document.getElementById('loaderMsg').textContent = msg;
@@ -183,7 +218,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <br><strong>${fNum(diaTot)}</strong>
                             </div>
                             <div class="divisor-box">
-                                <span style="font-size:0.8rem; font-weight:700;">Cant. Pers. Ptos.:</span>
+                                <span style="font-size:0.8rem; font-weight:700; display:flex; align-items:center; gap:5px;">
+                                    Cant. Pers. Ptos.
+                                    <button class="help-tip-btn" onclick="showHelpTip('divisor')">?</button>
+                                </span>
                                 <input type="number" class="divisor-input" value="${divVal || ''}" onchange="updDiv('${fecha}', this.value)">
                             </div>
                             <div style="text-align:right">
@@ -337,25 +375,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         reader.readAsText(e.target.files[0]);
-    };
-
-    // --- IMPORT TEXT ---
-    document.getElementById('btnProcesar').onclick = async () => {
-        const txt = document.getElementById('importText').value;
-        const lines = txt.split('\n');
-        let curDate = null;
-        showLoad(true, 'Procesando...');
-        for (let l of lines) {
-            const fMatch = l.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-            if (fMatch) curDate = `${fMatch[3]}-${fMatch[2]}-${fMatch[1]}`;
-            const mMatch = l.match(/- (TarjetaMDA|EfectivoMDA|SalaDeJuegos|Boveda):\s*\$?([\d.]+)/);
-            if (mMatch && curDate) {
-                await post({ action: 'add', fecha: curDate, tipo: mMatch[1], monto: parseFloat(mMatch[2].replace(/\./g, '')) });
-            }
-        }
-        showToast('Importación finalizada');
-        await cargar();
-        switchPanel('historialPanel');
     };
 
     // --- LOGOUT ---
