@@ -251,13 +251,13 @@ window.addEventListener('load', () => {
 
     dbRec.channel('diario-realtime')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'recaudaciones' }, () => {
-            _debounce(() => { if (typeof cargar === 'function') cargar(true); });
+            _debounce(() => { if (typeof window._diarioReload === 'function') window._diarioReload(); });
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'notas_recaudacion' }, () => {
-            _debounce(() => { if (typeof cargar === 'function') cargar(true); }, 400);
+            _debounce(() => { if (typeof window._diarioReload === 'function') window._diarioReload(); }, 400);
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'divisores' }, () => {
-            _debounce(() => { if (typeof cargar === 'function') cargar(true); });
+            _debounce(() => { if (typeof window._diarioReload === 'function') window._diarioReload(); });
         })
         .subscribe();
 });

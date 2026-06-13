@@ -470,4 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('password').value = '1234';
         document.getElementById('loginForm').dispatchEvent(new Event('submit'));
     }
+
+    // Exponer cargar globalmente para Supabase Realtime
+    window._diarioReload = () => cargar(true);
 });
