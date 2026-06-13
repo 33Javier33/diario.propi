@@ -243,3 +243,21 @@ async function callApiRec(action, payload) {
             return recErr('Acción no implementada: ' + action);
     }
 }
+
+// ── Realtime: actualizar UI al instante cuando otra app cambia datos ───────────
+window.addEventListener('load', () => {
+    let _rtTimer = null;
+    const _debounce = (fn, ms = 600) => { clearTimeout(_rtTimer); _rtTimer = setTimeout(fn, ms); };
+
+    dbRec.channel('diario-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'recaudaciones' }, () => {
+            _debounce(() => { if (typeof cargar === 'function') cargar(true); });
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'notas_recaudacion' }, () => {
+            _debounce(() => { if (typeof cargar === 'function') cargar(true); }, 400);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'divisores' }, () => {
+            _debounce(() => { if (typeof cargar === 'function') cargar(true); });
+        })
+        .subscribe();
+});
