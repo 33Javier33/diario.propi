@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(err => console.log('Fallo registro SW:', err));
     }
 
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz_kCb4aEe437zHGbRqnjCibw1NtAqfCbTNmsVPn9jaZOPBFaZ6-FwmiTLqVxq39X1P/exec';
     let datos = [], notes = [], divisores = {}, editIndex = -1, minimizado = true, sortOrder = 'desc', currentPanel = 'agregarPanel', currentUser = '';
 
     // --- TOAST ---
@@ -87,8 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         cerrarPeriodo: {
             title: 'Guardar Período',
-            content: `Archiva todos los datos del período actual en una <strong>nueva pestaña de Google Sheets</strong> con el nombre del período (ej: <em>15 Abr - 14 May 2026</em>).<br><br>
-                Luego <strong>borra los registros</strong> de trabajo (datos, divisores, saldo) para comenzar el siguiente período en limpio.<br><br>
+            content: `Archiva todos los datos del período actual en Supabase y limpia los registros activos para comenzar el siguiente período en limpio.<br><br>
                 Los períodos van del <strong>día 15 de un mes al 14 del siguiente</strong>. Usa este botón cuando termines el ciclo.`
         }
     };
@@ -119,15 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return d.toLocaleDateString('es-ES', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
     };
 
-    // --- API ---
+    // --- API: Supabase via callApiRec() ---
     async function api(params) {
-        const url = new URL(SCRIPT_URL);
-        Object.keys(params).forEach(k => url.searchParams.append(k, params[k]));
-        return fetch(url).then(r => r.json());
+        return callApiRec(params.action, params);
     }
 
     async function post(data) {
-        return fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) }).then(r => r.json());
+        return callApiRec(data.action, data);
     }
 
     async function cargar(loader = true) {
@@ -205,8 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td style="font-weight:700; color:var(--primary)">${d.tipo}</td>
                     <td><strong>${fNum(d.monto)}</strong></td>
                     <td style="text-align:right">
-                        <button onclick="abrirEd(${d.originalIndex})" class="btn btn-outline btn-sm"><i class="fas fa-pencil"></i></button>
-                        <button onclick="borrar(${d.originalIndex})" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                        <button onclick="abrirEd('${d.originalIndex}')" class="btn btn-outline btn-sm"><i class="fas fa-pencil"></i></button>
+                        <button onclick="borrar('${d.originalIndex}')" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`).join('');
 
@@ -249,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sortedNotes = [...notes].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
         document.getElementById('notesContainer').innerHTML = sortedNotes.map(n => `
             <div class="card note-card" style="border-left-color:${new Date(n.fecha).getTime() > last ? 'var(--warning)' : 'var(--primary)'}">
-                <button onclick="borrarNota(${n.originalIndex})" class="note-btn-del"><i class="fas fa-trash"></i></button>
+                <button onclick="borrarNota('${n.originalIndex}')" class="note-btn-del"><i class="fas fa-trash"></i></button>
                 <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.6rem; font-weight:600;">
                     Por <span class="note-author">${n.autor || 'Desconocido'}</span> — ${new Date(n.fecha).toLocaleString()}
                 </div>
@@ -336,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnSaveEd').onclick = async () => {
         showLoad(true, 'Actualizando...');
         await post({
-            action: 'update', sheetIndex: editIndex,
+            action: 'update', index: editIndex,
             tipo:  document.getElementById('edTipo').value,
             fecha: document.getElementById('edFecha').value,
             monto: parseInt(document.getElementById('edMonto').value.replace(/\./g, ''))
@@ -413,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const periodo = getPeriodo();
         if (await customConfirm(
             'Guardar Período',
-            `¿Archivar el período "${periodo}"?\n\nSe creará una pestaña en Google Sheets con todos los datos actuales y se borrarán los registros para comenzar el siguiente período.`
+            `¿Archivar el período "${periodo}"?\n\nSe guardará en Supabase y se limpiarán los registros activos para comenzar el siguiente período.`
         )) {
             showLoad(true, 'Archivando período...');
             try {
