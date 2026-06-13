@@ -8,8 +8,16 @@ const SUPABASE_KEY_REC = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 
 const dbRec = supabase.createClient(SUPABASE_URL_REC, SUPABASE_KEY_REC);
 
+// Canal compartido para notificar cambios a todas las apps en tiempo real
+const _recBroadcast = dbRec.channel('rec-data-sync');
+
 function recOk(data)  { return { status: 'success', data }; }
 function recErr(msg)  { return { status: 'error', message: String(msg) }; }
+
+// Emite evento broadcast para que todas las apps recarguen
+function _notificarCambio(tabla = 'recaudaciones') {
+    _recBroadcast.send({ type: 'broadcast', event: 'changed', payload: { tabla } }).catch(() => {});
+}
 
 async function apiGetRecaudaciones() {
     try {
@@ -95,6 +103,7 @@ async function apiAddRecaudacion(fecha, tipo, monto) {
     try {
         const { error } = await dbRec.from('recaudaciones').insert({ id: crypto.randomUUID(), fecha, tipo: tipo || 'Sin Tipo', monto: Number(monto) });
         if (error) throw error;
+        _notificarCambio('recaudaciones');
         return recOk('Dato agregado.');
     } catch(e) { return recErr(e.message); }
 }
@@ -103,6 +112,7 @@ async function apiUpdateRecaudacion(id, fecha, tipo, monto) {
     try {
         const { error } = await dbRec.from('recaudaciones').update({ fecha, tipo, monto: Number(monto) }).eq('id', id);
         if (error) throw error;
+        _notificarCambio('recaudaciones');
         return recOk('Dato actualizado.');
     } catch(e) { return recErr(e.message); }
 }
@@ -111,6 +121,7 @@ async function apiDeleteRecaudacion(id) {
     try {
         const { error } = await dbRec.from('recaudaciones').delete().eq('id', id);
         if (error) throw error;
+        _notificarCambio('recaudaciones');
         return recOk('Dato eliminado.');
     } catch(e) { return recErr(e.message); }
 }
@@ -127,6 +138,7 @@ async function apiAddNota(autor, mensaje) {
     try {
         const { error } = await dbRec.from('notas_recaudacion').insert({ id: crypto.randomUUID(), autor: autor || 'Sistema', mensaje });
         if (error) throw error;
+        _notificarCambio('notas');
         return recOk('Nota agregada.');
     } catch(e) { return recErr(e.message); }
 }
@@ -135,6 +147,7 @@ async function apiDeleteNota(id) {
     try {
         const { error } = await dbRec.from('notas_recaudacion').delete().eq('id', id);
         if (error) throw error;
+        _notificarCambio('notas');
         return recOk('Nota eliminada.');
     } catch(e) { return recErr(e.message); }
 }
@@ -148,6 +161,7 @@ async function apiUpdateDivisor(fecha, divisor) {
             const { error } = await dbRec.from('divisores').upsert({ id: crypto.randomUUID(), fecha, valor: Number(divisor) }, { onConflict: 'fecha' });
             if (error) throw error;
         }
+        _notificarCambio('divisores');
         return recOk('Divisor actualizado.');
     } catch(e) { return recErr(e.message); }
 }
@@ -244,20 +258,12 @@ async function callApiRec(action, payload) {
     }
 }
 
-// ── Realtime: actualizar UI al instante cuando otra app cambia datos ───────────
+// ── Realtime broadcast: recargar UI cuando otra app cambia datos ───────────────
 window.addEventListener('load', () => {
-    let _rtTimer = null;
-    const _debounce = (fn, ms = 600) => { clearTimeout(_rtTimer); _rtTimer = setTimeout(fn, ms); };
+    let _rt = null;
+    const _reload = () => { clearTimeout(_rt); _rt = setTimeout(() => { if (typeof window._diarioReload === 'function') window._diarioReload(); }, 500); };
 
-    dbRec.channel('diario-realtime')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'recaudaciones' }, () => {
-            _debounce(() => { if (typeof window._diarioReload === 'function') window._diarioReload(); });
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'notas_recaudacion' }, () => {
-            _debounce(() => { if (typeof window._diarioReload === 'function') window._diarioReload(); }, 400);
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'divisores' }, () => {
-            _debounce(() => { if (typeof window._diarioReload === 'function') window._diarioReload(); });
-        })
+    _recBroadcast
+        .on('broadcast', { event: 'changed' }, _reload)
         .subscribe();
 });
