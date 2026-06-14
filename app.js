@@ -302,8 +302,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- PIN NOTE ---
     window._notaPin = async (id, pinned) => {
+        // Un solo pin a la vez — desfijar el resto primero
+        if (pinned) {
+            const others = notes.filter(n => n.pinned && n.originalIndex !== id);
+            for (const o of others) {
+                await post({ action: 'togglePin', id: o.originalIndex, pinned: false });
+                o.pinned = false;
+            }
+        }
+        // Respuesta local inmediata
+        const nota = notes.find(n => n.originalIndex === id);
+        if (nota) nota.pinned = pinned;
+        renderNotes();
         await post({ action: 'togglePin', id, pinned });
-        await cargar(true);
     };
 
     // --- REACTION ON NOTE ---
