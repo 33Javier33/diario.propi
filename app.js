@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll(`[data-target="${targetId}"]`).forEach(l => l.classList.add('active-link'));
         if (targetId === 'notasPanel') {
             localStorage.setItem('lastNote', Date.now());
+            localStorage.setItem('_rec_last_seen', Date.now());
             checkNotesInd();
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -241,16 +242,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- RENDER NOTES ---
     function renderNotes() {
-        const last = parseInt(localStorage.getItem('lastNote')) || 0;
-        const sortedNotes = [...notes].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-        document.getElementById('notesContainer').innerHTML = sortedNotes.map(n => `
-            <div class="card note-card" style="border-left-color:${new Date(n.fecha).getTime() > last ? 'var(--warning)' : 'var(--primary)'}">
-                <button onclick="borrarNota('${n.originalIndex}')" class="note-btn-del"><i class="fas fa-trash"></i></button>
-                <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.6rem; font-weight:600;">
-                    Por <span class="note-author">${n.autor || 'Desconocido'}</span> — ${new Date(n.fecha).toLocaleString()}
+        const lastSeen = parseInt(localStorage.getItem('_rec_last_seen')) || 0;
+        const myRx = JSON.parse(localStorage.getItem('_rec_my_reactions') || '{}');
+        const EMOJIS = ['👍','❤️','😂'];
+        const sorted = [...notes].sort((a,b) => (b.pinned?1:0)-(a.pinned?1:0) || new Date(b.fecha)-new Date(a.fecha));
+        document.getElementById('notesContainer').innerHTML = sorted.map(n => {
+            const isNew = lastSeen > 0 && new Date(n.fecha).getTime() > lastSeen;
+            const border = n.pinned ? '#f59e0b' : isNew ? '#3b82f6' : 'var(--primary)';
+            const bg = n.pinned ? '#fffde7' : isNew ? '#eff6ff' : '';
+            const rxBtns = EMOJIS.map(e => {
+                const cnt = (n.reactions||{})[e]||0;
+                const mine = myRx[n.originalIndex]?.[e];
+                return `<button onclick="_notaReaccion('${n.originalIndex}','${e}')" style="background:${mine?'#dbeafe':'#f8fafc'};border:1px solid ${mine?'#93c5fd':'#e2e8f0'};border-radius:20px;padding:2px 10px;cursor:pointer;font-size:0.82em;transition:0.15s">${e}${cnt?' '+cnt:''}</button>`;
+            }).join('');
+            return `
+            <div class="card note-card" style="border-left:4px solid ${border};background:${bg};margin-bottom:10px;padding:12px 14px">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
+                    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px">
+                        ${n.pinned?'<span style="background:#f59e0b;color:#fff;font-size:0.68em;font-weight:700;padding:1px 7px;border-radius:20px">📌 FIJADA</span>':''}
+                        ${isNew?'<span style="background:#3b82f6;color:#fff;font-size:0.68em;font-weight:700;padding:1px 7px;border-radius:20px">NUEVO</span>':''}
+                        <span style="font-size:0.75rem;color:var(--text-muted);font-weight:600">Por <b>${n.autor||'?'}</b> — ${new Date(n.fecha).toLocaleString()}</span>
+                    </div>
+                    <div style="display:flex;gap:4px;flex-shrink:0">
+                        <button onclick="_notaPin('${n.originalIndex}',${!n.pinned})" title="${n.pinned?'Desfijar':'Fijar'}" style="background:none;border:1px solid #e2e8f0;border-radius:6px;padding:2px 7px;cursor:pointer;font-size:0.85em">${n.pinned?'📌':'📍'}</button>
+                        <button onclick="borrarNota('${n.originalIndex}')" style="background:none;border:1px solid #fee2e2;color:#ef4444;border-radius:6px;padding:2px 7px;cursor:pointer;font-size:0.85em">🗑️</button>
+                    </div>
                 </div>
-                <div style="font-size:1rem; line-height:1.6;">${n.mensaje}</div>
-            </div>`).join('') || '<p style="text-align:center; color:var(--text-muted);">Sin notas guardadas.</p>';
+                <div style="font-size:1rem;line-height:1.6;margin-bottom:10px">${n.mensaje}</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">${rxBtns}</div>
+            </div>`;
+        }).join('') || '<p style="text-align:center;color:var(--text-muted)">Sin notas guardadas.</p>';
     }
 
     // --- COPY REPORT ---
@@ -277,6 +298,25 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Nota eliminada');
             await cargar();
         }
+    };
+
+    // --- PIN NOTE ---
+    window._notaPin = async (id, pinned) => {
+        await post({ action: 'togglePin', id, pinned });
+        await cargar(true);
+    };
+
+    // --- REACTION ON NOTE ---
+    window._notaReaccion = async (id, emoji) => {
+        const myRx = JSON.parse(localStorage.getItem('_rec_my_reactions') || '{}');
+        const alreadyReacted = myRx[id]?.[emoji];
+        await post({ action: 'toggleReaction', id, emoji, add: !alreadyReacted });
+        if (!myRx[id]) myRx[id] = {};
+        if (alreadyReacted) delete myRx[id][emoji]; else myRx[id][emoji] = true;
+        localStorage.setItem('_rec_my_reactions', JSON.stringify(myRx));
+        const nRes = await api({ action: 'getNotes' });
+        notes = nRes.data || [];
+        renderNotes();
     };
 
     // --- UPDATE DIVISOR ---

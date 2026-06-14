@@ -83,9 +83,9 @@ async function apiGetSaldo() {
 
 async function apiGetNotas() {
     try {
-        const { data, error } = await dbRec.from('notas_recaudacion').select('*').order('created_at', { ascending: false });
+        const { data, error } = await dbRec.from('notas_recaudacion').select('*').order('pinned', { ascending: false }).order('created_at', { ascending: false });
         if (error) throw error;
-        return recOk((data || []).map(n => ({ originalIndex: n.id, fecha: n.created_at, autor: n.autor, mensaje: n.mensaje })));
+        return recOk((data || []).map(n => ({ originalIndex: n.id, fecha: n.created_at, autor: n.autor, mensaje: n.mensaje, pinned: n.pinned || false, reactions: n.reactions || {} })));
     } catch(e) { return recErr(e.message); }
 }
 
@@ -150,6 +150,24 @@ async function apiDeleteNota(id) {
         _notificarCambio('notas');
         return recOk('Nota eliminada.');
     } catch(e) { return recErr(e.message); }
+}
+
+async function apiTogglePin(id, pinned) {
+    const { error } = await dbRec.from('notas_recaudacion').update({ pinned }).eq('id', id);
+    if (error) throw error;
+    _notificarCambio('notas');
+    return recOk('ok');
+}
+
+async function apiToggleReaction(id, emoji, add) {
+    const { data } = await dbRec.from('notas_recaudacion').select('reactions').eq('id', id).maybeSingle();
+    const r = data?.reactions || {};
+    if (add) r[emoji] = (r[emoji] || 0) + 1;
+    else { r[emoji] = Math.max(0, (r[emoji] || 0) - 1); if (r[emoji] === 0) delete r[emoji]; }
+    const { error } = await dbRec.from('notas_recaudacion').update({ reactions: r }).eq('id', id);
+    if (error) throw error;
+    _notificarCambio('notas');
+    return recOk(r);
 }
 
 async function apiUpdateDivisor(fecha, divisor) {
@@ -248,6 +266,8 @@ async function callApiRec(action, payload) {
         case 'updateSaldo':   return apiUpdateSaldo(payload.fecha, payload.monto);
         case 'addNote':       return apiAddNota(payload.autor, payload.mensaje);
         case 'deleteNote':    return apiDeleteNota(payload.index || payload.id);
+        case 'togglePin':     return apiTogglePin(payload.id, payload.pinned);
+        case 'toggleReaction': return apiToggleReaction(payload.id, payload.emoji, payload.add);
         case 'updateDivisor': return apiUpdateDivisor(payload.fecha, payload.divisor);
         case 'importAll':     return apiImportAll(payload.data || payload);
         case 'clearAll':      return apiClearAll();
