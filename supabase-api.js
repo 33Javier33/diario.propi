@@ -161,11 +161,14 @@ async function apiTogglePin(id, pinned) {
     return recOk('ok');
 }
 
-async function apiToggleReaction(id, emoji, add) {
+async function apiToggleReaction(id, emoji, add, user = 'Admin') {
     const { data } = await dbRec.from('notas_recaudacion').select('reactions').eq('id', id).maybeSingle();
     const r = data?.reactions || {};
-    if (add) r[emoji] = (r[emoji] || 0) + 1;
-    else { r[emoji] = Math.max(0, (r[emoji] || 0) - 1); if (r[emoji] === 0) delete r[emoji]; }
+    const arr = Array.isArray(r[emoji]) ? [...r[emoji]] : [];
+    const pos = arr.indexOf(user);
+    if (add && pos === -1) arr.push(user);
+    else if (!add && pos !== -1) arr.splice(pos, 1);
+    if (arr.length === 0) delete r[emoji]; else r[emoji] = arr;
     const { error } = await dbRec.from('notas_recaudacion').update({ reactions: r }).eq('id', id);
     if (error) throw error;
     _notificarCambio('notas');
@@ -269,7 +272,7 @@ async function callApiRec(action, payload) {
         case 'addNote':       return apiAddNota(payload.autor, payload.mensaje);
         case 'deleteNote':    return apiDeleteNota(payload.index || payload.id);
         case 'togglePin':     return apiTogglePin(payload.id, payload.pinned);
-        case 'toggleReaction': return apiToggleReaction(payload.id, payload.emoji, payload.add);
+        case 'toggleReaction': return apiToggleReaction(payload.id, payload.emoji, payload.add, payload.user || 'Admin');
         case 'updateDivisor': return apiUpdateDivisor(payload.fecha, payload.divisor);
         case 'importAll':     return apiImportAll(payload.data || payload);
         case 'clearAll':      return apiClearAll();

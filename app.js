@@ -251,9 +251,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const border = n.pinned ? '#f59e0b' : isNew ? '#3b82f6' : 'var(--primary)';
             const bg = n.pinned ? '#fffde7' : isNew ? '#eff6ff' : '';
             const rxBtns = EMOJIS.map(e => {
-                const cnt = (n.reactions||{})[e]||0;
+                const arr = Array.isArray((n.reactions||{})[e]) ? (n.reactions||{})[e] : [];
+                const cnt = arr.length;
                 const mine = myRx[n.originalIndex]?.[e];
-                return `<button onclick="_notaReaccion('${n.originalIndex}','${e}')" style="background:${mine?'#dbeafe':'#f8fafc'};border:1px solid ${mine?'#93c5fd':'#e2e8f0'};border-radius:20px;padding:2px 10px;cursor:pointer;font-size:0.82em;transition:0.15s">${e}${cnt?' '+cnt:''}</button>`;
+                const names = arr.filter(u => u !== 'Admin').join(', ') || arr.join(', ');
+                return `<button onclick="_notaReaccion('${n.originalIndex}','${e}')" title="${names}" style="background:${mine?'#dbeafe':'#f8fafc'};border:1px solid ${mine?'#93c5fd':'#e2e8f0'};border-radius:20px;padding:2px 10px;cursor:pointer;font-size:0.82em;transition:0.15s">${e}${cnt?' '+cnt:''}</button>`;
             }).join('');
             return `
             <div class="card note-card" style="border-left:4px solid ${border};background:${bg};margin-bottom:10px;padding:12px 14px">
@@ -320,20 +322,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- REACTION ON NOTE ---
     window._notaReaccion = async (id, emoji) => {
         const myRx = JSON.parse(localStorage.getItem('_rec_my_reactions') || '{}');
-        const alreadyReacted = myRx[id]?.[emoji];
-        // Actualizar local inmediatamente
-        if (!myRx[id]) myRx[id] = {};
-        if (alreadyReacted) delete myRx[id][emoji]; else myRx[id][emoji] = true;
-        localStorage.setItem('_rec_my_reactions', JSON.stringify(myRx));
         const nota = notes.find(n => n.originalIndex === id);
-        if (nota) {
-            if (!nota.reactions) nota.reactions = {};
-            nota.reactions[emoji] = Math.max(0, (nota.reactions[emoji] || 0) + (alreadyReacted ? -1 : 1));
-            if (nota.reactions[emoji] === 0) delete nota.reactions[emoji];
-        }
+        if (!nota) return;
+        if (!nota.reactions) nota.reactions = {};
+        const arr = Array.isArray(nota.reactions[emoji]) ? [...nota.reactions[emoji]] : [];
+        const pos = arr.indexOf('Admin');
+        const adding = pos === -1;
+        if (adding) arr.push('Admin'); else arr.splice(pos, 1);
+        if (arr.length === 0) delete nota.reactions[emoji]; else nota.reactions[emoji] = arr;
+        // Mantener localStorage para highlight visual
+        if (!myRx[id]) myRx[id] = {};
+        if (adding) myRx[id][emoji] = true; else delete myRx[id][emoji];
+        localStorage.setItem('_rec_my_reactions', JSON.stringify(myRx));
         renderNotes();
         // Persistir en Supabase
-        post({ action: 'toggleReaction', id, emoji, add: !alreadyReacted }).catch(()=>{});
+        post({ action: 'toggleReaction', id, emoji, user: 'Admin', add: adding }).catch(()=>{});
     };
 
     // --- UPDATE DIVISOR ---
