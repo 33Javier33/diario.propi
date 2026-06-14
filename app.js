@@ -321,13 +321,19 @@ document.addEventListener('DOMContentLoaded', () => {
     window._notaReaccion = async (id, emoji) => {
         const myRx = JSON.parse(localStorage.getItem('_rec_my_reactions') || '{}');
         const alreadyReacted = myRx[id]?.[emoji];
-        await post({ action: 'toggleReaction', id, emoji, add: !alreadyReacted });
+        // Actualizar local inmediatamente
         if (!myRx[id]) myRx[id] = {};
         if (alreadyReacted) delete myRx[id][emoji]; else myRx[id][emoji] = true;
         localStorage.setItem('_rec_my_reactions', JSON.stringify(myRx));
-        const nRes = await api({ action: 'getNotes' });
-        notes = nRes.data || [];
+        const nota = notes.find(n => n.originalIndex === id);
+        if (nota) {
+            if (!nota.reactions) nota.reactions = {};
+            nota.reactions[emoji] = Math.max(0, (nota.reactions[emoji] || 0) + (alreadyReacted ? -1 : 1));
+            if (nota.reactions[emoji] === 0) delete nota.reactions[emoji];
+        }
         renderNotes();
+        // Persistir en Supabase
+        post({ action: 'toggleReaction', id, emoji, add: !alreadyReacted }).catch(()=>{});
     };
 
     // --- UPDATE DIVISOR ---
