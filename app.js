@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const rows = grouped[fecha].map(d => `
                 <tr>
-                    <td style="font-weight:700; color:var(--primary)">${d.tipo}</td>
+                    <td style="font-weight:700; color:var(--primary)">${d.tipo}${d.registrado_por_nombre ? `<br><small style="font-size:0.68em;color:#7f8c8d;font-weight:500">👤 ${d.registrado_por_nombre}</small>` : ''}</td>
                     <td><strong>${fNum(d.monto)}</strong></td>
                     <td style="text-align:right">
                         <button onclick="abrirEd('${d.originalIndex}')" class="btn btn-outline btn-sm"><i class="fas fa-pencil"></i></button>

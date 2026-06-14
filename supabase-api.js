@@ -34,7 +34,8 @@ async function apiGetRecaudaciones() {
             fecha:  r.fecha,
             tipo:   r.tipo,
             monto:  Number(r.monto),
-            divisor: divisoresPorFecha[r.fecha] ? Number(divisoresPorFecha[r.fecha]) : null
+            divisor: divisoresPorFecha[r.fecha] ? Number(divisoresPorFecha[r.fecha]) : null,
+            registrado_por_nombre: r.registrado_por_nombre || null
         }));
         return recOk(records);
     } catch(e) { return recErr(e.message); }
