@@ -1,14 +1,13 @@
 // --- CONFIGURACIÓN DE CACHÉ ---
-// Paso 1: Nombramos nuestra caché y le damos una versión.
-// Si haces cambios importantes en el futuro (como añadir botones), cambia 'v2' a 'v3', y así sucesivamente.
-const CACHE_NAME = 'recaudacion-cache-v2';
+const CACHE_NAME = 'recaudacion-cache-v3';
 
 // Archivos que la aplicación necesita para funcionar sin conexión.
 const urlsToCache = [
   '/',
   '/index.html',
+  '/app.js',
+  '/styles.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css'
-  // Si tuvieras un archivo .css o .js separado, lo agregarías aquí.
 ];
 
 // --- CICLO DE VIDA DEL SERVICE WORKER ---
