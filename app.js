@@ -8,6 +8,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let datos = [], notes = [], divisores = {}, editIndex = -1, minimizado = true, sortOrder = 'desc', currentPanel = 'agregarPanel', currentUser = '';
 
+    // ── Inactividad (15 minutos) ──────────────────────────────────────────────
+    const INACTIVIDAD_MS = 15 * 60 * 1000;
+    let _inactivTimeout = null;
+
+    function cerrarSesion(porInactividad = false) {
+        clearTimeout(_inactivTimeout);
+        sessionStorage.clear();
+        if (porInactividad) showToast('Sesión cerrada por inactividad (15 min)', 'danger');
+        setTimeout(() => location.reload(), porInactividad ? 1500 : 0);
+    }
+
+    function resetearInactividad() {
+        if (!sessionStorage.getItem('user')) return;
+        clearTimeout(_inactivTimeout);
+        _inactivTimeout = setTimeout(() => cerrarSesion(true), INACTIVIDAD_MS);
+    }
+
+    function iniciarWatchdogInactividad() {
+        ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(ev =>
+            document.addEventListener(ev, resetearInactividad, { passive: true }));
+        resetearInactividad();
+    }
+
     // --- TOAST ---
     function showToast(msg, type = 'success') {
         const container = document.getElementById('toast-container');
@@ -489,10 +512,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- LOGOUT ---
-    document.getElementById('logoutBtn').onclick = () => {
-        sessionStorage.clear();
-        location.reload();
-    };
+    document.getElementById('logoutBtn').onclick = () => cerrarSesion(false);
+    document.getElementById('logoutBtnMobile').onclick = () => cerrarSesion(false);
 
     // --- LOGIN ---
     document.getElementById('loginForm').onsubmit = (e) => {
@@ -509,6 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('activeUserBadge').textContent = 'SESIÓN: ' + user.toUpperCase();
             document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
             cargar();
+            iniciarWatchdogInactividad();
         } else {
             showToast('Clave incorrecta', 'danger');
         }
