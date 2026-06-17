@@ -8,6 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let datos = [], notes = [], divisores = {}, editIndex = -1, minimizado = true, sortOrder = 'desc', currentPanel = 'agregarPanel', currentUser = '';
 
+    function escHtml(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
     // ── Inactividad (15 minutos) ──────────────────────────────────────────────
     const INACTIVIDAD_MS = 15 * 60 * 1000;
     let _inactivTimeout = null;
@@ -36,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = 'toast';
-        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-circle-xmark'}" style="color:${type === 'success' ? 'var(--secondary)' : 'var(--danger)'}"></i> ${msg}`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-circle-xmark'}" style="color:${type === 'success' ? 'var(--secondary)' : 'var(--danger)'}"></i> ${escHtml(msg)}`;
         container.appendChild(toast);
         setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 3000);
     }
@@ -222,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const rows = grouped[fecha].map(d => `
                 <tr>
-                    <td style="font-weight:700; color:var(--primary)">${d.tipo}${d.registrado_por_nombre ? `<br><small style="font-size:0.68em;color:#7f8c8d;font-weight:500">👤 ${d.registrado_por_nombre}</small>` : ''}</td>
+                    <td style="font-weight:700; color:var(--primary)">${escHtml(d.tipo)}${d.registrado_por_nombre ? `<br><small style="font-size:0.68em;color:#7f8c8d;font-weight:500">👤 ${escHtml(d.registrado_por_nombre)}</small>` : ''}</td>
                     <td><strong>${fNum(d.monto)}</strong></td>
                     <td style="text-align:right">
                         <button onclick="abrirEd('${d.originalIndex}')" class="btn btn-outline btn-sm"><i class="fas fa-pencil"></i></button>
@@ -286,14 +292,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px">
                         ${n.pinned?'<span style="background:#f59e0b;color:#fff;font-size:0.68em;font-weight:700;padding:1px 7px;border-radius:20px">📌 FIJADA</span>':''}
                         ${isNew?'<span style="background:#3b82f6;color:#fff;font-size:0.68em;font-weight:700;padding:1px 7px;border-radius:20px">NUEVO</span>':''}
-                        <span style="font-size:0.75rem;color:var(--text-muted);font-weight:600">Por <b>${n.autor||'?'}</b> — ${new Date(n.fecha).toLocaleString()}</span>
+                        <span style="font-size:0.75rem;color:var(--text-muted);font-weight:600">Por <b>${escHtml(n.autor||'?')}</b> — ${escHtml(new Date(n.fecha).toLocaleString())}</span>
                     </div>
                     <div style="display:flex;gap:4px;flex-shrink:0">
                         <button onclick="_notaPin('${n.originalIndex}',${!n.pinned})" title="${n.pinned?'Desfijar':'Fijar'}" style="background:none;border:1px solid #e2e8f0;border-radius:6px;padding:2px 7px;cursor:pointer;font-size:0.85em">${n.pinned?'📌':'📍'}</button>
                         <button onclick="borrarNota('${n.originalIndex}')" style="background:none;border:1px solid #fee2e2;color:#ef4444;border-radius:6px;padding:2px 7px;cursor:pointer;font-size:0.85em">🗑️</button>
                     </div>
                 </div>
-                <div style="font-size:1rem;line-height:1.6;margin-bottom:10px">${n.mensaje}</div>
+                <div style="font-size:1rem;line-height:1.6;margin-bottom:10px;white-space:pre-wrap">${escHtml(n.mensaje)}</div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap">${rxBtns}</div>
             </div>`;
         }).join('') || '<p style="text-align:center;color:var(--text-muted)">Sin notas guardadas.</p>';
