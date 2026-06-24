@@ -310,13 +310,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const ds = datos.filter(x => x.fecha === fecha);
         const total = ds.reduce((s, d) => s + d.monto, 0);
         const div = divisores[fecha] || 0;
-        const res = div > 0 ? total / div : 0;
+        const res = div > 0 ? total / div : null;
 
         let txt = `📊 REPORTE: ${fFec(fecha)}\n--------------------------------\n`;
         ds.forEach(x => txt += `• ${x.tipo}: ${fNum(x.monto)}\n`);
         txt += `--------------------------------\n`;
         txt += `💰 TOTAL DÍA: ${fNum(total)}\n`;
-        txt += `✅ RESULTADO NOCHE: ${fNum(res)}`;
+        txt += `✅ RESULTADO NOCHE: ${res !== null ? fNum(res) : '— (sin divisor)'}`;
 
         navigator.clipboard.writeText(txt).then(() => showToast('Reporte copiado'));
     };
