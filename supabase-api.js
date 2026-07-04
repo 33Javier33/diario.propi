@@ -182,7 +182,9 @@ async function apiUpdateDivisor(fecha, divisor) {
             const { error } = await dbRec.from('divisores').delete().eq('fecha', fecha);
             if (error) throw error;
         } else {
-            const { error } = await dbRec.from('divisores').upsert({ id: crypto.randomUUID(), fecha, valor: Number(divisor) }, { onConflict: 'fecha' });
+            // Upsert por fecha: si la fecha ya existe, sobrescribe el valor y conserva el id
+            // de la fila (no se pasa id → en INSERT lo genera el default; en UPDATE no cambia).
+            const { error } = await dbRec.from('divisores').upsert({ fecha, valor: Number(divisor) }, { onConflict: 'fecha' });
             if (error) throw error;
         }
         _notificarCambio('divisores');
