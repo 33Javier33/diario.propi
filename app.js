@@ -628,8 +628,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mostrar la explicación del nuevo login UNA vez por dispositivo (tras actualizar),
     // solo si quedó en la pantalla de ingreso (no si ya hay sesión activa).
-    if (!document.body.classList.contains('loggedin') && !localStorage.getItem('diario_login_help_v1')) {
-        localStorage.setItem('diario_login_help_v1', '1');
+    if (!document.body.classList.contains('loggedin') && !localStorage.getItem('diario_login_help_v2')) {
+        localStorage.setItem('diario_login_help_v2', '1');
         setTimeout(() => { try { window.showLoginHelp(); } catch(e) {} }, 500);
     }
 
