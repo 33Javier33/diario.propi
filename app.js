@@ -14,9 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
-    // ── Inactividad (15 minutos) ──────────────────────────────────────────────
+    // ── Inactividad (15 minutos, también en segundo plano / fuera de pestaña) ──
+    // Se usa un timestamp de última actividad (hora real): así el cierre funciona
+    // aunque el SO congele los timers al dejar la app en segundo plano — al volver
+    // se verifica el tiempo transcurrido real y se cierra si pasaron 15 min.
     const INACTIVIDAD_MS = 15 * 60 * 1000;
     let _inactivTimeout = null;
+    let _ultimaActividad = Date.now();
 
     function cerrarSesion(porInactividad = false) {
         clearTimeout(_inactivTimeout);
@@ -27,13 +31,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resetearInactividad() {
         if (!sessionStorage.getItem('user')) return;
+        _ultimaActividad = Date.now();
         clearTimeout(_inactivTimeout);
         _inactivTimeout = setTimeout(() => cerrarSesion(true), INACTIVIDAD_MS);
+    }
+
+    function _chequearInactividad() {
+        if (!sessionStorage.getItem('user')) return;
+        if (Date.now() - _ultimaActividad >= INACTIVIDAD_MS) cerrarSesion(true);
     }
 
     function iniciarWatchdogInactividad() {
         ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(ev =>
             document.addEventListener(ev, resetearInactividad, { passive: true }));
+        // Al volver a primer plano (o a la pestaña) verificar el tiempo real transcurrido
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') _chequearInactividad();
+        });
+        window.addEventListener('focus', _chequearInactividad);
         resetearInactividad();
     }
 
