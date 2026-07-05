@@ -605,6 +605,16 @@ document.addEventListener('DOMContentLoaded', () => {
         this.classList.toggle('fa-eye-slash');
     };
 
+    // --- AYUDA DEL NUEVO LOGIN ---
+    window.showLoginHelp = function () {
+        const m = document.getElementById('loginHelpModal');
+        if (m) m.style.display = 'flex';
+    };
+    window.closeLoginHelp = function () {
+        const m = document.getElementById('loginHelpModal');
+        if (m) m.style.display = 'none';
+    };
+
     // --- AUTO-LOGIN FROM SESSION ---
     // Si ya inició sesión en esta sesión del navegador, restaurar directo (sin re-pedir PIN).
     const savedUser = sessionStorage.getItem('user');
@@ -614,6 +624,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (savedUser) {
         // Sesión antigua (esquema viejo) → limpiar para forzar login nuevo con PIN
         sessionStorage.removeItem('user');
+    }
+
+    // Mostrar la explicación del nuevo login UNA vez por dispositivo (tras actualizar),
+    // solo si quedó en la pantalla de ingreso (no si ya hay sesión activa).
+    if (!document.body.classList.contains('loggedin') && !localStorage.getItem('diario_login_help_v1')) {
+        localStorage.setItem('diario_login_help_v1', '1');
+        setTimeout(() => { try { window.showLoginHelp(); } catch(e) {} }, 500);
     }
 
     // Exponer cargar globalmente para Supabase Realtime

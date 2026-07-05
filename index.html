@@ -31,7 +31,11 @@
 
     <!-- LOGIN -->
     <div id="loginOverlay">
-        <div class="card" style="width:100%; max-width:420px; text-align:center; padding:3rem;">
+        <div class="card" style="width:100%; max-width:420px; text-align:center; padding:3rem; position:relative;">
+            <button type="button" onclick="showLoginHelp()" title="¿Cómo ingreso ahora?"
+                style="position:absolute; top:14px; right:14px; width:34px; height:34px; border-radius:50%; border:1px solid var(--border); background:var(--bg-main); color:var(--primary); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-circle-question"></i>
+            </button>
             <div style="background:var(--primary); color:white; width:64px; height:64px; border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; font-size:1.5rem;">
                 <i class="fas fa-user-shield"></i>
             </div>
@@ -54,6 +58,27 @@
                 <div id="loginHint" style="display:none; font-size:0.82em; margin:8px 0 2px; text-align:center;"></div>
                 <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Ingresar</button>
             </form>
+            <button type="button" onclick="showLoginHelp()" style="margin-top:14px; background:none; border:none; color:var(--primary); font-weight:700; font-size:0.85rem; cursor:pointer;">
+                <i class="fas fa-circle-info"></i> ¿Cómo ingreso ahora?
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: AYUDA DEL NUEVO LOGIN -->
+    <div id="loginHelpModal" class="modal">
+        <div class="modal-content" style="max-width:470px; text-align:left;">
+            <h3 style="margin-bottom:0.7rem;"><i class="fas fa-key" style="color:var(--primary);"></i> Cómo ingresar ahora</h3>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.2rem;">
+                Cambiamos el acceso: <strong>ya no se usa la clave 1234</strong>. Ahora cada persona entra con su propio PIN.
+            </p>
+            <div class="help-step"><div class="help-step-num">1</div><div>Elige tu <strong>Área</strong> (Mesas, Máquinas, Técnicos o Cambistas).</div></div>
+            <div class="help-step"><div class="help-step-num">2</div><div>Elige tu <strong>nombre</strong> en la lista (son los socios de esa área).</div></div>
+            <div class="help-step"><div class="help-step-num">3</div><div>Escribe tu <strong>PIN de 4 dígitos</strong> y pulsa <span class="help-badge">Ingresar</span>.</div></div>
+            <div style="background:#fff8e1; border:1px solid #ffe08a; border-radius:12px; padding:12px 14px; margin-top:16px; font-size:0.86rem; line-height:1.5;">
+                <strong>🆕 ¿Primera vez?</strong> Si aún no tienes PIN, el que escribas quedará guardado como tuyo.<br><br>
+                <strong>🔒 ¿Olvidaste tu PIN?</strong> Un encargado puede verlo o cambiarlo desde la app <strong>socios-comicion → 🔑 PIN Diario</strong>.
+            </div>
+            <button onclick="closeLoginHelp()" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:18px;">Entendido</button>
         </div>
     </div>
 
@@ -220,6 +245,18 @@
                     <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:2rem;">
                         En las secciones del sistema encontrarás el botón <button class="help-tip-btn" style="cursor:default;">?</button> para obtener una explicación rápida sin salir de donde estás.
                     </p>
+                    <div class="help-section">
+                        <div class="help-section-header"><i class="fas fa-key"></i><span>0. Ingreso al sistema (nuevo)</span></div>
+                        <div class="help-section-body">
+                            <p style="margin-bottom:1rem;">El acceso cambió: <strong>ya no se usa la clave 1234</strong>. Ahora cada persona entra con su propio PIN de 4 dígitos.</p>
+                            <div class="help-step"><div class="help-step-num">1</div><div>Elige tu <strong>Área</strong>: <span class="help-badge">Mesas</span> <span class="help-badge">Máquinas</span> <span class="help-badge">Técnicos</span> <span class="help-badge">Cambistas</span>.</div></div>
+                            <div class="help-step"><div class="help-step-num">2</div><div>Elige tu <strong>nombre</strong> en la lista (son los socios de esa área, tomados de socios-comicion).</div></div>
+                            <div class="help-step"><div class="help-step-num">3</div><div>Escribe tu <strong>PIN de 4 dígitos</strong> y pulsa <span class="help-badge">Ingresar</span>.</div></div>
+                            <p style="margin-top:1rem;"><strong>Primera vez:</strong> si aún no tienes PIN, el que escribas quedará guardado como tuyo.</p>
+                            <p style="margin-top:0.5rem;"><strong>¿Olvidaste tu PIN?</strong> Un encargado lo recupera o cambia desde <strong>socios-comicion → 🔑 PIN Diario</strong> (protegido con la clave de recuperación).</p>
+                            <p style="margin-top:0.5rem; color:var(--text-muted); font-size:0.85rem;">En la pantalla de ingreso, el botón <i class="fas fa-circle-question"></i> vuelve a mostrar esta explicación.</p>
+                        </div>
+                    </div>
                     <div class="help-section">
                         <div class="help-section-header"><i class="fas fa-plus-circle"></i><span>1. Agregar Dato</span></div>
                         <div class="help-section-body">
