@@ -32,6 +32,45 @@ function _audit(accion, detalle, datos) {
     } catch(e) {}
 }
 
+// ── Usuarios diario.propi: socios (por área) + PIN de 4 dígitos en Supabase ──
+function _normArea(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
+
+// Devuelve los socios de socios-comicion que pertenecen al área elegida (filtro tolerante)
+window.diarioGetSociosByArea = async function(areaSel) {
+    const target = _normArea(areaSel);
+    try {
+        const { data, error } = await dbSoc.from('socios').select('id, nombre, apellido, area').order('nombre', { ascending: true });
+        if (error || !data) return [];
+        return data.filter(s => {
+            const a = _normArea(s.area);
+            if (target === 'cambistas') return a.includes('cambist');
+            if (target === 'mesas')     return a.includes('mesa') && !a.includes('cambist');
+            if (target === 'maquinas')  return a.includes('maquina');
+            if (target === 'tecnicos')  return a.includes('tecnic');
+            return a === target;
+        }).map(s => ({ id: s.id, nombre: ((s.nombre || '') + ' ' + (s.apellido || '')).trim(), area: s.area }));
+    } catch(e) { return []; }
+};
+
+// Lee el PIN guardado de un socio (o null si aún no tiene)
+window.diarioGetPin = async function(socioId) {
+    try {
+        const { data } = await dbSoc.from('diario_pins').select('pin, nombre, area').eq('socio_id', socioId).maybeSingle();
+        return data || null;
+    } catch(e) { return null; }
+};
+
+// Crea o actualiza el PIN de un socio
+window.diarioSetPin = async function(socioId, nombre, area, pin) {
+    try {
+        const { error } = await dbSoc.from('diario_pins').upsert(
+            { socio_id: socioId, nombre: nombre || '', area: area || '', pin: String(pin), updated_at: new Date().toISOString() },
+            { onConflict: 'socio_id' }
+        );
+        return !error;
+    } catch(e) { return false; }
+};
+
 // Canal compartido para notificar cambios a todas las apps en tiempo real
 const _recBroadcast = dbRec.channel('rec-data-sync');
 

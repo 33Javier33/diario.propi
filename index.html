@@ -37,15 +37,21 @@
             </div>
             <h2 style="margin-bottom:1.5rem;">Acceso al Sistema</h2>
             <form id="loginForm">
-                <select id="username" style="font-weight:700; text-align:center; cursor:pointer; background:var(--bg-main);">
-                    <option value="" disabled selected>Elegir Usuario...</option>
-                    <option value="mesas">USUARIO: MESAS</option>
-                    <option value="maquinas">USUARIO: MÁQUINAS</option>
+                <select id="loginArea" style="font-weight:700; text-align:center; cursor:pointer; background:var(--bg-main); margin-bottom:10px;">
+                    <option value="" disabled selected>1. Elegir Área...</option>
+                    <option value="Mesas">MESAS</option>
+                    <option value="Maquinas">MÁQUINAS</option>
+                    <option value="Tecnicos">TÉCNICOS</option>
+                    <option value="Cambistas">CAMBISTAS</option>
+                </select>
+                <select id="username" style="font-weight:700; text-align:center; cursor:pointer; background:var(--bg-main);" disabled>
+                    <option value="" disabled selected>2. Elegir tu nombre...</option>
                 </select>
                 <div class="password-container">
-                    <input type="password" id="password" placeholder="Clave de Seguridad" required>
+                    <input type="password" id="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="3. PIN de 4 dígitos" required>
                     <i class="fas fa-eye toggle-password" id="toggleLoginPassword"></i>
                 </div>
+                <div id="loginHint" style="display:none; font-size:0.82em; margin:8px 0 2px; text-align:center;"></div>
                 <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Ingresar</button>
             </form>
         </div>

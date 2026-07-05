@@ -521,25 +521,80 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('logoutBtn').onclick = () => cerrarSesion(false);
     document.getElementById('logoutBtnMobile').onclick = () => cerrarSesion(false);
 
-    // --- LOGIN ---
-    document.getElementById('loginForm').onsubmit = (e) => {
-        e.preventDefault();
-        const user = document.getElementById('username').value;
-        const pass = document.getElementById('password').value;
-        if (!user) { showToast('Elija un usuario', 'danger'); return; }
-        if ((user === 'mesas' || user === 'maquinas') && pass === '1234') {
-            currentUser = user;
-            sessionStorage.setItem('user', user);
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('mainContent').style.display = 'flex';
-            document.body.classList.add('loggedin');
-            document.getElementById('activeUserBadge').textContent = 'SESIÓN: ' + user.toUpperCase();
-            document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
-            cargar();
-            iniciarWatchdogInactividad();
-        } else {
-            showToast('Clave incorrecta', 'danger');
+    // --- LOGIN (área → socio → PIN de 4 dígitos guardado en Supabase) ---
+    function _diarioEntrarApp(displayName) {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'flex';
+        document.body.classList.add('loggedin');
+        document.getElementById('activeUserBadge').textContent = 'SESIÓN: ' + String(displayName || '').toUpperCase();
+        document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+        cargar();
+        iniciarWatchdogInactividad();
+    }
+
+    const _selArea = document.getElementById('loginArea');
+    const _selUser = document.getElementById('username');
+    const _hintEl  = document.getElementById('loginHint');
+    function _setHint(msg, color) {
+        if (!_hintEl) return;
+        _hintEl.textContent = msg || '';
+        _hintEl.style.color = color || '#666';
+        _hintEl.style.display = msg ? 'block' : 'none';
+    }
+
+    // Al elegir el área → cargar los socios de esa área desde socios-comicion
+    if (_selArea) _selArea.onchange = async () => {
+        _selUser.innerHTML = '<option value="" disabled selected>Cargando...</option>';
+        _selUser.disabled = true;
+        _setHint('', '');
+        document.getElementById('password').value = '';
+        const socios = (typeof window.diarioGetSociosByArea === 'function')
+            ? await window.diarioGetSociosByArea(_selArea.value) : [];
+        if (!socios.length) {
+            _selUser.innerHTML = '<option value="" disabled selected>Sin socios en esta área</option>';
+            _selUser.disabled = true;
+            return;
         }
+        _selUser.innerHTML = '<option value="" disabled selected>2. Elegir tu nombre...</option>'
+            + socios.map(s => `<option value="${s.id}" data-nombre="${(s.nombre || '').replace(/"/g, '&quot;')}">${s.nombre}</option>`).join('');
+        _selUser.disabled = false;
+    };
+
+    // Al elegir el socio → indicar si ya tiene PIN o si es su primera vez
+    if (_selUser) _selUser.onchange = async () => {
+        if (!_selUser.value) return;
+        const rec = (typeof window.diarioGetPin === 'function') ? await window.diarioGetPin(_selUser.value) : null;
+        if (rec && rec.pin) _setHint('🔒 Ingresa tu PIN de 4 dígitos', '#1a6fa0');
+        else _setHint('🆕 Primera vez: crea tu PIN de 4 dígitos (quedará guardado)', '#b45309');
+    };
+
+    document.getElementById('loginForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const area    = _selArea ? _selArea.value : '';
+        const socioId = _selUser ? _selUser.value : '';
+        const pin     = (document.getElementById('password').value || '').trim();
+        const nombre  = (_selUser && _selUser.selectedOptions[0])
+            ? (_selUser.selectedOptions[0].dataset.nombre || _selUser.selectedOptions[0].textContent) : '';
+
+        if (!area)    { showToast('Elige el área', 'danger'); return; }
+        if (!socioId) { showToast('Elige tu nombre', 'danger'); return; }
+        if (!/^\d{4}$/.test(pin)) { showToast('El PIN debe ser de 4 dígitos', 'danger'); return; }
+
+        const rec = (typeof window.diarioGetPin === 'function') ? await window.diarioGetPin(socioId) : null;
+        if (rec && rec.pin) {
+            if (pin !== rec.pin) { showToast('PIN incorrecto', 'danger'); return; }
+        } else {
+            // Primera vez: crear el PIN del usuario
+            const ok = (typeof window.diarioSetPin === 'function') ? await window.diarioSetPin(socioId, nombre, area, pin) : false;
+            if (!ok) { showToast('No se pudo crear el PIN, reintenta', 'danger'); return; }
+            showToast('PIN creado ✓', 'success');
+        }
+
+        currentUser = nombre || socioId;
+        sessionStorage.setItem('user', currentUser);
+        sessionStorage.setItem('user_area', area);
+        sessionStorage.setItem('user_socioId', socioId);
+        _diarioEntrarApp(currentUser);
     };
 
     // --- TOGGLE PASSWORD ---
@@ -551,12 +606,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- AUTO-LOGIN FROM SESSION ---
+    // Si ya inició sesión en esta sesión del navegador, restaurar directo (sin re-pedir PIN).
     const savedUser = sessionStorage.getItem('user');
-    if (savedUser) {
+    if (savedUser && savedUser !== 'mesas' && savedUser !== 'maquinas') {
         currentUser = savedUser;
-        document.getElementById('username').value = savedUser;
-        document.getElementById('password').value = '1234';
-        document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+        _diarioEntrarApp(currentUser);
+    } else if (savedUser) {
+        // Sesión antigua (esquema viejo) → limpiar para forzar login nuevo con PIN
+        sessionStorage.removeItem('user');
     }
 
     // Exponer cargar globalmente para Supabase Realtime
