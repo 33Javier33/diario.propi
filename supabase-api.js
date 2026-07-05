@@ -8,6 +8,30 @@ const SUPABASE_KEY_REC = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 
 const dbRec = supabase.createClient(SUPABASE_URL_REC, SUPABASE_KEY_REC);
 
+// Cliente a la base de socios (donde vive la auditoría de socios-comicion).
+// Permite registrar en su historial quién hizo cada cambio desde diario.propi.
+const SUPABASE_URL_SOC = 'https://teemahksasdougehrcly.supabase.co';
+const SUPABASE_KEY_SOC = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlZW1haGtzYXNkb3VnZWhyY2x5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTkwNjIsImV4cCI6MjA5Njg3NTA2Mn0.EIQ7gRcwf3zYgvGESKw3s5lnZMABN_EuNWsrJK3L1zk';
+const dbSoc = supabase.createClient(SUPABASE_URL_SOC, SUPABASE_KEY_SOC);
+
+// Registra un evento en la auditoría de socios-comicion (no bloqueante).
+function _audit(accion, detalle, datos) {
+    try {
+        const user = sessionStorage.getItem('user') || '';
+        const usuario = user ? ('Diario · ' + user) : 'Diario';
+        dbSoc.from('auditoria').insert({
+            usuario,
+            accion,
+            folio: null,
+            datos_extra: Object.assign(
+                { detalle: detalle || '', id_afectado: '', origen: 'diario.propi' },
+                datos || {}
+            )
+        }).then(({ error }) => { if (error) console.warn('[supabase-api] auditoria error:', error.message); })
+          .catch(() => {});
+    } catch(e) {}
+}
+
 // Canal compartido para notificar cambios a todas las apps en tiempo real
 const _recBroadcast = dbRec.channel('rec-data-sync');
 
@@ -102,11 +126,16 @@ async function apiGetDivisores() {
     } catch(e) { return recErr(e.message); }
 }
 
+function _fmtM(v) { return '$' + (Number(v) || 0).toLocaleString('es-CL'); }
+
 async function apiAddRecaudacion(fecha, tipo, monto) {
     try {
         const { error } = await dbRec.from('recaudaciones').insert({ id: crypto.randomUUID(), fecha, tipo: tipo || 'Sin Tipo', monto: Number(monto) });
         if (error) throw error;
         _notificarCambio('recaudaciones');
+        _audit('Registrar Recaudación',
+            'Fecha: ' + (fecha || '') + ' | Tipo: ' + (tipo || 'Sin Tipo') + ' | Monto: ' + _fmtM(monto),
+            { tipo: tipo || 'Sin Tipo', fecha: fecha || '', monto: Number(monto) || 0 });
         return recOk('Dato agregado.');
     } catch(e) { return recErr(e.message); }
 }
@@ -116,15 +145,24 @@ async function apiUpdateRecaudacion(id, fecha, tipo, monto) {
         const { error } = await dbRec.from('recaudaciones').update({ fecha, tipo, monto: Number(monto) }).eq('id', id);
         if (error) throw error;
         _notificarCambio('recaudaciones');
+        _audit('Actualizar Recaudación',
+            'Fecha: ' + (fecha || '') + ' | Tipo: ' + (tipo || '') + ' | Monto: ' + _fmtM(monto) + ' | ID: ' + String(id).slice(0, 8),
+            { id, tipo, fecha: fecha || '', monto: Number(monto) || 0 });
         return recOk('Dato actualizado.');
     } catch(e) { return recErr(e.message); }
 }
 
 async function apiDeleteRecaudacion(id) {
     try {
+        // Capturar detalles antes de borrar para dejarlos en la auditoría
+        let prev = null;
+        try { const r = await dbRec.from('recaudaciones').select('fecha, tipo, monto').eq('id', id).maybeSingle(); prev = r.data; } catch(e) {}
         const { error } = await dbRec.from('recaudaciones').delete().eq('id', id);
         if (error) throw error;
         _notificarCambio('recaudaciones');
+        _audit('Eliminar Recaudación',
+            prev ? ('Fecha: ' + (prev.fecha || '') + ' | Tipo: ' + (prev.tipo || '') + ' | Monto: ' + _fmtM(prev.monto)) : ('ID: ' + String(id).slice(0, 8)),
+            { id, tipo: prev?.tipo || '', fecha: prev?.fecha || '', monto: Number(prev?.monto) || 0 });
         return recOk('Dato eliminado.');
     } catch(e) { return recErr(e.message); }
 }
@@ -133,6 +171,9 @@ async function apiUpdateSaldo(fecha, monto) {
     try {
         const { error } = await dbRec.from('saldo_fondo').upsert({ id: 'main', fecha, monto: Number(monto) }, { onConflict: 'id' });
         if (error) throw error;
+        _audit('Registrar Saldo Fondo',
+            'Fecha: ' + (fecha || '') + ' | Monto: ' + _fmtM(monto),
+            { fecha: fecha || '', monto: Number(monto) || 0 });
         return recOk('Saldo actualizado.');
     } catch(e) { return recErr(e.message); }
 }
@@ -188,6 +229,10 @@ async function apiUpdateDivisor(fecha, divisor) {
             if (error) throw error;
         }
         _notificarCambio('divisores');
+        const _divN = Number(divisor) || 0;
+        _audit('Actualizar Divisor',
+            'Fecha: ' + (fecha || '') + (_divN > 0 ? ' | Divisor: ' + _divN : ' | Divisor eliminado'),
+            { fecha: fecha || '', divisor: _divN });
         return recOk('Divisor actualizado.');
     } catch(e) { return recErr(e.message); }
 }
