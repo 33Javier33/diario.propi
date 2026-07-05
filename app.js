@@ -594,6 +594,11 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('user', currentUser);
         sessionStorage.setItem('user_area', area);
         sessionStorage.setItem('user_socioId', socioId);
+        // Registrar el ingreso (login) en la auditoría de socios-comicion
+        if (typeof _audit === 'function') {
+            _audit('Acceso', 'Ingreso a diario.propi · Área: ' + area,
+                { metodo: 'pin_diario', area: area, socio_id: socioId, app: 'diario.propi' });
+        }
         _diarioEntrarApp(currentUser);
     };
 
