@@ -7,6 +7,23 @@
 const TELEGRAM_TOKEN   = '8318855772:AAEDfwR7BdyF5gL7nMJjaYowvMF9hw6yfCw';
 const TELEGRAM_CHAT_ID = '5981473068';
 
+// ── SUPABASE (recaudaciones) — el bot lee de aquí, no de Sheets ────────────────
+const SB_REC_URL = 'https://lpulmjzboogixbdxxayo.supabase.co';
+const SB_REC_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwdWxtanpib29naXhiZHh4YXlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NjY0NzMsImV4cCI6MjA5MTI0MjQ3M30.vjebyQb4Bb62ZQlNaJZveuxdBYDOmtC4bM7uwAilDzY';
+
+// GET a la API REST de Supabase (recaudaciones). Devuelve array (o [] si falla).
+function sbRecGet(path) {
+  try {
+    const res = UrlFetchApp.fetch(SB_REC_URL + '/rest/v1/' + path, {
+      method: 'get',
+      headers: { apikey: SB_REC_KEY, Authorization: 'Bearer ' + SB_REC_KEY },
+      muteHttpExceptions: true
+    });
+    const j = JSON.parse(res.getContentText());
+    return Array.isArray(j) ? j : [];
+  } catch (e) { Logger.log('sbRecGet error: ' + e); return []; }
+}
+
 function probarTelegramRec() {
   telegramRec('🔔 Prueba Recaudaciones OK!');
 }
@@ -29,37 +46,30 @@ function telegramRec(mensaje) {
   }
 }
 
-// Resumen diario — llamar con activador de tiempo
+// Resumen diario — llamar con activador de tiempo. Lee de Supabase (recaudaciones/divisores).
 function resumenDiarioRecaudacion() {
   try {
-    const ss           = SpreadsheetApp.getActiveSpreadsheet();
-    const sheetDatos   = ss.getSheetByName(DATA_SHEET_NAME);
-    const timeZone     = ss.getSpreadsheetTimeZone();
-    const hoy          = Utilities.formatDate(new Date(), timeZone, 'yyyy-MM-dd');
-    const hoyVis       = Utilities.formatDate(new Date(), timeZone, 'dd/MM/yyyy');
+    const timeZone = 'America/Santiago';
+    const hoy      = Utilities.formatDate(new Date(), timeZone, 'yyyy-MM-dd');
+    const hoyVis   = Utilities.formatDate(new Date(), timeZone, 'dd/MM/yyyy');
 
-    if (!sheetDatos || sheetDatos.getLastRow() < 2) {
+    const recs = sbRecGet('recaudaciones?select=fecha,tipo,monto&fecha=eq.' + hoy);
+    if (!recs.length) {
       telegramRec('📊 <b>Resumen del día ' + hoyVis + '</b>\n\nSin registros de recaudación.');
       return;
     }
 
-    const values = sheetDatos.getRange(2, 1, sheetDatos.getLastRow() - 1, 3).getValues();
     const desglose = {};
     let totalDia = 0;
-
-    values.forEach(row => {
-      const fecha = row[0];
-      if (!fecha || !(fecha instanceof Date)) return;
-      const fechaStr = Utilities.formatDate(fecha, timeZone, 'yyyy-MM-dd');
-      if (fechaStr !== hoy) return;
-      const tipo  = row[1] ? row[1].toString().trim() : 'Sin Tipo';
-      const monto = parseFloat(row[2]) || 0;
+    recs.forEach(r => {
+      const monto = Number(r.monto) || 0;
+      const tipo  = r.tipo ? String(r.tipo).trim() : 'Sin Tipo';
       totalDia += monto;
       desglose[tipo] = (desglose[tipo] || 0) + monto;
     });
 
-    const divisores  = getDivisoresInternal(ss.getSheetByName(DIVISORES_SHEET_NAME));
-    const divisorHoy = divisores[hoy] ? parseFloat(divisores[hoy]) : null;
+    const divs = sbRecGet('divisores?select=valor&fecha=eq.' + hoy);
+    const divisorHoy = (divs.length && Number(divs[0].valor) > 0) ? Number(divs[0].valor) : null;
     const puntoNoche = divisorHoy && divisorHoy > 1
       ? Math.round(totalDia / divisorHoy) : null;
 
@@ -141,82 +151,40 @@ function doPost(e) {
 // ==============================================================================
 function getTotalDataForArqueo() {
   try {
-    const ss             = SpreadsheetApp.getActiveSpreadsheet();
-    const sheetDatos     = ss.getSheetByName(DATA_SHEET_NAME);
-    const sheetDivisores = ss.getSheetByName(DIVISORES_SHEET_NAME);
-    const timeZone       = ss.getSpreadsheetTimeZone();
-
-    if (!sheetDatos) {
-      return createErrorResponse("Error: Hoja '" + DATA_SHEET_NAME + "' no encontrada.");
-    }
+    const recs = sbRecGet('recaudaciones?select=fecha,tipo,monto');
+    const divs = sbRecGet('divisores?select=fecha,valor');
 
     let totalAcumulado = 0;
-    let allData        = [];
     const desgloseMap  = {};
+    recs.forEach(function(r) {
+      const monto = Number(r.monto) || 0;
+      const tipo  = r.tipo ? String(r.tipo).trim() : 'Sin Tipo';
+      totalAcumulado += monto;
+      if (tipo !== 'Sin Tipo') desgloseMap[tipo] = (desgloseMap[tipo] || 0) + monto;
+    });
 
-    if (sheetDatos.getLastRow() >= 2) {
-      allData = sheetDatos.getRange(2, 1, sheetDatos.getLastRow() - 1, 3).getValues();
-      for (let i = 0; i < allData.length; i++) {
-        const tipo  = allData[i][1] ? allData[i][1].toString().trim() : 'Sin Tipo';
-        let   monto = allData[i][2];
-        if (typeof monto === 'string') {
-          monto = monto.replace(/\./g, '').replace(/,/g, '.');
-          monto = parseFloat(monto) || 0;
-        }
-        monto = parseFloat(monto) || 0;
-        totalAcumulado += monto;
-        if (tipo !== 'Sin Tipo') {
-          desgloseMap[tipo] = (desgloseMap[tipo] || 0) + monto;
-        }
+    // Divisor más reciente por fecha (ISO yyyy-mm-dd → orden lexicográfico sirve)
+    let lastDivisorValue = 1.0, lastDivisorISO = null, lastDivisorDateString = 'N/A';
+    divs.forEach(function(d) {
+      if (!d.fecha) return;
+      if (!lastDivisorISO || d.fecha > lastDivisorISO) {
+        lastDivisorISO = d.fecha;
+        lastDivisorValue = Number(d.valor) || 1.0;
       }
-    }
-
-    let lastDivisorValue      = 1.0;
-    let lastDivisorDateString = "N/A";
-    let lastDate              = new Date(0);
-
-    if (sheetDivisores && sheetDivisores.getLastRow() >= 2) {
-      const allDivisors = sheetDivisores.getRange(2, 1, sheetDivisores.getLastRow() - 1, 2).getValues();
-      for (let i = 0; i < allDivisors.length; i++) {
-        const rowDate    = allDivisors[i][0];
-        const rowDivisor = allDivisors[i][1];
-        if (rowDate && rowDate instanceof Date && rowDivisor !== null && rowDivisor !== "") {
-          if (rowDate.getTime() > lastDate.getTime()) {
-            lastDate              = rowDate;
-            lastDivisorValue      = parseFloat(rowDivisor) || 1.0;
-            lastDivisorDateString = Utilities.formatDate(rowDate, timeZone, "dd-MM-yyyy");
-          }
-        }
-      }
+    });
+    if (lastDivisorISO) {
+      const p = String(lastDivisorISO).split('-'); // yyyy-mm-dd
+      lastDivisorDateString = p[2] + '-' + p[1] + '-' + p[0]; // dd-mm-yyyy
     }
 
     let totalLastDivisorDay = 0;
-    if (lastDivisorDateString !== "N/A" && allData.length > 0) {
-      const dateForComparison = Utilities.formatDate(
-        Utilities.parseDate(lastDivisorDateString, timeZone, "dd-MM-yyyy"),
-        timeZone, "yyyy-MM-dd"
-      );
-      for (let i = 0; i < allData.length; i++) {
-        const fecha = allData[i][0];
-        let   monto = allData[i][2];
-        if (fecha && fecha instanceof Date) {
-          const recordDateString = Utilities.formatDate(fecha, timeZone, "yyyy-MM-dd");
-          if (recordDateString === dateForComparison) {
-            if (typeof monto === 'string') {
-              monto = monto.replace(/\./g, '').replace(/,/g, '.');
-              monto = parseFloat(monto) || 0;
-            }
-            monto = parseFloat(monto) || 0;
-            totalLastDivisorDay += monto;
-          }
-        }
-      }
+    if (lastDivisorISO) {
+      recs.forEach(function(r) { if (r.fecha === lastDivisorISO) totalLastDivisorDay += Number(r.monto) || 0; });
     }
 
-    const desgloseEsperadoArray = Object.keys(desgloseMap).map(tipo => ({
-      tipo:  tipo,
-      monto: Math.round(desgloseMap[tipo]) * 100
-    }));
+    const desgloseEsperadoArray = Object.keys(desgloseMap).map(function(tipo) {
+      return { tipo: tipo, monto: Math.round(desgloseMap[tipo]) * 100 };
+    });
 
     const dataToSend = {
       totalAcumulado:      Math.round(totalAcumulado) * 100,
@@ -225,19 +193,13 @@ function getTotalDataForArqueo() {
       lastDivisorDate:     lastDivisorDateString,
       desgloseEsperado:    desgloseEsperadoArray
     };
-
     return ContentService.createTextOutput(JSON.stringify(dataToSend))
       .setMimeType(ContentService.MimeType.JSON);
-
   } catch (error) {
-    Logger.log("Error al acceder a Sheets: " + error.toString());
     return ContentService.createTextOutput(JSON.stringify({
-      error:               "Fallo de ejecución en script. " + error.message,
-      totalAcumulado:      0,
-      lastDivisor:         1.0,
-      totalLastDivisorDay: 0,
-      lastDivisorDate:     "ERROR",
-      desgloseEsperado:    []
+      error: 'Fallo de ejecución. ' + error.message,
+      totalAcumulado: 0, lastDivisor: 1.0, totalLastDivisorDay: 0,
+      lastDivisorDate: 'ERROR', desgloseEsperado: []
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }
@@ -246,36 +208,20 @@ function getTotalDataForArqueo() {
 // FUNCIONES PARA HISTORIAL DETALLADO
 // ==============================================================================
 function getRecordsWithDivisors() {
-  const ss             = SpreadsheetApp.getActiveSpreadsheet();
-  const sheetDatos     = ss.getSheetByName(DATA_SHEET_NAME);
-  const sheetDivisores = ss.getSheetByName(DIVISORES_SHEET_NAME);
-  const timeZone       = ss.getSpreadsheetTimeZone();
+  const recs = sbRecGet('recaudaciones?select=id,fecha,tipo,monto&order=fecha.desc');
+  const divs = sbRecGet('divisores?select=fecha,valor');
+  const divMap = {};
+  divs.forEach(function(d) { if (d.fecha) { const v = Number(d.valor); divMap[d.fecha] = (v > 0) ? v : null; } });
 
-  if (!sheetDatos) return createErrorResponse("Hoja '" + DATA_SHEET_NAME + "' no encontrada.");
-  const divisoresPorFecha = getDivisoresInternal(sheetDivisores);
-  if (sheetDatos.getLastRow() < 2) return createSuccessResponse([]);
-
-  const values  = sheetDatos.getRange(2, 1, sheetDatos.getLastRow() - 1, 3).getValues();
-  const records = values.map((row, index) => {
-    const rawDate = row[0];
-    let formattedDate = null;
-    let divisor       = null;
-    if (rawDate && rawDate instanceof Date) {
-      formattedDate = Utilities.formatDate(rawDate, timeZone, "yyyy-MM-dd");
-      if (divisoresPorFecha[formattedDate] !== undefined) {
-        const parsedDivisor = parseFloat(divisoresPorFecha[formattedDate]);
-        divisor = (isNaN(parsedDivisor) || parsedDivisor <= 0) ? null : parsedDivisor;
-      }
-    }
+  const records = recs.filter(function(r) { return r.fecha; }).map(function(r) {
     return {
-      originalIndex: index + 2,
-      fecha:         formattedDate,
-      tipo:          row[1],
-      monto:         parseFloat(row[2]) || 0,
-      divisor:       divisor
+      originalIndex: r.id,
+      fecha:   r.fecha,
+      tipo:    r.tipo,
+      monto:   Number(r.monto) || 0,
+      divisor: (divMap[r.fecha] !== undefined ? divMap[r.fecha] : null)
     };
-  }).filter(r => r.fecha);
-
+  });
   return createSuccessResponse(records);
 }
 
@@ -293,17 +239,11 @@ function getSaldo() {
 }
 
 function getNotes() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(NOTES_SHEET_NAME);
-  if (!sheet) return createErrorResponse("Hoja Notas no encontrada");
-  if (sheet.getLastRow() < 2) return createSuccessResponse([]);
-  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, 3).getValues();
-  const notes  = values.map((row, index) => ({
-    originalIndex: index + 2,
-    fecha:         row[0] ? new Date(row[0]).toISOString() : null,
-    autor:         row[1],
-    mensaje:       row[2]
-  })).filter(note => note.mensaje);
-  return createSuccessResponse(notes);
+  const notas = sbRecGet('notas_recaudacion?select=id,autor,mensaje,created_at&order=created_at.asc');
+  const out = notas.filter(function(n) { return n.mensaje; }).map(function(n) {
+    return { originalIndex: n.id, fecha: n.created_at || null, autor: n.autor, mensaje: n.mensaje };
+  });
+  return createSuccessResponse(out);
 }
 
 function getDivisores() {
