@@ -169,12 +169,29 @@ function _fmtM(v) { return '$' + (Number(v) || 0).toLocaleString('es-CL'); }
 
 async function apiAddRecaudacion(fecha, tipo, monto) {
     try {
-        const { error } = await dbRec.from('recaudaciones').insert({ id: crypto.randomUUID(), fecha, tipo: tipo || 'Sin Tipo', monto: Number(monto) });
+        // Quién agrega el dato (login nuevo: nombre + área)
+        const _nombre  = sessionStorage.getItem('user') || '';
+        const _area    = sessionStorage.getItem('user_area') || '';
+        const _socioId = sessionStorage.getItem('user_socioId') || '';
+        const _porNombre = _nombre ? (_area ? _nombre + ' (' + _area + ')' : _nombre) : null;
+
+        const id = crypto.randomUUID();
+        let { error } = await dbRec.from('recaudaciones').insert({
+            id, fecha, tipo: tipo || 'Sin Tipo', monto: Number(monto),
+            registrado_por_id: _socioId || null,
+            registrado_por_nombre: _porNombre
+        });
+        // Si las columnas registrado_por_* no existieran, reintentar sin ellas
+        if (error && error.message && error.message.includes('registrado_por')) {
+            ({ error } = await dbRec.from('recaudaciones').insert({ id, fecha, tipo: tipo || 'Sin Tipo', monto: Number(monto) }));
+        }
         if (error) throw error;
         _notificarCambio('recaudaciones');
         _audit('Registrar Recaudación',
-            'Fecha: ' + (fecha || '') + ' | Tipo: ' + (tipo || 'Sin Tipo') + ' | Monto: ' + _fmtM(monto),
-            { tipo: tipo || 'Sin Tipo', fecha: fecha || '', monto: Number(monto) || 0 });
+            'Fecha: ' + (fecha || '') + ' | Tipo: ' + (tipo || 'Sin Tipo') + ' | Monto: ' + _fmtM(monto)
+                + (_porNombre ? ' | Por: ' + _porNombre : ''),
+            { tipo: tipo || 'Sin Tipo', fecha: fecha || '', monto: Number(monto) || 0,
+              registrado_por_nombre: _nombre, registrado_por_area: _area, registrado_por_id: _socioId });
         return recOk('Dato agregado.');
     } catch(e) { return recErr(e.message); }
 }
