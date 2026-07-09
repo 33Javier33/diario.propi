@@ -149,7 +149,7 @@ async function apiGetNotas() {
     try {
         const { data, error } = await dbRec.from('notas_recaudacion').select('*').order('created_at', { ascending: false });
         if (error) throw error;
-        const mapped = (data || []).map(n => ({ originalIndex: n.id, fecha: n.created_at, autor: n.autor, mensaje: n.mensaje, pinned: n.pinned || false, reactions: n.reactions || {} }));
+        const mapped = (data || []).map(n => ({ originalIndex: n.id, fecha: n.created_at, autor: n.autor, mensaje: n.mensaje, pinned: n.pinned || false, reactions: n.reactions || {}, foto_url: n.foto_url || '' }));
         mapped.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
         return recOk(mapped);
     } catch(e) { return recErr(e.message); }

@@ -284,6 +284,22 @@ document.addEventListener('DOMContentLoaded', () => {
         renderNotes();
     }
 
+    // --- LIGHTBOX: ver foto de una nota en grande ---
+    window.verFotoGrande = function(url){
+        if(!url) return;
+        let o = document.getElementById('fotoGrandeOverlay');
+        if(!o){
+            o = document.createElement('div');
+            o.id = 'fotoGrandeOverlay';
+            o.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;padding:24px;flex-direction:column;gap:16px;';
+            o.onclick = () => { o.style.display = 'none'; };
+            o.innerHTML = '<img id="fotoGrandeImg" style="max-width:100%;max-height:85vh;border-radius:16px;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,0.5)"><button style="background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer">✕</button>';
+            document.body.appendChild(o);
+        }
+        o.querySelector('#fotoGrandeImg').src = url;
+        o.style.display = 'flex';
+    };
+
     // --- RENDER NOTES ---
     function renderNotes() {
         const lastSeen = parseInt(localStorage.getItem('_rec_last_seen')) || 0;
@@ -315,6 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div style="font-size:1rem;line-height:1.6;margin-bottom:10px;white-space:pre-wrap">${escHtml(n.mensaje)}</div>
+                ${n.foto_url ? `<img src="${escHtml(n.foto_url)}" onclick="verFotoGrande('${(n.foto_url+'').replace(/'/g,'%27')}')" style="max-width:200px;max-height:220px;border-radius:10px;margin-bottom:10px;object-fit:cover;cursor:zoom-in;display:block;border:1px solid var(--border,#e2e8f0)">` : ''}
                 <div style="display:flex;gap:6px;flex-wrap:wrap">${rxBtns}</div>
             </div>`;
         }).join('') || '<p style="text-align:center;color:var(--text-muted)">Sin notas guardadas.</p>';
