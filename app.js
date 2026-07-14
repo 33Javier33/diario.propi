@@ -331,6 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div style="font-size:1rem;line-height:1.6;margin-bottom:10px;white-space:pre-wrap">${escHtml(n.mensaje)}</div>
+                ${n.destacadosNombres ? `<div style="display:inline-flex;align-items:center;gap:5px;background:#fef3c7;border:1px solid #fde68a;border-radius:20px;padding:3px 11px;font-size:0.74em;color:#92400e;font-weight:700;margin-bottom:10px;">⭐ Destacado para: ${escHtml(n.destacadosNombres)}</div>` : ''}
                 ${n.foto_url ? `<img src="${escHtml(n.foto_url)}" onclick="verFotoGrande('${(n.foto_url+'').replace(/'/g,'%27')}')" style="max-width:200px;max-height:220px;border-radius:10px;margin-bottom:10px;object-fit:cover;cursor:zoom-in;display:block;border:1px solid var(--border,#e2e8f0)">` : ''}
                 <div style="display:flex;gap:6px;flex-wrap:wrap">${rxBtns}</div>
             </div>`;

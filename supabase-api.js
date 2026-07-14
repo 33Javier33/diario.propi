@@ -149,7 +149,20 @@ async function apiGetNotas() {
     try {
         const { data, error } = await dbRec.from('notas_recaudacion').select('*').order('created_at', { ascending: false });
         if (error) throw error;
-        const mapped = (data || []).map(n => ({ originalIndex: n.id, fecha: n.created_at, autor: n.autor, mensaje: n.mensaje, pinned: n.pinned || false, reactions: n.reactions || {}, foto_url: n.foto_url || '' }));
+        const mapped = (data || []).map(n => ({ originalIndex: n.id, fecha: n.created_at, autor: n.autor, mensaje: n.mensaje, pinned: n.pinned || false, reactions: n.reactions || {}, foto_url: n.foto_url || '', destacados: n.destacados || '', destacadosNombres: '' }));
+        // Resolver IDs de socios destacados → nombres (para mostrar el badge)
+        if (mapped.some(m => m.destacados)) {
+            try {
+                const { data: socs } = await dbSoc.from('socios').select('id, nombre, apellido');
+                const nombreDe = {};
+                (socs || []).forEach(s => { nombreDe[s.id] = (s.nombre || '') + (s.apellido ? ' ' + s.apellido.charAt(0) + '.' : ''); });
+                mapped.forEach(m => {
+                    if (!m.destacados) return;
+                    const ids = String(m.destacados).split(',').map(x => x.trim()).filter(Boolean);
+                    m.destacadosNombres = ids.map(id => nombreDe[id] || id).join(', ');
+                });
+            } catch (eN) { /* si falla, se muestra sin nombres */ }
+        }
         mapped.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
         return recOk(mapped);
     } catch(e) { return recErr(e.message); }
