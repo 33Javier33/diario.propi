@@ -215,6 +215,7 @@
                         <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top:12px; border-top:1px solid var(--border);">
                             <button id="btnExport" class="btn btn-outline btn-sm">Exportar Backup</button>
                             <button id="btnImportTrigger" class="btn btn-outline btn-sm" style="color:var(--warning)">Restaurar JSON</button>
+                            <button id="btnRestaurarCopia" class="btn btn-outline btn-sm" style="color:var(--primary)"><i class="fas fa-shield-halved"></i> Copias de seguridad</button>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <button id="btnLimpiar" class="btn btn-danger btn-sm">Vaciar Todo</button>
                                 <button type="button" class="help-tip-btn" onclick="showHelpTip('vaciarTodo')">?</button>
@@ -325,6 +326,36 @@
         </div>
     </div>
 
+    <!-- MODAL: CONFIRMAR CON PIN (acciones peligrosas) -->
+    <div id="pinDangerModal" class="modal">
+        <div class="modal-content" style="max-width:400px;">
+            <div style="text-align:center;margin-bottom:1rem;">
+                <div style="background:rgba(239,68,68,0.12);color:var(--danger);width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 12px;"><i class="fas fa-triangle-exclamation"></i></div>
+                <h3 id="pinDangerTitle" style="margin:0;">Confirmar</h3>
+            </div>
+            <div id="pinDangerMsg" style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-bottom:1rem;"></div>
+            <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:6px;">Ingresa TU PIN de 4 dígitos para confirmar</label>
+            <input type="password" id="pinDangerInput" inputmode="numeric" maxlength="4" placeholder="••••" style="width:100%;box-sizing:border-box;text-align:center;letter-spacing:0.5em;font-size:1.4rem;margin-bottom:4px;">
+            <div id="pinDangerError" style="color:var(--danger);font-size:0.8rem;min-height:18px;text-align:center;"></div>
+            <div style="display:flex;gap:12px;margin-top:6px;">
+                <button id="pinDangerYes" class="btn btn-primary" style="flex:1;background:var(--danger);">Confirmar</button>
+                <button id="pinDangerNo" class="btn btn-outline" style="flex:1;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: COPIAS DE SEGURIDAD -->
+    <div id="backupsModal" class="modal">
+        <div class="modal-content" style="max-width:480px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:0.8rem;">
+                <h3 style="margin:0;"><i class="fas fa-shield-halved" style="color:var(--primary)"></i> Copias de seguridad</h3>
+                <button onclick="document.getElementById('backupsModal').style.display='none'" class="btn btn-outline btn-sm">✕</button>
+            </div>
+            <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:12px;line-height:1.5;">Respaldos automáticos (diarios y antes de vaciar). Toca <b>Restaurar</b> para volver a esa copia. Antes de restaurar se guarda el estado actual.</p>
+            <div id="backupsList"><div style="text-align:center;color:var(--text-muted);padding:16px;">Cargando...</div></div>
+        </div>
+    </div>
+
     <!-- MODAL: AYUDA CONTEXTUAL -->
     <div id="helpTipModal" class="modal">
         <div class="modal-content" style="max-width:400px;">
@@ -342,7 +373,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-api.js?v=2"></script>
-    <script src="app.js?v=2"></script>
+    <script src="supabase-api.js?v=3"></script>
+    <script src="app.js?v=3"></script>
 </body>
 </html>

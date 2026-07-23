@@ -328,14 +328,80 @@ async function apiImportAll(importData) {
     } catch(e) { return recErr(e.message); }
 }
 
+// Snapshot completo del diario a la tabla de respaldos (append-only).
+async function apiBackupDiario(origen, creadoPor) {
+    try {
+        const [recRes, divRes, notasRes, saldoRes] = await Promise.all([
+            dbRec.from('recaudaciones').select('*'),
+            dbRec.from('divisores').select('*'),
+            dbRec.from('notas_recaudacion').select('*'),
+            dbRec.from('saldo_fondo').select('*').eq('id', 'main').maybeSingle()
+        ]);
+        const recs = recRes.data || [];
+        const total = recs.reduce((s, r) => s + Number(r.monto || 0), 0);
+        const datos = { recaudaciones: recs, divisores: divRes.data || [], notas: notasRes.data || [], saldo: saldoRes.data || null };
+        const { error } = await dbRec.from('diario_backups_rec').insert({
+            id: crypto.randomUUID(), origen: origen || 'manual',
+            creado_por: creadoPor || sessionStorage.getItem('user') || '',
+            total_rec: total, n_recaudaciones: recs.length, datos
+        });
+        if (error) throw error;
+        return recOk({ n: recs.length, total });
+    } catch(e) { return recErr(e.message); }
+}
+
+async function apiUltimoBackup() {
+    try {
+        const { data } = await dbRec.from('diario_backups_rec')
+            .select('created_at').order('created_at', { ascending: false }).limit(1).maybeSingle();
+        return recOk({ created_at: data ? data.created_at : null });
+    } catch(e) { return recErr(e.message); }
+}
+
+async function apiGetBackups() {
+    try {
+        const { data } = await dbRec.from('diario_backups_rec')
+            .select('id, origen, creado_por, total_rec, n_recaudaciones, created_at')
+            .order('created_at', { ascending: false }).limit(60);
+        return recOk(data || []);
+    } catch(e) { return recErr(e.message); }
+}
+
+async function apiRestoreBackup(id) {
+    try {
+        const { data: bk } = await dbRec.from('diario_backups_rec').select('datos').eq('id', id).maybeSingle();
+        if (!bk || !bk.datos) return recErr('Copia no encontrada');
+        // Respaldo del estado actual antes de restaurar (por si acaso)
+        await apiBackupDiario('pre-restore', sessionStorage.getItem('user') || '');
+        const d = bk.datos;
+        await Promise.all([
+            dbRec.from('recaudaciones').delete().neq('id', '__never__'),
+            dbRec.from('divisores').delete().neq('id', '__never__'),
+            dbRec.from('notas_recaudacion').delete().neq('id', '__never__')
+        ]);
+        const ops = [];
+        if ((d.recaudaciones || []).length) ops.push(dbRec.from('recaudaciones').insert(d.recaudaciones.map(r => ({ id: r.id || crypto.randomUUID(), fecha: r.fecha, tipo: r.tipo, monto: Number(r.monto), registrado_por_nombre: r.registrado_por_nombre || null, registrado_por_id: r.registrado_por_id || null }))));
+        if ((d.divisores || []).length) ops.push(dbRec.from('divisores').insert(d.divisores.map(v => ({ id: v.id || crypto.randomUUID(), fecha: v.fecha, valor: Number(v.valor) }))));
+        if ((d.notas || []).length) ops.push(dbRec.from('notas_recaudacion').insert(d.notas.map(n => ({ id: n.id || crypto.randomUUID(), created_at: n.created_at, autor: n.autor, mensaje: n.mensaje, foto_url: n.foto_url || null, pinned: n.pinned || false }))));
+        if (d.saldo && d.saldo.fecha) ops.push(dbRec.from('saldo_fondo').upsert({ id: 'main', fecha: d.saldo.fecha, monto: Number(d.saldo.monto) }, { onConflict: 'id' }));
+        await Promise.all(ops);
+        _notificarCambio('recaudaciones');
+        _audit('Restaurar Copia', 'Restauró copia con ' + (d.recaudaciones || []).length + ' recaudaciones', {});
+        return recOk('Copia restaurada.');
+    } catch(e) { return recErr(e.message); }
+}
+
 async function apiClearAll() {
     try {
+        // Respaldo automático ANTES de borrar (nunca se borra en seco)
+        await apiBackupDiario('vaciar', sessionStorage.getItem('user') || '');
         await Promise.all([
             dbRec.from('recaudaciones').delete().neq('id', '__never__'),
             dbRec.from('divisores').delete().neq('id', '__never__'),
             dbRec.from('notas_recaudacion').delete().neq('id', '__never__'),
             dbRec.from('saldo_fondo').upsert({ id: 'main', fecha: null, monto: null }, { onConflict: 'id' })
         ]);
+        _audit('Vaciar Todo', 'Se vaciaron todos los datos (se guardó copia de seguridad)', {});
         return recOk('Datos reiniciados.');
     } catch(e) { return recErr(e.message); }
 }
@@ -388,6 +454,10 @@ async function callApiRec(action, payload) {
         case 'updateSaldo':   return apiUpdateSaldo(payload.fecha, payload.monto);
         case 'addNote':       return apiAddNota(payload.autor, payload.mensaje);
         case 'deleteNote':    return apiDeleteNota(payload.index || payload.id);
+        case 'backupDiario':  return apiBackupDiario(payload.origen, payload.creadoPor);
+        case 'ultimoBackup':  return apiUltimoBackup();
+        case 'getBackups':    return apiGetBackups();
+        case 'restoreBackup': return apiRestoreBackup(payload.id);
         case 'togglePin':     return apiTogglePin(payload.id, payload.pinned);
         case 'toggleReaction': return apiToggleReaction(payload.id, payload.emoji, payload.add, payload.user || 'Admin');
         case 'updateDivisor': return apiUpdateDivisor(payload.fecha, payload.divisor);

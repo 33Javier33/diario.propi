@@ -74,6 +74,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Confirmación de acción peligrosa: muestra una advertencia y exige el PIN
+    // del socio que tiene la sesión iniciada. Devuelve true solo si el PIN es correcto.
+    function pedirPinPeligro(titulo, msgHtml) {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('pinDangerModal');
+            document.getElementById('pinDangerTitle').textContent = titulo;
+            document.getElementById('pinDangerMsg').innerHTML = msgHtml;
+            const input = document.getElementById('pinDangerInput');
+            const err = document.getElementById('pinDangerError');
+            input.value = ''; err.textContent = '';
+            modal.style.display = 'flex';
+            setTimeout(() => input.focus(), 120);
+            const socioId = sessionStorage.getItem('user_socioId') || '';
+            const cerrar = (val) => {
+                modal.style.display = 'none';
+                document.getElementById('pinDangerYes').onclick = null;
+                document.getElementById('pinDangerNo').onclick = null;
+                input.onkeydown = null;
+                resolve(val);
+            };
+            const intentar = async () => {
+                const pin = (input.value || '').trim();
+                if (!/^\d{4}$/.test(pin)) { err.textContent = 'El PIN debe ser de 4 dígitos'; return; }
+                const rec = (typeof window.diarioGetPin === 'function') ? await window.diarioGetPin(socioId) : null;
+                if (!rec || !rec.pin) { err.textContent = 'No se encontró tu PIN. Vuelve a iniciar sesión.'; return; }
+                if (pin !== rec.pin) { err.textContent = 'PIN incorrecto'; input.value = ''; return; }
+                cerrar(true);
+            };
+            document.getElementById('pinDangerNo').onclick = () => cerrar(false);
+            document.getElementById('pinDangerYes').onclick = intentar;
+            input.onkeydown = (e) => { if (e.key === 'Enter') intentar(); };
+        });
+    }
+
     // --- PANEL SWITCHING ---
     function switchPanel(targetId) {
         currentPanel = targetId;
@@ -501,15 +535,68 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsText(e.target.files[0]);
     };
 
-    // --- CLEAR ALL ---
+    // --- CLEAR ALL (protegido con PIN + advertencia) ---
     document.getElementById('btnLimpiar').onclick = async () => {
-        if (await customConfirm('⚠️ Vaciar Todo', '¿Eliminar TODOS los datos del sistema? Esta acción no se puede deshacer.')) {
-            showLoad(true, 'Vaciando...');
-            await post({ action: 'clearAll' });
-            showToast('Todos los datos fueron eliminados');
-            await cargar();
-        }
+        const advertencia = `
+            <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.28);border-radius:10px;padding:12px;text-align:left;">
+                <b style="color:var(--danger);">Vas a borrar TODAS las recaudaciones, divisores y notas del período actual.</b>
+                <br><br>El diario quedará <b>en blanco para todos los socios</b>. Se guardará una <b>copia de seguridad</b> automática antes de borrar (podrás restaurarla desde “Copias de seguridad”).
+                <br><br>Si solo quieres cerrar el mes, usa <b>“Guardar Período”</b> en su lugar.
+            </div>`;
+        const ok = await pedirPinPeligro('Vaciar Todo', advertencia);
+        if (!ok) return;
+        showLoad(true, 'Respaldando y vaciando...');
+        await post({ action: 'clearAll' });
+        showToast('Datos vaciados — se guardó una copia de seguridad');
+        await cargar();
     };
+
+    // --- COPIAS DE SEGURIDAD (listar y restaurar con un clic) ---
+    document.getElementById('btnRestaurarCopia').onclick = async () => {
+        const modal = document.getElementById('backupsModal');
+        const list = document.getElementById('backupsList');
+        list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;">Cargando...</div>';
+        modal.style.display = 'flex';
+        try {
+            const res = await post({ action: 'getBackups' });
+            const backups = (res && res.data) || [];
+            if (!backups.length) { list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;">Aún no hay copias guardadas.</div>'; return; }
+            const fmtM = v => '$' + (Number(v) || 0).toLocaleString('es-CL');
+            const _org = o => ({ auto: '🕒 Automática', vaciar: '🗑️ Antes de vaciar', manual: '✍️ Manual', 'pre-restore': '↩️ Antes de restaurar' }[o] || o);
+            list.innerHTML = backups.map(b => `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;">
+                    <div style="min-width:0;">
+                        <div style="font-weight:700;font-size:0.85rem;">${_org(b.origen)} · ${fmtM(b.total_rec)}</div>
+                        <div style="font-size:0.72rem;color:var(--text-muted);">${new Date(b.created_at).toLocaleString('es-CL')} · ${b.n_recaudaciones} registros${b.creado_por ? (' · ' + b.creado_por) : ''}</div>
+                    </div>
+                    <button onclick="_restaurarCopia('${b.id}')" class="btn btn-outline btn-sm" style="flex-shrink:0;color:var(--primary);">Restaurar</button>
+                </div>`).join('');
+        } catch (e) { list.innerHTML = '<div style="text-align:center;color:var(--danger);padding:16px;">Error al cargar copias.</div>'; }
+    };
+    window._restaurarCopia = async (id) => {
+        if (!(await customConfirm('Restaurar copia', '¿Reemplazar los datos actuales con esta copia? Se guardará una copia del estado actual antes de restaurar.'))) return;
+        document.getElementById('backupsModal').style.display = 'none';
+        showLoad(true, 'Restaurando copia...');
+        try {
+            const res = await post({ action: 'restoreBackup', id });
+            if (res && res.status === 'success') { showToast('Copia restaurada ✓'); await cargar(); }
+            else { showLoad(false); showToast((res && res.message) || 'Error al restaurar', 'danger'); }
+        } catch (e) { showLoad(false); showToast('Error de conexión', 'danger'); }
+    };
+
+    // --- BACKUP AUTOMÁTICO DIARIO ---
+    async function _autoBackupDiario() {
+        try {
+            const hoy = new Date().toISOString().slice(0, 10);
+            if (localStorage.getItem('diario_last_backup_day') === hoy) return; // ya se aseguró hoy en este dispositivo
+            const res = await post({ action: 'ultimoBackup' });
+            const last = (res && res.data && res.data.created_at) ? String(res.data.created_at).slice(0, 10) : null;
+            if (last === hoy) { localStorage.setItem('diario_last_backup_day', hoy); return; } // ya hay copia de hoy
+            await post({ action: 'backupDiario', origen: 'auto' });
+            localStorage.setItem('diario_last_backup_day', hoy);
+        } catch (e) {}
+    }
+    window._autoBackupDiario = _autoBackupDiario;
 
     // --- CLOSE PERIOD ---
     function getPeriodo() {
@@ -563,6 +650,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
         cargar();
         iniciarWatchdogInactividad();
+        // Respaldo automático diario (una copia por día, en segundo plano)
+        setTimeout(() => { if (typeof _autoBackupDiario === 'function') _autoBackupDiario(); }, 3000);
     }
 
     const _selArea = document.getElementById('loginArea');
