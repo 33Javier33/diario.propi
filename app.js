@@ -686,7 +686,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (_selUser) _selUser.onchange = async () => {
         if (!_selUser.value) return;
         const rec = (typeof window.diarioGetPin === 'function') ? await window.diarioGetPin(_selUser.value) : null;
-        if (rec && rec.pin) _setHint('🔒 Ingresa tu PIN de 4 dígitos', '#1a6fa0');
+        if (rec && rec.hasPin) _setHint('🔒 Ingresa tu PIN de 4 dígitos', '#1a6fa0');
         else _setHint('🆕 Primera vez: crea tu PIN de 4 dígitos (quedará guardado)', '#b45309');
     };
 
@@ -703,8 +703,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!/^\d{4}$/.test(pin)) { showToast('El PIN debe ser de 4 dígitos', 'danger'); return; }
 
         const rec = (typeof window.diarioGetPin === 'function') ? await window.diarioGetPin(socioId) : null;
-        if (rec && rec.pin) {
-            if (pin !== rec.pin) { showToast('PIN incorrecto', 'danger'); return; }
+        if (rec && rec.hasPin) {
+            // Verificación en el servidor: el PIN nunca se compara en el navegador
+            const v = (typeof window.diarioVerifyPin === 'function') ? await window.diarioVerifyPin(socioId, pin) : { ok: false };
+            if (!v || !v.ok) { showToast('PIN incorrecto', 'danger'); return; }
         } else {
             // Primera vez: crear el PIN del usuario
             const ok = (typeof window.diarioSetPin === 'function') ? await window.diarioSetPin(socioId, nombre, area, pin) : false;

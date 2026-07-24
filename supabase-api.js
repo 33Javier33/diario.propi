@@ -52,23 +52,42 @@ window.diarioGetSociosByArea = async function(areaSel) {
     } catch(e) { return []; }
 };
 
-// Lee el PIN guardado de un socio (o null si aún no tiene)
-window.diarioGetPin = async function(socioId) {
+// ── PIN de diario.propi — verificación SERVIDOR (Edge Function pin-auth) ──
+// El PIN nunca se lee ni se compara en el navegador: la tabla diario_pins está
+// cerrada al rol anon. Solo la Edge Function (service_role) la toca.
+const PIN_AUTH_URL = SUPABASE_URL_SOC + '/functions/v1/pin-auth';
+
+async function _pinAuth(body) {
     try {
-        const { data } = await dbSoc.from('diario_pins').select('pin, nombre, area').eq('socio_id', socioId).maybeSingle();
-        return data || null;
-    } catch(e) { return null; }
+        const res = await fetch(PIN_AUTH_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + SUPABASE_KEY_SOC,
+                'apikey': SUPABASE_KEY_SOC
+            },
+            body: JSON.stringify(body || {})
+        });
+        return await res.json();
+    } catch(e) { return { ok: false, reason: String(e && e.message || e) }; }
+}
+
+// ¿El socio ya tiene PIN? Devuelve { hasPin } (nunca el PIN en sí).
+window.diarioGetPin = async function(socioId) {
+    const r = await _pinAuth({ action: 'diarioStatus', socioId });
+    return (r && r.ok) ? { hasPin: !!r.hasPin } : null;
 };
 
-// Crea o actualiza el PIN de un socio
-window.diarioSetPin = async function(socioId, nombre, area, pin) {
-    try {
-        const { error } = await dbSoc.from('diario_pins').upsert(
-            { socio_id: socioId, nombre: nombre || '', area: area || '', pin: String(pin), updated_at: new Date().toISOString() },
-            { onConflict: 'socio_id' }
-        );
-        return !error;
-    } catch(e) { return false; }
+// Verifica el PIN contra el servidor. Devuelve { ok, nombre, area } si es correcto.
+window.diarioVerifyPin = async function(socioId, pin) {
+    const r = await _pinAuth({ action: 'diarioVerify', socioId, pin: String(pin) });
+    return r || { ok: false };
+};
+
+// Crea el PIN por primera vez (o lo cambia si se envía el PIN actual correcto).
+window.diarioSetPin = async function(socioId, nombre, area, pin, currentPin) {
+    const r = await _pinAuth({ action: 'diarioSet', socioId, pin: String(pin), nombre: nombre || '', area: area || '', currentPin: currentPin || '' });
+    return !!(r && r.ok);
 };
 
 // Canal compartido para notificar cambios a todas las apps en tiempo real
