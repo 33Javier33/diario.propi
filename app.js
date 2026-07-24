@@ -3,18 +3,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Service Worker + aviso de actualización (sin interrumpir ni cerrar sesión) ──
     if ('serviceWorker' in navigator) {
         let _swActualizando = false;
+        let _updateBannerMostrado = false;
+        // Aparece arriba automáticamente, muestra ~5s una cuenta regresiva y luego
+        // activa la nueva versión (recarga manteniendo la sesión: no cierra sesión).
         function _mostrarUpdate(sw) {
-            if (!sw) return;
+            if (!sw || _updateBannerMostrado) return;
+            _updateBannerMostrado = true;
             const banner = document.getElementById('updateBanner');
+            const txt = document.getElementById('updateBannerText');
             if (!banner) return;
             banner.style.display = 'flex';
-            document.getElementById('updateBannerBtn').onclick = () => {
-                banner.style.display = 'none';
-                // Solo activa la nueva versión y recarga. La sesión (sessionStorage)
-                // se mantiene, así que NO cierra la sesión del usuario.
-                sw.postMessage({ type: 'SKIP_WAITING' });
-            };
-            document.getElementById('updateBannerClose').onclick = () => { banner.style.display = 'none'; };
+            let s = 5;
+            if (txt) txt.textContent = 'Nueva versión — actualizando en ' + s + '…';
+            const iv = setInterval(() => {
+                s--;
+                if (s > 0) {
+                    if (txt) txt.textContent = 'Nueva versión — actualizando en ' + s + '…';
+                } else {
+                    clearInterval(iv);
+                    if (txt) txt.textContent = 'Actualizando…';
+                    sw.postMessage({ type: 'SKIP_WAITING' }); // → controllerchange → recarga (mantiene sesión)
+                }
+            }, 1000);
         }
         navigator.serviceWorker.register('sw.js').then(reg => {
             // Ya hay una versión nueva lista y esperando
