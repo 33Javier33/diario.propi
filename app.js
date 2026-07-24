@@ -1,25 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ── Service Worker + aviso de actualización (sin interrumpir ni cerrar sesión) ──
-    // El banner SIEMPRE se auto-oculta (~6s) pase lo que pase → nunca queda pegado.
-    // Un candado por tiempo evita que reaparezca en bucle tras la recarga.
+    // Diseño anti-bucle y anti-pegado:
+    //   · El banner se oculta SIEMPRE a los 5s (setTimeout puro, sin depender del SW).
+    //   · Se hace UNA sola recarga, con candado de 30s en localStorage → nunca en bucle.
+    //   · NO se usa el listener 'controllerchange' (ese era el que recargaba en bucle).
     function _ocultarUpdateBanner() { const b = document.getElementById('updateBanner'); if (b) b.style.display = 'none'; }
     if ('serviceWorker' in navigator) {
-        let _swActualizando = false;
         let _updateBannerMostrado = false;
-        // ¿Actualizamos hace poco? (persiste en localStorage entre recargas)
+        // ¿Se actualizó hace poco? (persiste entre recargas) → no volver a mostrar/recargar
         let _recienActualizado = false;
         try {
             const ts = parseInt(localStorage.getItem('_diario_upd_ts') || '0');
-            if (ts && (Date.now() - ts) < 20000) _recienActualizado = true; // <20s → no volver a mostrar
+            if (ts && (Date.now() - ts) < 30000) _recienActualizado = true;
         } catch (e) {}
-
-        function _recargarYa() {
-            if (_swActualizando) return;
-            _swActualizando = true;
-            _ocultarUpdateBanner();
-            location.reload();
-        }
 
         function _mostrarUpdate(sw) {
             if (!sw || _updateBannerMostrado || _recienActualizado) return;
@@ -28,21 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const txt = document.getElementById('updateBannerText');
             if (!banner) return;
             banner.style.display = 'flex';
-            // Red de seguridad: pase lo que pase, el banner se oculta a los 6.5s.
-            const safety = setTimeout(_ocultarUpdateBanner, 6500);
             let s = 5;
             const pinta = () => { if (txt) txt.textContent = 'Actualizando en ' + s + '…'; };
             pinta();
-            const iv = setInterval(() => {
-                s--;
-                if (s > 0) { pinta(); return; }
+            const iv = setInterval(() => { s--; if (s > 0) pinta(); }, 1000);
+            // A los 5s: ocultar SIEMPRE + aplicar la nueva versión + UNA recarga (con candado).
+            setTimeout(() => {
                 clearInterval(iv);
-                clearTimeout(safety);
-                _ocultarUpdateBanner();  // ← ocultar SIEMPRE antes de recargar
+                _ocultarUpdateBanner();
                 try { localStorage.setItem('_diario_upd_ts', String(Date.now())); } catch (e) {}
                 try { sw.postMessage({ type: 'SKIP_WAITING' }); } catch (e) {}
-                setTimeout(_recargarYa, 400);
-            }, 1000);
+                setTimeout(() => { location.reload(); }, 600);
+            }, 5000);
         }
 
         navigator.serviceWorker.register('sw.js').then(reg => {
@@ -58,8 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             setInterval(() => { reg.update().catch(() => {}); }, 5 * 60 * 1000);
         }).catch(err => console.log('Fallo registro SW:', err));
-
-        navigator.serviceWorker.addEventListener('controllerchange', _recargarYa);
     }
 
     let datos = [], notes = [], divisores = {}, editIndex = -1, minimizado = true, sortOrder = 'desc', currentPanel = 'agregarPanel', currentUser = '';
