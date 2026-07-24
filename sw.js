@@ -1,5 +1,5 @@
 // --- CONFIGURACIÓN DE CACHÉ ---
-const CACHE_NAME = 'recaudacion-cache-v19';
+const CACHE_NAME = 'recaudacion-cache-v20';
 
 // La app pide activar la nueva versión SOLO cuando el usuario toca "Actualizar".
 // Así una actualización nunca interrumpe lo que está haciendo ni cierra sesión.

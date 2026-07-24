@@ -1,25 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ── Service Worker + aviso de actualización (sin interrumpir ni cerrar sesión) ──
+    // El banner SIEMPRE se auto-oculta (~6s) pase lo que pase → nunca queda pegado.
+    // Un candado por tiempo evita que reaparezca en bucle tras la recarga.
+    function _ocultarUpdateBanner() { const b = document.getElementById('updateBanner'); if (b) b.style.display = 'none'; }
     if ('serviceWorker' in navigator) {
         let _swActualizando = false;
         let _updateBannerMostrado = false;
-        // Si venimos de una recarga por actualización, NO volver a mostrar el banner
-        // (evita que quede en bucle o pegado en pantalla).
+        // ¿Actualizamos hace poco? (persiste en localStorage entre recargas)
         let _recienActualizado = false;
         try {
-            if (sessionStorage.getItem('_diario_updating')) { _recienActualizado = true; sessionStorage.removeItem('_diario_updating'); }
+            const ts = parseInt(localStorage.getItem('_diario_upd_ts') || '0');
+            if (ts && (Date.now() - ts) < 20000) _recienActualizado = true; // <20s → no volver a mostrar
         } catch (e) {}
 
         function _recargarYa() {
             if (_swActualizando) return;
             _swActualizando = true;
+            _ocultarUpdateBanner();
             location.reload();
         }
 
-        // Aparece arriba automáticamente, cuenta ~5s y actualiza sola. La recarga se
-        // FUERZA (no depende de controllerchange, que en algunos navegadores no dispara),
-        // así el banner nunca queda pegado.
         function _mostrarUpdate(sw) {
             if (!sw || _updateBannerMostrado || _recienActualizado) return;
             _updateBannerMostrado = true;
@@ -27,18 +28,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const txt = document.getElementById('updateBannerText');
             if (!banner) return;
             banner.style.display = 'flex';
+            // Red de seguridad: pase lo que pase, el banner se oculta a los 6.5s.
+            const safety = setTimeout(_ocultarUpdateBanner, 6500);
             let s = 5;
-            const pinta = () => { if (txt) txt.textContent = 'Nueva versión — actualizando en ' + s + '…'; };
+            const pinta = () => { if (txt) txt.textContent = 'Actualizando en ' + s + '…'; };
             pinta();
             const iv = setInterval(() => {
                 s--;
                 if (s > 0) { pinta(); return; }
                 clearInterval(iv);
-                if (txt) txt.textContent = 'Actualizando…';
-                try { sessionStorage.setItem('_diario_updating', '1'); } catch (e) {}
+                clearTimeout(safety);
+                _ocultarUpdateBanner();  // ← ocultar SIEMPRE antes de recargar
+                try { localStorage.setItem('_diario_upd_ts', String(Date.now())); } catch (e) {}
                 try { sw.postMessage({ type: 'SKIP_WAITING' }); } catch (e) {}
-                // Recargar sí o sí a los ~900ms (mantiene la sesión: sessionStorage persiste)
-                setTimeout(_recargarYa, 900);
+                setTimeout(_recargarYa, 400);
             }, 1000);
         }
 
@@ -56,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setInterval(() => { reg.update().catch(() => {}); }, 5 * 60 * 1000);
         }).catch(err => console.log('Fallo registro SW:', err));
 
-        // Respaldo: si el nuevo SW toma control, recargar (además del reload forzado)
         navigator.serviceWorker.addEventListener('controllerchange', _recargarYa);
     }
 
