@@ -459,3 +459,19 @@ footer {
     .footer-row { flex-direction: column; align-items: stretch; text-align: center; }
     .divisor-box { justify-content: center; }
 }
+
+/* =====================
+   LOGO DE MARCA (se funde con el tema)
+   El PNG trae fondo BLANCO:
+   · Tema claro: multiply → el blanco se vuelve transparente (logo azul marino visible).
+   · Tema oscuro: invert+hue-rotate + screen → el blanco desaparece y el logo queda claro.
+   ===================== */
+.marca-logo { filter: none; mix-blend-mode: multiply; }
+body.dark-mode .marca-logo { filter: invert(1) hue-rotate(180deg); mix-blend-mode: screen; }
+.marca-logo-login { width: 190px; max-width: 70%; height: auto; display: block; margin: 0 auto 1.2rem; }
+.marca-logo-side  { width: 150px; max-width: 82%; height: auto; display: block; margin: 6px auto 2px; }
+.marca-logo-foot  { width: 130px; max-width: 55%; height: auto; display: block; margin: 0 auto 6px; }
+
+/* El sidebar es SIEMPRE oscuro → el logo del sidebar usa el tratamiento oscuro
+   en cualquier tema (si no, el fondo blanco del PNG se vería como caja blanca). */
+.marca-logo.marca-logo-side { filter: invert(1) hue-rotate(180deg); mix-blend-mode: screen; }

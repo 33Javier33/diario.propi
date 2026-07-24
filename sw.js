@@ -1,5 +1,5 @@
 // --- CONFIGURACIÓN DE CACHÉ ---
-const CACHE_NAME = 'recaudacion-cache-v15';
+const CACHE_NAME = 'recaudacion-cache-v16';
 
 // Archivos que la aplicación necesita para funcionar sin conexión.
 const urlsToCache = [
@@ -7,6 +7,7 @@ const urlsToCache = [
   '/index.html',
   '/app.js',
   '/styles.css',
+  '/img/carlospn-logo.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css'
 ];
 
