@@ -1,11 +1,5 @@
 // --- CONFIGURACIÓN DE CACHÉ ---
-const CACHE_NAME = 'recaudacion-cache-v21';
-
-// La app pide activar la nueva versión SOLO cuando el usuario toca "Actualizar".
-// Así una actualización nunca interrumpe lo que está haciendo ni cierra sesión.
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
-});
+const CACHE_NAME = 'recaudacion-cache-v22';
 
 // Archivos que la aplicación necesita para funcionar sin conexión.
 const urlsToCache = [
@@ -23,6 +17,9 @@ const urlsToCache = [
 self.addEventListener('install', event => {
   console.log('Service Worker: Instalando...');
   // Esperamos a que la promesa de abrir la caché y agregar los archivos se complete.
+  // skipWaiting: la versión nueva se activa de inmediato y se aplica sola al
+  // reabrir/recargar, sin avisos ni banners. (Ayuda a destrabar versiones viejas.)
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {

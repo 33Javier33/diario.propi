@@ -1,54 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── Service Worker + aviso de actualización (sin interrumpir ni cerrar sesión) ──
-    // Diseño anti-bucle y anti-pegado:
-    //   · El banner se oculta SIEMPRE a los 5s (setTimeout puro, sin depender del SW).
-    //   · Se hace UNA sola recarga, con candado de 30s en localStorage → nunca en bucle.
-    //   · NO se usa el listener 'controllerchange' (ese era el que recargaba en bucle).
-    function _ocultarUpdateBanner() { const b = document.getElementById('updateBanner'); if (b) b.style.display = 'none'; }
+    // ── Service Worker (registro simple, sin banner ni recargas) ──
+    // La app se actualiza sola de forma silenciosa al reabrir. No muestra nada.
     if ('serviceWorker' in navigator) {
-        let _updateBannerMostrado = false;
-        // ¿Se actualizó hace poco? (persiste entre recargas) → no volver a mostrar/recargar
-        let _recienActualizado = false;
-        try {
-            const ts = parseInt(localStorage.getItem('_diario_upd_ts') || '0');
-            if (ts && (Date.now() - ts) < 30000) _recienActualizado = true;
-        } catch (e) {}
-
-        function _mostrarUpdate(sw) {
-            if (!sw || _updateBannerMostrado || _recienActualizado) return;
-            _updateBannerMostrado = true;
-            const banner = document.getElementById('updateBanner');
-            const txt = document.getElementById('updateBannerText');
-            if (!banner) return;
-            banner.style.display = 'flex';
-            let s = 5;
-            const pinta = () => { if (txt) txt.textContent = 'Actualizando en ' + s + '…'; };
-            pinta();
-            const iv = setInterval(() => { s--; if (s > 0) pinta(); }, 1000);
-            // A los 5s: ocultar SIEMPRE + aplicar la nueva versión + UNA recarga (con candado).
-            setTimeout(() => {
-                clearInterval(iv);
-                _ocultarUpdateBanner();
-                try { localStorage.setItem('_diario_upd_ts', String(Date.now())); } catch (e) {}
-                try { sw.postMessage({ type: 'SKIP_WAITING' }); } catch (e) {}
-                setTimeout(() => { location.reload(); }, 600);
-            }, 5000);
-        }
-
-        navigator.serviceWorker.register('sw.js').then(reg => {
-            if (reg.waiting && navigator.serviceWorker.controller) _mostrarUpdate(reg.waiting);
-            reg.addEventListener('updatefound', () => {
-                const nuevo = reg.installing;
-                if (!nuevo) return;
-                nuevo.addEventListener('statechange', () => {
-                    if (nuevo.state === 'installed' && navigator.serviceWorker.controller) {
-                        _mostrarUpdate(reg.waiting || nuevo);
-                    }
-                });
-            });
-            setInterval(() => { reg.update().catch(() => {}); }, 5 * 60 * 1000);
-        }).catch(err => console.log('Fallo registro SW:', err));
+        navigator.serviceWorker.register('sw.js').catch(err => console.log('Fallo registro SW:', err));
     }
 
     let datos = [], notes = [], divisores = {}, editIndex = -1, minimizado = true, sortOrder = 'desc', currentPanel = 'agregarPanel', currentUser = '';
