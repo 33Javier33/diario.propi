@@ -4,32 +4,46 @@ document.addEventListener('DOMContentLoaded', () => {
     if ('serviceWorker' in navigator) {
         let _swActualizando = false;
         let _updateBannerMostrado = false;
-        // Aparece arriba automáticamente, muestra ~5s una cuenta regresiva y luego
-        // activa la nueva versión (recarga manteniendo la sesión: no cierra sesión).
+        // Si venimos de una recarga por actualización, NO volver a mostrar el banner
+        // (evita que quede en bucle o pegado en pantalla).
+        let _recienActualizado = false;
+        try {
+            if (sessionStorage.getItem('_diario_updating')) { _recienActualizado = true; sessionStorage.removeItem('_diario_updating'); }
+        } catch (e) {}
+
+        function _recargarYa() {
+            if (_swActualizando) return;
+            _swActualizando = true;
+            location.reload();
+        }
+
+        // Aparece arriba automáticamente, cuenta ~5s y actualiza sola. La recarga se
+        // FUERZA (no depende de controllerchange, que en algunos navegadores no dispara),
+        // así el banner nunca queda pegado.
         function _mostrarUpdate(sw) {
-            if (!sw || _updateBannerMostrado) return;
+            if (!sw || _updateBannerMostrado || _recienActualizado) return;
             _updateBannerMostrado = true;
             const banner = document.getElementById('updateBanner');
             const txt = document.getElementById('updateBannerText');
             if (!banner) return;
             banner.style.display = 'flex';
             let s = 5;
-            if (txt) txt.textContent = 'Nueva versión — actualizando en ' + s + '…';
+            const pinta = () => { if (txt) txt.textContent = 'Nueva versión — actualizando en ' + s + '…'; };
+            pinta();
             const iv = setInterval(() => {
                 s--;
-                if (s > 0) {
-                    if (txt) txt.textContent = 'Nueva versión — actualizando en ' + s + '…';
-                } else {
-                    clearInterval(iv);
-                    if (txt) txt.textContent = 'Actualizando…';
-                    sw.postMessage({ type: 'SKIP_WAITING' }); // → controllerchange → recarga (mantiene sesión)
-                }
+                if (s > 0) { pinta(); return; }
+                clearInterval(iv);
+                if (txt) txt.textContent = 'Actualizando…';
+                try { sessionStorage.setItem('_diario_updating', '1'); } catch (e) {}
+                try { sw.postMessage({ type: 'SKIP_WAITING' }); } catch (e) {}
+                // Recargar sí o sí a los ~900ms (mantiene la sesión: sessionStorage persiste)
+                setTimeout(_recargarYa, 900);
             }, 1000);
         }
+
         navigator.serviceWorker.register('sw.js').then(reg => {
-            // Ya hay una versión nueva lista y esperando
             if (reg.waiting && navigator.serviceWorker.controller) _mostrarUpdate(reg.waiting);
-            // Detectar una versión nueva que se instale mientras la app está abierta
             reg.addEventListener('updatefound', () => {
                 const nuevo = reg.installing;
                 if (!nuevo) return;
@@ -39,16 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             });
-            // Buscar actualizaciones cada 5 min (silencioso, no molesta)
             setInterval(() => { reg.update().catch(() => {}); }, 5 * 60 * 1000);
         }).catch(err => console.log('Fallo registro SW:', err));
 
-        // Cuando el nuevo SW toma control → recargar UNA vez (mantiene la sesión)
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (_swActualizando) return;
-            _swActualizando = true;
-            location.reload();
-        });
+        // Respaldo: si el nuevo SW toma control, recargar (además del reload forzado)
+        navigator.serviceWorker.addEventListener('controllerchange', _recargarYa);
     }
 
     let datos = [], notes = [], divisores = {}, editIndex = -1, minimizado = true, sortOrder = 'desc', currentPanel = 'agregarPanel', currentUser = '';
