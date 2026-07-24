@@ -1,9 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ── Service Worker + aviso de actualización (sin interrumpir ni cerrar sesión) ──
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-            .then(() => console.log('Service Worker registrado'))
-            .catch(err => console.log('Fallo registro SW:', err));
+        let _swActualizando = false;
+        function _mostrarUpdate(sw) {
+            if (!sw) return;
+            const banner = document.getElementById('updateBanner');
+            if (!banner) return;
+            banner.style.display = 'flex';
+            document.getElementById('updateBannerBtn').onclick = () => {
+                banner.style.display = 'none';
+                // Solo activa la nueva versión y recarga. La sesión (sessionStorage)
+                // se mantiene, así que NO cierra la sesión del usuario.
+                sw.postMessage({ type: 'SKIP_WAITING' });
+            };
+            document.getElementById('updateBannerClose').onclick = () => { banner.style.display = 'none'; };
+        }
+        navigator.serviceWorker.register('sw.js').then(reg => {
+            // Ya hay una versión nueva lista y esperando
+            if (reg.waiting && navigator.serviceWorker.controller) _mostrarUpdate(reg.waiting);
+            // Detectar una versión nueva que se instale mientras la app está abierta
+            reg.addEventListener('updatefound', () => {
+                const nuevo = reg.installing;
+                if (!nuevo) return;
+                nuevo.addEventListener('statechange', () => {
+                    if (nuevo.state === 'installed' && navigator.serviceWorker.controller) {
+                        _mostrarUpdate(reg.waiting || nuevo);
+                    }
+                });
+            });
+            // Buscar actualizaciones cada 5 min (silencioso, no molesta)
+            setInterval(() => { reg.update().catch(() => {}); }, 5 * 60 * 1000);
+        }).catch(err => console.log('Fallo registro SW:', err));
+
+        // Cuando el nuevo SW toma control → recargar UNA vez (mantiene la sesión)
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (_swActualizando) return;
+            _swActualizando = true;
+            location.reload();
+        });
     }
 
     let datos = [], notes = [], divisores = {}, editIndex = -1, minimizado = true, sortOrder = 'desc', currentPanel = 'agregarPanel', currentUser = '';

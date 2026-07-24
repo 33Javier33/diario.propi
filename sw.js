@@ -1,5 +1,11 @@
 // --- CONFIGURACIÓN DE CACHÉ ---
-const CACHE_NAME = 'recaudacion-cache-v16';
+const CACHE_NAME = 'recaudacion-cache-v17';
+
+// La app pide activar la nueva versión SOLO cuando el usuario toca "Actualizar".
+// Así una actualización nunca interrumpe lo que está haciendo ni cierra sesión.
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
 
 // Archivos que la aplicación necesita para funcionar sin conexión.
 const urlsToCache = [
@@ -39,10 +45,9 @@ self.addEventListener('activate', event => {
             return caches.delete(cacheName);
           }
         })
-      );
+      ).then(() => self.clients.claim());
     })
   );
-  return self.clients.claim();
 });
 
 // Evento 'fetch': Se dispara cada vez que la aplicación pide un recurso (una página, una imagen, etc.).
