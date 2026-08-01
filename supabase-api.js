@@ -61,6 +61,8 @@ const dbRec = supabase.createClient(SUPABASE_URL_REC, SUPABASE_KEY_REC);
         if (ch || typeof DB === 'undefined' || !DB) return;
         ch = DB.channel('rec-presencia', { config: { presence: { key: KEY } } });
         ch.on('presence', { event: 'sync' }, _render)
+          .on('presence', { event: 'join' }, _render)
+          .on('presence', { event: 'leave' }, _render)
           .on('broadcast', { event: 'rec-agregado' }, ({ payload }) => {
               if (payload && payload.key !== KEY) {
                   const t = payload.tipo ? (' (' + (TIPO_LABEL[payload.tipo] || payload.tipo) + ')') : '';
@@ -75,9 +77,13 @@ const dbRec = supabase.createClient(SUPABASE_URL_REC, SUPABASE_KEY_REC);
               // (re)marca la presencia pendiente.
               listo = (status === 'SUBSCRIBED');
               if (listo && mio) { try { ch.track(mio); } catch (e) {} }
+              if (listo) _render();
           });
+        // Respaldo: re-pintar periódicamente por si algún evento de presencia se pierde
+        setInterval(_render, 4000);
     }
     window.recPresIniciar = iniciar;
+    window.recPresRender = _render;
     window.recPresEntrar = function (nombre, tipo) {
         iniciar();
         mio = { key: KEY, nombre: nombre || 'Alguien', app: APP, tipo: tipo || '', enModal: true };
