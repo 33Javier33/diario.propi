@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function cerrarSesion(porInactividad = false) {
         clearTimeout(_inactivTimeout);
+        try { if (typeof window.recPresSalir === 'function') window.recPresSalir(); } catch (e) {}
         sessionStorage.clear();
         if (porInactividad) showToast('Sesión cerrada por inactividad (15 min)', 'danger');
         setTimeout(() => location.reload(), porInactividad ? 1500 : 0);
@@ -120,6 +121,17 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('_rec_last_seen', Date.now());
             checkNotesInd();
         }
+        // Presencia: estar en el panel "Agregar" = estar en recaudaciones
+        try {
+            if (targetId === 'agregarPanel') {
+                if (typeof window.recPresEntrar === 'function') {
+                    const _rt = document.querySelector('input[name="tipo"]:checked');
+                    window.recPresEntrar(sessionStorage.getItem('user') || 'Alguien', _rt ? _rt.value : '');
+                }
+            } else if (typeof window.recPresSalir === 'function') {
+                window.recPresSalir();
+            }
+        } catch (e) {}
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -127,6 +139,13 @@ document.addEventListener('DOMContentLoaded', () => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             switchPanel(link.dataset.target);
+        });
+    });
+
+    // Presencia: al cambiar el tipo en el formulario Agregar, avisar el tipo en curso
+    document.querySelectorAll('input[name="tipo"]').forEach(r => {
+        r.addEventListener('change', () => {
+            if (currentPanel === 'agregarPanel' && typeof window.recPresTipo === 'function') window.recPresTipo(r.value);
         });
     });
 
@@ -650,6 +669,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
         cargar();
         iniciarWatchdogInactividad();
+        // Presencia en recaudación: empezar a escuchar y, si el panel activo es
+        // "Agregar" (el de inicio), marcar que este socio está en recaudaciones.
+        try {
+            if (typeof window.recPresIniciar === 'function') window.recPresIniciar();
+            if (currentPanel === 'agregarPanel' && typeof window.recPresEntrar === 'function') {
+                const _rt = document.querySelector('input[name="tipo"]:checked');
+                window.recPresEntrar(sessionStorage.getItem('user') || String(displayName || 'Alguien'), _rt ? _rt.value : '');
+            }
+        } catch (e) {}
         // Respaldo automático diario (una copia por día, en segundo plano)
         setTimeout(() => { if (typeof _autoBackupDiario === 'function') _autoBackupDiario(); }, 3000);
     }
