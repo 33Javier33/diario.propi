@@ -3,6 +3,9 @@
 
 ## Historial de Cambios
 
+#### 2026-08-01 — Versión visible (esquina inferior derecha) (SW v28)
+- Etiqueta fija "v28" (= versión del SW) en la esquina inferior derecha para verificar de un vistazo si el dispositivo tomó la última versión.
+
 #### 2026-08-01 — Presencia garantizada: respaldo por tabla `rec_presencia` (SW v27)
 - Además del canal en vivo, la presencia se escribe en la tabla `rec_presencia` (latido cada 20s) y todas las apps la leen cada 5s → el nombre aparece siempre, sin depender del websocket. Al salir se borra la fila. Scripts `?v=14`, SW `recaudacion-cache-v27`.
 
