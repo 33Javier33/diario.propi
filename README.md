@@ -3,6 +3,9 @@
 
 ## Historial de Cambios
 
+#### 2026-08-01 — Presencia garantizada: respaldo por tabla `rec_presencia` (SW v27)
+- Además del canal en vivo, la presencia se escribe en la tabla `rec_presencia` (latido cada 20s) y todas las apps la leen cada 5s → el nombre aparece siempre, sin depender del websocket. Al salir se borra la fila. Scripts `?v=14`, SW `recaudacion-cache-v27`.
+
 #### 2026-08-01 — Presencia: refuerzos anti-pérdida (SW v26)
 - Listeners `join`/`leave` además de `sync`, repintado de respaldo cada 4s, render al confirmar suscripción, `window.recPresRender` expuesto. Scripts `?v=13`, SW `recaudacion-cache-v26`.
 
