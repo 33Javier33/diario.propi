@@ -3,6 +3,11 @@
 
 ## Historial de Cambios
 
+#### 2026-08-01 — Fix REAL de presencia: ahora se anuncia en toda la app (SW v29)
+- **Causa 1:** solo se marcaba presencia en el panel "Agregar"; al ver Historial/Notas el socio desaparecía de las otras apps. Ahora **estar dentro de diario.propi ya cuenta** como estar en recaudaciones (el tipo se envía solo si está en "Agregar").
+- **Causa 2:** `pagehide` borraba la presencia al apagar la pantalla o cambiar de app. Ya no se borra en segundo plano; al volver al frente se re-marca y re-lee. Vigencia ampliada a 3 minutos.
+- Etiqueta de versión visible: **v29**. Scripts `?v=15`, SW `recaudacion-cache-v29`.
+
 #### 2026-08-01 — Versión visible (esquina inferior derecha) (SW v28)
 - Etiqueta fija "v28" (= versión del SW) en la esquina inferior derecha para verificar de un vistazo si el dispositivo tomó la última versión.
 

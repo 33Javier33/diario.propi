@@ -121,15 +121,13 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('_rec_last_seen', Date.now());
             checkNotesInd();
         }
-        // Presencia: estar en el panel "Agregar" = estar en recaudaciones
+        // Presencia: estar DENTRO de diario.propi ya es estar en recaudaciones
+        // (toda la app es el diario de recaudación). No se quita la presencia al
+        // cambiar de panel — solo se actualiza el tipo cuando está en "Agregar".
         try {
-            if (targetId === 'agregarPanel') {
-                if (typeof window.recPresEntrar === 'function') {
-                    const _rt = document.querySelector('input[name="tipo"]:checked');
-                    window.recPresEntrar(sessionStorage.getItem('user') || 'Alguien', _rt ? _rt.value : '');
-                }
-            } else if (typeof window.recPresSalir === 'function') {
-                window.recPresSalir();
+            if (typeof window.recPresEntrar === 'function') {
+                const _rt = (targetId === 'agregarPanel') ? document.querySelector('input[name="tipo"]:checked') : null;
+                window.recPresEntrar(sessionStorage.getItem('user') || 'Alguien', _rt ? _rt.value : '');
             }
         } catch (e) {}
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -673,9 +671,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // "Agregar" (el de inicio), marcar que este socio está en recaudaciones.
         try {
             if (typeof window.recPresIniciar === 'function') window.recPresIniciar();
-            if (currentPanel === 'agregarPanel' && typeof window.recPresEntrar === 'function') {
+            // Al entrar a diario YA cuenta como estar en recaudaciones (sea cual sea el panel)
+            if (typeof window.recPresEntrar === 'function') {
                 const _rt = document.querySelector('input[name="tipo"]:checked');
-                window.recPresEntrar(sessionStorage.getItem('user') || String(displayName || 'Alguien'), _rt ? _rt.value : '');
+                window.recPresEntrar(sessionStorage.getItem('user') || String(displayName || 'Alguien'),
+                    (currentPanel === 'agregarPanel' && _rt) ? _rt.value : '');
             }
         } catch (e) {}
         // Respaldo automático diario (una copia por día, en segundo plano)

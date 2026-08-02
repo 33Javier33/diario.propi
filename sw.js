@@ -1,5 +1,5 @@
 // --- CONFIGURACIÓN DE CACHÉ ---
-const CACHE_NAME = 'recaudacion-cache-v28';
+const CACHE_NAME = 'recaudacion-cache-v29';
 
 // Archivos que la aplicación necesita para funcionar sin conexión.
 const urlsToCache = [
