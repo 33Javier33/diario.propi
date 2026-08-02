@@ -3,6 +3,9 @@
 
 ## Historial de Cambios
 
+#### 2026-08-01 — Presencia con `socio_id` (no verse a sí mismo) (SW v42)
+- La presencia viaja con `socio_id` y se filtra la propia. `supabase-config.js?v=49`, SW `fondo-admin-v42`, versión visible **v42**.
+
 #### 2026-08-01 — Presencia con `socio_id`: el socio no se ve a sí mismo (SW v30)
 - La presencia ahora incluye el `socio_id` del socio en sesión, para que si tiene diario.propi y propi.solicitada abiertas a la vez **no se muestre a sí mismo** en la otra app. Scripts `?v=16`, SW `recaudacion-cache-v30`, versión visible **v30**.
 
