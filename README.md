@@ -3,6 +3,11 @@
 
 ## Historial de Cambios
 
+#### 2026-08-02 — Tarjeta sutil de presencia arriba (ya no tapa la barra inferior) (SW v33)
+- **Problema:** el aviso de presencia salía abajo y **tapaba la barra de navegación** (Agregar / Historial / Notas / Ayuda / Salir).
+- **Fix:** ahora es una **tarjeta discreta arriba a la derecha** (zona libre: la barra lateral va a la izquierda y los botones flotantes abajo), con "EN RECAUDACIONES (n)" y una línea por persona: **nombre** + *en \<app\> · \<tipo\>*. Se ve en **todos los paneles** y desaparece sola cuando no queda nadie.
+- Archivos: `supabase-api.js`. Scripts `?v=19`, SW `recaudacion-cache-v33`, versión visible **v33**.
+
 #### 2026-08-02 — Fix: volvió a mostrarse el socio de la otra app (SW v32)
 - El filtro de "no verse a sí mismo" ocultaba cualquier presencia con el mismo `socio_id`, incluida la de propi.solicitada (misma cuenta en ambas apps). Ahora se oculta **solo la propia línea de esta app**. Scripts `?v=18`, SW `recaudacion-cache-v32`, versión visible **v32**.
 
