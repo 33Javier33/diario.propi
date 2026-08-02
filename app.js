@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             if (typeof window.recPresEntrar === 'function') {
                 const _rt = (targetId === 'agregarPanel') ? document.querySelector('input[name="tipo"]:checked') : null;
-                window.recPresEntrar(sessionStorage.getItem('user') || 'Alguien', _rt ? _rt.value : '');
+                window.recPresEntrar(sessionStorage.getItem('user') || 'Alguien', _rt ? _rt.value : '', sessionStorage.getItem('user_socioId') || '');
             }
         } catch (e) {}
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -675,7 +675,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof window.recPresEntrar === 'function') {
                 const _rt = document.querySelector('input[name="tipo"]:checked');
                 window.recPresEntrar(sessionStorage.getItem('user') || String(displayName || 'Alguien'),
-                    (currentPanel === 'agregarPanel' && _rt) ? _rt.value : '');
+                    (currentPanel === 'agregarPanel' && _rt) ? _rt.value : '',
+                    sessionStorage.getItem('user_socioId') || '');
             }
         } catch (e) {}
         // Respaldo automático diario (una copia por día, en segundo plano)

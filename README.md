@@ -3,6 +3,9 @@
 
 ## Historial de Cambios
 
+#### 2026-08-01 — Presencia con `socio_id`: el socio no se ve a sí mismo (SW v30)
+- La presencia ahora incluye el `socio_id` del socio en sesión, para que si tiene diario.propi y propi.solicitada abiertas a la vez **no se muestre a sí mismo** en la otra app. Scripts `?v=16`, SW `recaudacion-cache-v30`, versión visible **v30**.
+
 #### 2026-08-01 — Fix REAL de presencia: ahora se anuncia en toda la app (SW v29)
 - **Causa 1:** solo se marcaba presencia en el panel "Agregar"; al ver Historial/Notas el socio desaparecía de las otras apps. Ahora **estar dentro de diario.propi ya cuenta** como estar en recaudaciones (el tipo se envía solo si está en "Agregar").
 - **Causa 2:** `pagehide` borraba la presencia al apagar la pantalla o cambiar de app. Ya no se borra en segundo plano; al volver al frente se re-marca y re-lee. Vigencia ampliada a 3 minutos.
