@@ -3,6 +3,9 @@
 
 ## Historial de Cambios
 
+#### 2026-08-02 — Presencia: una sola fila por socio (sin duplicados) (SW v31)
+- El id de la fila de presencia ahora es **fijo por socio + app**, así al recargar la app se sobreescribe la misma fila en vez de dejar una sesión anterior viva (que hacía que un socio se viera a sí mismo en la otra app). Scripts `?v=17`, SW `recaudacion-cache-v31`, versión visible **v31**.
+
 #### 2026-08-01 — Presencia con `socio_id`: el socio no se ve a sí mismo (SW v30)
 - La presencia ahora incluye el `socio_id` del socio en sesión, para que si tiene diario.propi y propi.solicitada abiertas a la vez **no se muestre a sí mismo** en la otra app. Scripts `?v=16`, SW `recaudacion-cache-v30`, versión visible **v30**.
 
