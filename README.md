@@ -3,6 +3,9 @@
 
 ## Historial de Cambios
 
+#### 2026-08-02 — Fix: volvió a mostrarse el socio de la otra app (SW v32)
+- El filtro de "no verse a sí mismo" ocultaba cualquier presencia con el mismo `socio_id`, incluida la de propi.solicitada (misma cuenta en ambas apps). Ahora se oculta **solo la propia línea de esta app**. Scripts `?v=18`, SW `recaudacion-cache-v32`, versión visible **v32**.
+
 #### 2026-08-02 — Presencia: una sola fila por socio (sin duplicados) (SW v31)
 - El id de la fila de presencia ahora es **fijo por socio + app**, así al recargar la app se sobreescribe la misma fila en vez de dejar una sesión anterior viva (que hacía que un socio se viera a sí mismo en la otra app). Scripts `?v=17`, SW `recaudacion-cache-v31`, versión visible **v31**.
 
