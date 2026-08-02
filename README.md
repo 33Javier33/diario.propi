@@ -3,6 +3,11 @@
 
 ## Historial de Cambios
 
+#### 2026-08-02 — Tarjeta de presencia dentro del contenido, igual que socios-comicion (SW v34)
+- La presencia ya no se muestra flotando (antes tapaba la barra inferior, y arriba estorbaba). Ahora es una **tarjeta en el flujo del contenido** (`#recPresenciaCard`, arriba de las estadísticas): se ve en **TODOS los paneles**, empuja el contenido en vez de taparlo y desaparece sola cuando no hay nadie.
+- Mismo diseño que socios-comicion: "🟢 EN RECAUDACIONES (n)" + una línea por persona con **nombre** + *en \<app\> · \<tipo\>*.
+- Archivos: `index.html` (contenedor), `supabase-api.js`. Scripts `?v=20`, SW `recaudacion-cache-v34`, versión visible **v34**.
+
 #### 2026-08-02 — Tarjeta sutil de presencia arriba (ya no tapa la barra inferior) (SW v33)
 - **Problema:** el aviso de presencia salía abajo y **tapaba la barra de navegación** (Agregar / Historial / Notas / Ayuda / Salir).
 - **Fix:** ahora es una **tarjeta discreta arriba a la derecha** (zona libre: la barra lateral va a la izquierda y los botones flotantes abajo), con "EN RECAUDACIONES (n)" y una línea por persona: **nombre** + *en \<app\> · \<tipo\>*. Se ve en **todos los paneles** y desaparece sola cuando no queda nadie.

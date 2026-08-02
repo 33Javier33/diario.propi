@@ -144,6 +144,11 @@
     <div class="main-container">
         <div id="mainContent" style="display:none; flex:1; flex-direction:column;">
 
+            <!-- Tarjeta de presencia: quién está en recaudaciones y dónde.
+                 Va aquí (en el flujo, arriba del contenido) para verse en TODOS
+                 los paneles sin tapar la barra de navegación ni el contenido. -->
+            <div id="recPresenciaCard"></div>
+
             <!-- STATS -->
             <div class="stats-grid">
                 <div class="stat-card">
@@ -375,9 +380,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-api.js?v=19"></script>
+    <script src="supabase-api.js?v=20"></script>
     <script src="app.js?v=18"></script>
 <!-- Versión visible de la app (= versión del Service Worker) -->
-<div style="position:fixed;bottom:6px;right:8px;z-index:9999;font-size:10px;color:#94a3b8;opacity:0.75;pointer-events:none;font-weight:600;">v33</div>
+<div style="position:fixed;bottom:6px;right:8px;z-index:9999;font-size:10px;color:#94a3b8;opacity:0.75;pointer-events:none;font-weight:600;">v34</div>
 </body>
 </html>
