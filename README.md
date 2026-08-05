@@ -3,6 +3,9 @@
 
 ## Historial de Cambios
 
+#### 2026-08-02 — Fix: el mismo socio aparecía dos veces en la tarjeta (SW v35)
+- La misma persona llegaba por el canal en vivo y por la tabla con claves distintas, y se listaba duplicada. Ahora se deduplica por identidad estable (`app + socio_id`). Scripts `?v=21`, SW `recaudacion-cache-v35`, versión visible **v35**.
+
 #### 2026-08-02 — Tarjeta de presencia dentro del contenido, igual que socios-comicion (SW v34)
 - La presencia ya no se muestra flotando (antes tapaba la barra inferior, y arriba estorbaba). Ahora es una **tarjeta en el flujo del contenido** (`#recPresenciaCard`, arriba de las estadísticas): se ve en **TODOS los paneles**, empuja el contenido en vez de taparlo y desaparece sola cuando no hay nadie.
 - Mismo diseño que socios-comicion: "🟢 EN RECAUDACIONES (n)" + una línea por persona con **nombre** + *en \<app\> · \<tipo\>*.

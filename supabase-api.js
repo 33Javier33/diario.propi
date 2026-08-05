@@ -67,13 +67,25 @@ const dbRec = supabase.createClient(SUPABASE_URL_REC, SUPABASE_KEY_REC);
     const _esMio = m => !m || m.key === KEY
         || (m.app === APP && miSocioId && String(m.socioId || '') === String(miSocioId))
         || (mio && m.app === APP && String(m.nombre || '') === String(mio.nombre || ''));
+    // Identidad ESTABLE de una presencia: la misma persona puede llegar por el
+    // canal en vivo (clave aleatoria de sesión) y por la tabla (clave app:socio),
+    // así que se deduplica por app + socio (o nombre si no hay id). Sin esto el
+    // mismo socio aparecía DOS VECES en la tarjeta.
+    const _idOf = m => String(m.app || '') + '|' + String(m.socioId || m.nombre || '');
     function _otrosActuales() {
         const out = [], vistos = {};
+        const agregar = m => {
+            if (!m || _esMio(m)) return;
+            const id = _idOf(m);
+            if (vistos[id]) return;
+            vistos[id] = 1;
+            out.push(m);
+        };
         if (ch) {
             const st = ch.presenceState();
-            Object.keys(st).forEach(k => (st[k] || []).forEach(m => { if (m && !_esMio(m) && m.enModal && !vistos[m.key]) { vistos[m.key] = 1; out.push(m); } }));
+            Object.keys(st).forEach(k => (st[k] || []).forEach(m => { if (m && m.enModal) agregar(m); }));
         }
-        otrosDb.forEach(m => { if (!vistos[m.key] && !_esMio(m)) { vistos[m.key] = 1; out.push(m); } });
+        otrosDb.forEach(agregar);
         return out;
     }
     function _render() {
