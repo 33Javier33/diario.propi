@@ -3,6 +3,10 @@
 
 ## Historial de Cambios
 
+#### 2026-08-02 — El login dice "Acceso al Sistema de Recaudaciones" (SW v36)
+- El título de la pantalla de ingreso pasó de **"Acceso al Sistema"** a **"Acceso al Sistema de Recaudaciones"**, para que quede claro a qué app se está entrando cuando se tienen las tres instaladas.
+- Archivos: `index.html`. SW v36 (visible v36).
+
 #### 2026-08-02 — Fix: el mismo socio aparecía dos veces en la tarjeta (SW v35)
 - La misma persona llegaba por el canal en vivo y por la tabla con claves distintas, y se listaba duplicada. Ahora se deduplica por identidad estable (`app + socio_id`). Scripts `?v=21`, SW `recaudacion-cache-v35`, versión visible **v35**.
 
