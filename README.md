@@ -3,6 +3,12 @@
 
 ## Historial de Cambios
 
+#### 2026-09-08 — Se revierte el recorte al período en el aviso de recaudación (SW v39)
+- La v38 limitó el aviso al **período actual**. Eso dejaba fuera los días sin recaudación de períodos ya cerrados, que igual hay que saber para poder ingresarlos.
+- Vuelve la ventana de **45 días hacia atrás** desde ayer, igual que en las otras dos apps.
+- Se conservan las guardas: no avisa mientras no haya datos cargados, y nunca revisa antes del primer día que trajo la consulta.
+- Archivos: `app.js` (`_diasSinIngreso`). `app.js?v=21`, SW `recaudacion-cache-v39`, versión visible **v39**.
+
 #### 2026-09-08 — El aviso de recaudación faltante, acotado al período (SW v38)
 - El título dice **«Falta la recaudación de 1 día»** (o de N días), igual que en las otras dos apps.
 - **Ventana acotada al período actual** (del 15 en adelante) en vez de 45 días hacia atrás, que podía cruzar el corte de mes.

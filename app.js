@@ -277,12 +277,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!keys.length) return [];   // sin datos cargados no se avisa nada
         const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
         const ayer = new Date(hoy); ayer.setDate(ayer.getDate() - 1);
-        // El PERÍODO ACTUAL (del 15 en adelante), y nunca antes del primer día
-        // cargado: esos días pueden tener recaudación sin estar en la consulta.
-        const y = hoy.getFullYear(), m = hoy.getMonth(), dd = hoy.getDate();
-        let cur = (dd >= 15) ? new Date(y, m, 15) : new Date(y, m - 1, 15);
-        const primero = new Date(keys[0] + 'T00:00:00');
-        if (primero > cur) cur = primero;
+        // Ventana de 45 días hacia atrás, NO solo el período actual: un día sin
+        // recaudación de un período cerrado igual hay que saberlo. Nunca antes
+        // del primer día cargado, que puede no haber venido en la consulta.
+        let cur = new Date(keys[0] + 'T00:00:00');
+        const tope = new Date(ayer); tope.setDate(tope.getDate() - 45);
+        if (cur < tope) cur = tope;
         if (cur > ayer) return [];
         const faltan = [];
         for (let d = new Date(cur); d <= ayer; d.setDate(d.getDate() + 1)) {
