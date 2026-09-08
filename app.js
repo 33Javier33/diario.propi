@@ -306,12 +306,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     + 'padding:3px 10px;border-radius:20px;margin:4px 4px 0 0;white-space:nowrap;">' + txt + '</span>';
             }).join('');
             const n = faltan.length;
+            let _dia1 = faltan[0];
+            try {
+                const d1 = new Date(faltan[0] + 'T12:00:00');
+                _dia1 = d1.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
+                _dia1 = _dia1.charAt(0).toUpperCase() + _dia1.slice(1);
+            } catch (e) {}
+            const titulo = n === 1
+                ? 'Falta agregar la recaudación del ' + _dia1
+                : 'Faltan agregar ' + n + ' días de recaudación';
             return '<div style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:12px;padding:12px 14px;'
                 + 'box-shadow:0 1px 6px rgba(120,80,0,0.14);">'
                 + '<div style="display:flex;align-items:center;gap:8px;">'
                 +   '<span style="font-size:1.05rem;">📅</span>'
                 +   '<b style="font-size:0.86rem;color:#7c2d12;">'
-                +     (n === 1 ? 'Falta la recaudación de 1 día' : 'Falta la recaudación de ' + n + ' días') + '</b>'
+                +     titulo + '</b>'
                 + '</div>'
                 + '<div style="margin-top:4px;">' + chips + '</div>'
                 + '<div style="font-size:0.72rem;color:#92400e;margin-top:8px;line-height:1.45;">'

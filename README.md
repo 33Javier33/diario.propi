@@ -3,6 +3,11 @@
 
 ## Historial de Cambios
 
+#### 2026-09-08 — El aviso nombra el día que falta (SW v40)
+- Cuando falta **un solo día**, el título lo dice con nombre y fecha: **«Falta agregar la recaudación del Lunes, 7 de septiembre»**, en vez de solo *«Falta la recaudación de 1 día»*.
+- Con varios días muestra el conteo y el detalle en los chips.
+- Archivos: `app.js` (`_pintarDiasFaltantes`). `app.js?v=22`, SW `recaudacion-cache-v40`, versión visible **v40**.
+
 #### 2026-09-08 — Se revierte el recorte al período en el aviso de recaudación (SW v39)
 - La v38 limitó el aviso al **período actual**. Eso dejaba fuera los días sin recaudación de períodos ya cerrados, que igual hay que saber para poder ingresarlos.
 - Vuelve la ventana de **45 días hacia atrás** desde ayer, igual que en las otras dos apps.
