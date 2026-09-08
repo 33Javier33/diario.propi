@@ -266,6 +266,63 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- RENDER HISTORIAL ---
+    // ── DÍAS SIN RECAUDACIÓN ────────────────────────────────────────────
+    // Mismo criterio que socios-comicion y propi.solicitada: se revisan los
+    // días entre el más antiguo con datos y AYER (hoy todavía se está
+    // trabajando), como mucho los últimos 45. Acá importa más que en las otras
+    // dos, porque esta es la app donde se ingresa la recaudación.
+    function _diasSinIngreso(fechasConDatos) {
+        const set = new Set(fechasConDatos);
+        const keys = [...set].sort();
+        if (!keys.length) return [];
+        const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+        const ayer = new Date(hoy); ayer.setDate(ayer.getDate() - 1);
+        let cur = new Date(keys[0] + 'T00:00:00');
+        const tope = new Date(ayer); tope.setDate(tope.getDate() - 45);
+        if (cur < tope) cur = tope;
+        const faltan = [];
+        for (let d = new Date(cur); d <= ayer; d.setDate(d.getDate() + 1)) {
+            const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            if (!set.has(k)) faltan.push(k);
+        }
+        return faltan;
+    }
+
+    function _pintarDiasFaltantes(fechasConDatos) {
+        const faltan = _diasSinIngreso(fechasConDatos);
+        const html = faltan.length ? (function () {
+            const chips = faltan.map(k => {
+                const d = new Date(k + 'T12:00:00');
+                let txt = k;
+                try {
+                    txt = d.toLocaleDateString('es-CL', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace(/\./g, '');
+                    txt = txt.charAt(0).toUpperCase() + txt.slice(1);
+                } catch (e) {}
+                return '<span style="display:inline-block;background:#fde68a;color:#7c2d12;font-size:0.72rem;font-weight:800;'
+                    + 'padding:3px 10px;border-radius:20px;margin:4px 4px 0 0;white-space:nowrap;">' + txt + '</span>';
+            }).join('');
+            const n = faltan.length;
+            return '<div style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:12px;padding:12px 14px;'
+                + 'box-shadow:0 1px 6px rgba(120,80,0,0.14);">'
+                + '<div style="display:flex;align-items:center;gap:8px;">'
+                +   '<span style="font-size:1.05rem;">📅</span>'
+                +   '<b style="font-size:0.86rem;color:#7c2d12;">'
+                +     (n === 1 ? 'Falta ingresar 1 día' : 'Faltan ingresar ' + n + ' días') + '</b>'
+                + '</div>'
+                + '<div style="margin-top:4px;">' + chips + '</div>'
+                + '<div style="font-size:0.72rem;color:#92400e;margin-top:8px;line-height:1.45;">'
+                +   'Si tienes los montos de esos días, ingrésalos. Al terminar el turno consulta los que falten.'
+                + '</div>'
+                + '</div>';
+        })() : '';
+        ['diaFaltanteAviso', 'diaFaltanteAvisoHist'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = html;
+            el.style.display = html ? 'block' : 'none';
+        });
+    }
+
     function render() {
         const totalRec = datos.reduce((s, d) => s + d.monto, 0);
         document.getElementById('tot-rec').textContent = fNum(totalRec);
@@ -277,6 +334,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const sorted = Object.keys(grouped).sort((a, b) =>
             sortOrder === 'desc' ? new Date(b) - new Date(a) : new Date(a) - new Date(b)
         );
+
+        // El aviso se calcula con TODAS las fechas con datos, no con las filtradas.
+        _pintarDiasFaltantes(Object.keys(grouped).map(f => String(f).substring(0, 10)));
 
         let totDiv = 0;
         const container = document.getElementById('tablaContainer');

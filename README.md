@@ -3,6 +3,13 @@
 
 ## Historial de Cambios
 
+#### 2026-09-05 — Aviso de días sin recaudación ingresada (SW v37)
+- El aviso de días faltantes existía en **socios-comicion** y en **propi.solicitada**, pero **nunca se había agregado acá** — que es justamente donde se ingresa la recaudación, así que es donde más sirve.
+- Aparece en **Agregar Dato** (arriba del formulario) y en **Historial**, con los días sin ingresar como chips: *«Faltan ingresar 3 días · Mar 02/09 · Mié 03/09 · Jue 04/09»*.
+- Mismo criterio que las otras dos apps: se revisan los días entre el más antiguo con datos y **ayer** —hoy todavía se está trabajando—, como mucho los últimos 45.
+- El cálculo usa **todas** las fechas con datos, no las que queden tras aplicar el filtro de la pantalla.
+- Archivos: `index.html` (contenedores), `app.js` (`_diasSinIngreso`, `_pintarDiasFaltantes`). `app.js?v=19`, SW `recaudacion-cache-v37`, versión visible **v37**.
+
 #### 2026-08-02 — El login dice "Acceso al Sistema de Recaudaciones" (SW v36)
 - El título de la pantalla de ingreso pasó de **"Acceso al Sistema"** a **"Acceso al Sistema de Recaudaciones"**, para que quede claro a qué app se está entrando cuando se tienen las tres instaladas.
 - Archivos: `index.html`. SW v36 (visible v36).
