@@ -3,6 +3,12 @@
 
 ## Historial de Cambios
 
+#### 2026-09-08 — El aviso de recaudación faltante, acotado al período (SW v38)
+- El título dice **«Falta la recaudación de 1 día»** (o de N días), igual que en las otras dos apps.
+- **Ventana acotada al período actual** (del 15 en adelante) en vez de 45 días hacia atrás, que podía cruzar el corte de mes.
+- **Nunca revisa antes del primer día cargado** —esos días pueden tener recaudación sin estar en la consulta— y **no avisa si aún no hay datos**, para que al abrir la app no salga el período entero como faltante.
+- Archivos: `app.js` (`_diasSinIngreso`, `_pintarDiasFaltantes`). `app.js?v=20`, SW `recaudacion-cache-v38`, versión visible **v38**.
+
 #### 2026-09-05 — Aviso de días sin recaudación ingresada (SW v37)
 - El aviso de días faltantes existía en **socios-comicion** y en **propi.solicitada**, pero **nunca se había agregado acá** — que es justamente donde se ingresa la recaudación, así que es donde más sirve.
 - Aparece en **Agregar Dato** (arriba del formulario) y en **Historial**, con los días sin ingresar como chips: *«Faltan ingresar 3 días · Mar 02/09 · Mié 03/09 · Jue 04/09»*.

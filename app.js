@@ -274,12 +274,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function _diasSinIngreso(fechasConDatos) {
         const set = new Set(fechasConDatos);
         const keys = [...set].sort();
-        if (!keys.length) return [];
+        if (!keys.length) return [];   // sin datos cargados no se avisa nada
         const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
         const ayer = new Date(hoy); ayer.setDate(ayer.getDate() - 1);
-        let cur = new Date(keys[0] + 'T00:00:00');
-        const tope = new Date(ayer); tope.setDate(tope.getDate() - 45);
-        if (cur < tope) cur = tope;
+        // El PERÍODO ACTUAL (del 15 en adelante), y nunca antes del primer día
+        // cargado: esos días pueden tener recaudación sin estar en la consulta.
+        const y = hoy.getFullYear(), m = hoy.getMonth(), dd = hoy.getDate();
+        let cur = (dd >= 15) ? new Date(y, m, 15) : new Date(y, m - 1, 15);
+        const primero = new Date(keys[0] + 'T00:00:00');
+        if (primero > cur) cur = primero;
+        if (cur > ayer) return [];
         const faltan = [];
         for (let d = new Date(cur); d <= ayer; d.setDate(d.getDate() + 1)) {
             const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -307,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 + '<div style="display:flex;align-items:center;gap:8px;">'
                 +   '<span style="font-size:1.05rem;">📅</span>'
                 +   '<b style="font-size:0.86rem;color:#7c2d12;">'
-                +     (n === 1 ? 'Falta ingresar 1 día' : 'Faltan ingresar ' + n + ' días') + '</b>'
+                +     (n === 1 ? 'Falta la recaudación de 1 día' : 'Falta la recaudación de ' + n + ' días') + '</b>'
                 + '</div>'
                 + '<div style="margin-top:4px;">' + chips + '</div>'
                 + '<div style="font-size:0.72rem;color:#92400e;margin-top:8px;line-height:1.45;">'
