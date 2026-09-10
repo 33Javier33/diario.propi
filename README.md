@@ -3,6 +3,14 @@
 
 ## Historial de Cambios
 
+#### 2026-09-10 — El Total Valor por Punto queda siempre a la vista (SW v42)
+- Estaba solo en la tarjeta de arriba, que **se pierde apenas se baja** por el historial — justo cuando más se necesita para comparar contra los montos del día.
+- **En computador** va ahora en el **menú lateral**, bajo el nombre del usuario. Como la barra lateral es fija, queda visible esté donde esté la página y en cualquier panel (Agregar, Historial, Notas, Ayuda).
+- **En celular**, donde no hay barra lateral, se agregó una **franja adherida al borde superior** con *Valor por Punto* y el monto. Ocupa una sola línea y acompaña al hacer scroll.
+- Cada layout muestra solo lo suyo: la franja no aparece en escritorio ni el bloque del menú en celular, para no repetir el dato dos veces en pantalla.
+- Los tres lugares (tarjeta, menú y franja) se actualizan juntos en cada render, así que no pueden quedar descuadrados entre sí.
+- Archivos: `index.html` (`#vpMenu`, `#vpSticky`), `app.js` (`render`), `styles.css`. `app.js?v=24`, `styles.css?v=42`, SW `recaudacion-cache-v42`, versión visible **v42**.
+
 #### 2026-09-10 — Historial en vista mosaico (SW v41)
 - En computador el historial iba en **una sola columna**, con media pantalla vacía a la derecha y obligando a bajar mucho para comparar los montos de un día contra otro.
 - Botón nuevo **▦ Dos columnas** en la barra del Historial, junto al buscador de fecha: los días quedan **uno al lado del otro**. Desde **1700 px** entran tres, porque las columnas se acomodan solas según el ancho real.

@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#6366f1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=41">
+    <link rel="stylesheet" href="styles.css?v=42">
 </head>
 <body>
 
@@ -95,6 +95,12 @@
         <img src="img/carlospn-logo.png?v=1" alt="CarlosPN Interactive" class="marca-logo marca-logo-side">
         <div class="menu-header">SISTEMA GESTIÓN</div>
         <div id="activeUserBadge" class="user-status">Iniciando...</div>
+        <!-- Valor por punto en el menú: la barra lateral es fija, así que
+             queda a la vista sin importar dónde se esté en la página. -->
+        <div id="vpMenu">
+            <span class="vp-label">Total Valor por Punto</span>
+            <strong class="vp-monto" id="vp-menu-valor">$0</strong>
+        </div>
         <div class="menu-links-container">
             <a href="#" class="menu-link active-link" data-target="agregarPanel">
                 <i class="fas fa-plus-circle"></i> Agregar Dato
@@ -147,6 +153,13 @@
             <!-- Tarjeta de presencia: quién está en recaudaciones y dónde.
                  Va aquí (en el flujo, arriba del contenido) para verse en TODOS
                  los paneles sin tapar la barra de navegación ni el contenido. -->
+            <!-- Valor por punto fijo al hacer scroll. Solo en celular: en
+                 escritorio ya está en la barra lateral. -->
+            <div id="vpSticky">
+                <span class="vp-label">Valor por Punto</span>
+                <strong class="vp-monto" id="vp-sticky-valor">$0</strong>
+            </div>
+
             <div id="recPresenciaCard"></div>
 
             <!-- STATS -->
@@ -385,8 +398,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-api.js?v=21"></script>
-    <script src="app.js?v=23"></script>
+    <script src="app.js?v=24"></script>
 <!-- Versión visible de la app (= versión del Service Worker) -->
-<div style="position:fixed;bottom:6px;right:8px;z-index:9999;font-size:10px;color:#94a3b8;opacity:0.75;pointer-events:none;font-weight:600;">v41</div>
+<div style="position:fixed;bottom:6px;right:8px;z-index:9999;font-size:10px;color:#94a3b8;opacity:0.75;pointer-events:none;font-weight:600;">v42</div>
 </body>
 </html>

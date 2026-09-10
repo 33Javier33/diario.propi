@@ -432,7 +432,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
         });
 
-        document.getElementById('tot-div').textContent = fNum(totDiv);
+        // El valor por punto se muestra en tres lugares: la tarjeta de arriba,
+        // el menú lateral (escritorio) y la franja fija (celular).
+        const _vp = fNum(totDiv);
+        ['tot-div', 'vp-menu-valor', 'vp-sticky-valor'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = _vp;
+        });
         hist_aplicarVista();   // el contenedor se repuebla en cada render
         renderNotes();
     }

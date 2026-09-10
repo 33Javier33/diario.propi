@@ -494,3 +494,69 @@ body.dark-mode .marca-logo { filter: invert(1) hue-rotate(180deg); mix-blend-mod
 /* El sidebar es SIEMPRE oscuro → el logo del sidebar usa el tratamiento oscuro
    en cualquier tema (si no, el fondo blanco del PNG se vería como caja blanca). */
 .marca-logo.marca-logo-side { filter: invert(1) hue-rotate(180deg); mix-blend-mode: screen; }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   TOTAL VALOR POR PUNTO SIEMPRE A LA VISTA
+   Estaba solo en la tarjeta de arriba, que se pierde al bajar. Ahora va en
+   la barra lateral (escritorio, que es fija) y en una franja adherida al
+   borde superior (celular, donde no hay barra lateral).
+   ══════════════════════════════════════════════════════════════════════ */
+#vpMenu {
+    display: none;
+    margin: 0 1.4rem 1rem;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+#vpMenu .vp-label {
+    display: block;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 3px;
+}
+#vpMenu .vp-monto {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #34d399;
+    line-height: 1.1;
+}
+
+#vpSticky {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    margin: 0 0 12px;
+    padding: 8px 14px;
+    border-radius: 0 0 14px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-top: none;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.10);
+}
+#vpSticky .vp-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+#vpSticky .vp-monto {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--secondary);
+}
+
+/* En escritorio manda la barra lateral; en celular, la franja fija. */
+@media (min-width: 992px) {
+    #vpMenu   { display: block; }
+    #vpSticky { display: none; }
+}
