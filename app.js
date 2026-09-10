@@ -336,6 +336,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ── Vista mosaico del historial ─────────────────────────────────────
+    // Los días uno al lado del otro, para comparar montos sin bajar tanto.
+    // Encendida por defecto en pantalla ancha; apagarla queda a un clic y se
+    // recuerda. El contenedor se repuebla en cada render, así que la vista se
+    // vuelve a aplicar al final de render().
+    const HIST_VISTA_KEY = 'diario_hist_mosaico';
+
+    function hist_vistaMosaico() {
+        try { return localStorage.getItem(HIST_VISTA_KEY) !== '0'; } catch (e) { return true; }
+    }
+
+    function hist_aplicarVista() {
+        const cont = document.getElementById('tablaContainer');
+        const btn = document.getElementById('histVistaBtn');
+        const on = hist_vistaMosaico();
+        if (cont) cont.classList.toggle('mosaico', on);
+        if (btn) {
+            btn.textContent = on ? '▦ Dos columnas' : '☰ Una columna';
+            btn.title = on ? 'Volver a una sola columna' : 'Ver los días en dos columnas';
+        }
+    }
+
+    function hist_toggleVista() {
+        try { localStorage.setItem(HIST_VISTA_KEY, hist_vistaMosaico() ? '0' : '1'); } catch (e) {}
+        hist_aplicarVista();
+    }
+    window.hist_toggleVista = hist_toggleVista;
+
     function render() {
         const totalRec = datos.reduce((s, d) => s + d.monto, 0);
         document.getElementById('tot-rec').textContent = fNum(totalRec);
@@ -405,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         document.getElementById('tot-div').textContent = fNum(totDiv);
+        hist_aplicarVista();   // el contenedor se repuebla en cada render
         renderNotes();
     }
 

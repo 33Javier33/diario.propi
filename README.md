@@ -3,6 +3,15 @@
 
 ## Historial de Cambios
 
+#### 2026-09-10 — Historial en vista mosaico (SW v41)
+- En computador el historial iba en **una sola columna**, con media pantalla vacía a la derecha y obligando a bajar mucho para comparar los montos de un día contra otro.
+- Botón nuevo **▦ Dos columnas** en la barra del Historial, junto al buscador de fecha: los días quedan **uno al lado del otro**. Desde **1700 px** entran tres, porque las columnas se acomodan solas según el ancho real.
+- **Encendido por defecto** en pantalla ancha; apagarlo es un clic y la preferencia se guarda. Bajo **1100 px** el botón no aparece y la lista sigue en una columna, que es lo correcto en un celular.
+- La vista se re-aplica al final de cada render, porque el contenedor se repuebla entero cada vez que llegan datos o se cambia el orden.
+- **Recuerda:** el historial arranca minimizado y muestra solo el día más reciente. Para aprovechar el mosaico hay que presionar **Expandir/Min**.
+- Se agregó control de versión a `styles.css` (`?v=41`), que no lo tenía y podía quedar cacheado.
+- Archivos: `index.html` (botón), `app.js` (`hist_aplicarVista`, `hist_toggleVista`), `styles.css`. `app.js?v=23`, `styles.css?v=41`, SW `recaudacion-cache-v41`, versión visible **v41**.
+
 #### 2026-09-08 — El aviso nombra el día que falta (SW v40)
 - Cuando falta **un solo día**, el título lo dice con nombre y fecha: **«Falta agregar la recaudación del Lunes, 7 de septiembre»**, en vez de solo *«Falta la recaudación de 1 día»*.
 - Con varios días muestra el conteo y el detalle en los chips.
