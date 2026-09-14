@@ -4,6 +4,15 @@
 ## Historial de Cambios
 
 
+
+#### 2026-09-14 — Acceso directo en el login (SW v44)
+- Igual que en la app de Horarios: se puede dejar un usuario **recordado en este dispositivo**. Al abrir, el **área y el nombre quedan puestos** y solo falta escribir el PIN — los tres pasos se reducen a uno.
+- **El PIN no se guarda nunca.** Esto acorta el camino hasta el usuario, no la autenticación: un teléfono es personal pero puede prestarse.
+- Se marca con el botón **☆ Recordarme en este dispositivo**, que aparece al elegir el nombre y pasa a **★** cuando está activo. Se quita desde ahí o con la **✕** de la tarjeta.
+- **Bug encontrado y corregido durante la prueba:** si al abrir la lista de socios **no alcanzaba a cargar** (sin red, Supabase lento), el código concluía *«ese socio ya no está»* y **borraba el acceso directo**. Una falla pasajera no debe destruir la preferencia: ahora solo se limpia cuando la lista **sí cargó** y aun así el socio no aparece. Verificado que tras recargar sin datos el atajo **sobrevive**.
+- Las llamadas a `showToast` van protegidas: `favAplicar()` corre al arrancar y puede adelantarse a que esa función exista.
+- Probado en navegador en cinco pasos: sin favorito, marcar, que persista al recargar (área y nombre puestos, foco en el PIN y el aviso «Ingresa tu PIN»), que sobreviva a una carga fallida, y el caso del socio que ya no está en el área.
+- `app.js?v=25`, SW `recaudacion-cache-v44`, versión visible **v44**.
 #### 2026-09-14 — Marca nueva: Carlos P. Nauto Interactive (SW v43)
 - Se reemplaza el logotipo (`img/carlospn-logo.png`) por el nuevo y **«CarlosPN Interactive» pasa a «Carlos P. Nauto Interactive»** en sus 4 menciones: el logo del **login**, el del **sidebar**, el del **pie** y la línea de texto del pie.
 - El archivo mantiene el **mismo nombre**, así que las tres referencias y el Service Worker siguen sirviendo; cache-bust a `?v=2026`.

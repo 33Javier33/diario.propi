@@ -817,6 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
         _selUser.innerHTML = '<option value="" disabled selected>2. Elegir tu nombre...</option>'
             + socios.map(s => `<option value="${s.id}" data-nombre="${(s.nombre || '').replace(/"/g, '&quot;')}">${s.nombre}</option>`).join('');
         _selUser.disabled = false;
+        if (typeof favPintarBoton === 'function') favPintarBoton();
     };
 
     // Al elegir el socio → indicar si ya tiene PIN o si es su primera vez
@@ -825,7 +826,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const rec = (typeof window.diarioGetPin === 'function') ? await window.diarioGetPin(_selUser.value) : null;
         if (rec && rec.hasPin) _setHint('🔒 Ingresa tu PIN de 4 dígitos', '#1a6fa0');
         else _setHint('🆕 Primera vez: crea tu PIN de 4 dígitos (quedará guardado)', '#b45309');
+        if (typeof favPintarBoton === 'function') favPintarBoton();
     };
+
+    // Deja puestos el área y el nombre recordados; solo queda el PIN.
+    if (typeof favAplicar === 'function') setTimeout(favAplicar, 0);
 
     document.getElementById('loginForm').onsubmit = async (e) => {
         e.preventDefault();
@@ -902,3 +907,102 @@ document.addEventListener('DOMContentLoaded', () => {
     // Exponer cargar globalmente para Supabase Realtime
     window._diarioReload = () => cargar(true);
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// ACCESO DIRECTO EN EL LOGIN
+//
+// El ingreso son tres pasos: área → nombre → PIN. Los dos primeros son
+// siempre los mismos para cada persona, así que se guardan EN ESTE
+// dispositivo y quedan puestos al abrir: solo hay que escribir el PIN.
+//
+// El PIN NO se guarda nunca. Esto acorta el camino hasta el usuario, no
+// la autenticación: un teléfono es personal pero puede prestarse.
+// ══════════════════════════════════════════════════════════════════════
+const FAV_KEY = 'diario_acceso_directo';
+function favLeer()   { try { return JSON.parse(localStorage.getItem(FAV_KEY) || 'null'); } catch (e) { return null; } }
+function favBorrar() { try { localStorage.removeItem(FAV_KEY); } catch (e) {} }
+function favGuardar(area, id, nombre) {
+    try { localStorage.setItem(FAV_KEY, JSON.stringify({ area, id, nombre })); } catch (e) {}
+}
+
+// Muestra ☆ / ★ según si el socio elegido ahora es el recordado.
+function favPintarBoton() {
+    const btn = document.getElementById('btnFavorito');
+    const selU = document.getElementById('username');
+    if (!btn || !selU) return;
+    if (!selU.value) { btn.style.display = 'none'; return; }
+    const f = favLeer();
+    const esEste = f && f.id === selU.value;
+    btn.style.display = 'block';
+    btn.textContent = esEste ? '★ Recordado en este dispositivo — tocá para quitar'
+                             : '☆ Recordarme en este dispositivo';
+    btn.style.color = esEste ? 'var(--primary)' : 'var(--text-muted)';
+    btn.style.borderStyle = esEste ? 'solid' : 'dashed';
+}
+
+function favAlternar() {
+    const selA = document.getElementById('loginArea');
+    const selU = document.getElementById('username');
+    if (!selU || !selU.value) return;
+    const f = favLeer();
+    if (f && f.id === selU.value) {
+        favBorrar();
+        if (typeof showToast === 'function') showToast('Acceso directo quitado', 'info');
+    } else {
+        const op = selU.selectedOptions[0];
+        favGuardar(selA.value, selU.value, (op && (op.dataset.nombre || op.textContent)) || '');
+        if (typeof showToast === 'function') showToast('★ Listo: al abrir quedarás elegido', 'success');
+    }
+    favPintarBoton();
+    favPintarTarjeta();
+}
+
+function favPintarTarjeta() {
+    const cont = document.getElementById('accesoDirecto');
+    if (!cont) return;
+    const f = favLeer();
+    if (!f || !f.id) { cont.style.display = 'none'; cont.innerHTML = ''; return; }
+    cont.style.display = 'block';
+    cont.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px; border:1px solid var(--primary); border-radius:12px; padding:10px 12px; background:rgba(26,111,160,0.07);">
+            <span style="font-size:1.1rem;">★</span>
+            <div style="flex:1; min-width:0; text-align:left;">
+                <div style="font-size:0.68rem; font-weight:800; letter-spacing:0.08em; color:var(--primary);">ACCESO DIRECTO</div>
+                <div style="font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${(f.nombre || 'Mi usuario')}</div>
+                <div style="font-size:0.74rem; color:var(--text-muted);">${(f.area || '')} · solo falta tu PIN</div>
+            </div>
+            <button type="button" onclick="favQuitarDesdeTarjeta()" title="Quitar" style="background:none; border:1px solid var(--border); border-radius:8px; width:28px; height:28px; cursor:pointer; color:var(--text-muted); flex-shrink:0;">✕</button>
+        </div>`;
+}
+function favQuitarDesdeTarjeta() {
+    favBorrar(); favPintarTarjeta(); favPintarBoton();
+    if (typeof showToast === 'function') showToast('Acceso directo quitado', 'info');
+}
+
+// Al abrir el login: deja área y nombre puestos y el cursor en el PIN.
+async function favAplicar() {
+    const f = favLeer();
+    favPintarTarjeta();
+    if (!f || !f.id) return;
+    const selA = document.getElementById('loginArea');
+    const selU = document.getElementById('username');
+    if (!selA || !selU) return;
+    selA.value = f.area;
+    if (selA.onchange) await selA.onchange();          // carga los socios del área
+    // Ojo: si la lista NO llegó a cargar (sin red, Supabase lento), el select
+    // queda sin socios. Borrar el atajo en ese caso sería destruir la
+    // preferencia por una falla pasajera, así que solo se limpia cuando la
+    // lista SÍ cargó y aun así el socio no está.
+    const opciones = [...selU.options].filter(o => o.value);
+    if (!opciones.length) { favPintarBoton(); return; }   // no cargó: se deja como está
+    if (!opciones.some(o => o.value === f.id)) {
+        favBorrar(); favPintarTarjeta();
+        if (typeof showToast === 'function') showToast('Ese socio ya no está en el área guardada', 'warning');
+        return;
+    }
+    selU.value = f.id;
+    if (selU.onchange) await selU.onchange();          // muestra el aviso de PIN
+    favPintarBoton();
+    const pin = document.getElementById('password');
+    if (pin) pin.focus();
+}
