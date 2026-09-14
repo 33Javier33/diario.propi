@@ -3,6 +3,14 @@
 
 ## Historial de Cambios
 
+
+#### 2026-09-14 — Marca nueva: Carlos P. Nauto Interactive (SW v43)
+- Se reemplaza el logotipo (`img/carlospn-logo.png`) por el nuevo y **«CarlosPN Interactive» pasa a «Carlos P. Nauto Interactive»** en sus 4 menciones: el logo del **login**, el del **sidebar**, el del **pie** y la línea de texto del pie.
+- El archivo mantiene el **mismo nombre**, así que las tres referencias y el Service Worker siguen sirviendo; cache-bust a `?v=2026`.
+- **El logotipo nuevo es transparente** (el anterior tenía fondo blanco). Las reglas de `.marca-logo` —`multiply` en claro, `invert(1) hue-rotate(180deg)` + `screen` en oscuro, y el mismo tratamiento forzado para el sidebar, que siempre es oscuro— **funcionan igual** con un PNG transparente: no hubo que tocar `styles.css`.
+- Verificado en navegador en los tres lugares: login claro, sidebar oscuro y pie en modo oscuro.
+- SW `recaudacion-cache-v43`.
+- Archivos: `index.html`, `sw.js`, `img/carlospn-logo.png`.
 #### 2026-09-10 — El Total Valor por Punto queda siempre a la vista (SW v42)
 - Estaba solo en la tarjeta de arriba, que **se pierde apenas se baja** por el historial — justo cuando más se necesita para comparar contra los montos del día.
 - **En computador** va ahora en el **menú lateral**, bajo el nombre del usuario. Como la barra lateral es fija, queda visible esté donde esté la página y en cualquier panel (Agregar, Historial, Notas, Ayuda).
