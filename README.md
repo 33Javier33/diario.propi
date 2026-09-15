@@ -5,6 +5,15 @@
 
 
 
+#### 2026-09-15 — Logotipo nuevo: neón sobre placa oscura (SW v45)
+- Se reemplaza el logotipo por el nuevo de **Carlos P. Nauto Interactive**: escudo CPN en degradado neón sobre una **placa de metal oscuro**. Aparece en el **login**, el **sidebar** y el **pie**.
+- **El logotipo viene con su placa y así se usa.** Los colores neón solo tienen contraste sobre fondo oscuro: si se recorta el fondo, sobre la tarjeta blanca del login el logotipo se vuelve ilegible. La placa, redondeada y con una sombra suave en el tema claro, se muestra como una chapa.
+- **Se eliminó el tratamiento por tema, que con este logotipo estaba al revés.** El anterior era azul oscuro sobre blanco y se fundía con `multiply` en claro e `invert(1) hue-rotate(180deg)` + `screen` en oscuro (y ese mismo forzado en el sidebar, que siempre es oscuro). Probado con el nuevo, ese filtro **deja la placa blanca y lava el neón**.
+- **Archivo nuevo:** `img/marca/cpn-marca.jpg` (640×584, 68 KB). Es **JPG y no PNG** a propósito: la placa es opaca, no necesita transparencia, y en PNG el mismo recorte pesaba **502 KB** por la textura del metal. Se borra `img/carlospn-logo.png`.
+- Verificado en navegador en el login claro y en modo oscuro: la imagen carga (640×584), no queda filtro ni `mix-blend-mode`, y la sombra aparece solo en claro.
+- `styles.css?v=45`, SW `recaudacion-cache-v45`, versión visible **v45**.
+- Archivos: `index.html`, `styles.css`, `sw.js`, `img/marca/cpn-marca.jpg`.
+
 #### 2026-09-14 — Acceso directo en el login (SW v44)
 - Igual que en la app de Horarios: se puede dejar un usuario **recordado en este dispositivo**. Al abrir, el **área y el nombre quedan puestos** y solo falta escribir el PIN — los tres pasos se reducen a uno.
 - **El PIN no se guarda nunca.** Esto acorta el camino hasta el usuario, no la autenticación: un teléfono es personal pero puede prestarse.
