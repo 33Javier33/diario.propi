@@ -5,16 +5,13 @@
 
 
 
-#### 2026-09-15 — Logotipo redibujado en vectores, fondo transparente (SW v46)
-- El logotipo sobre placa negra que se publicó esta mañana **se retira**: el recuadro oscuro sobre la tarjeta blanca del login no se veía profesional.
-- **El archivo que existía era una foto de una maqueta**, no un archivo de logotipo: el escudo estaba fotografiado sobre una pared de metal cepillado con degradado. No se puede recortar ese fondo (se probó, quedan restos de los brillos del metal) ni cambiarle los colores. Para tenerlo con fondo transparente **hubo que redibujarlo**.
-- **Ahora es un SVG dibujado en curvas**: mismo escudo hexagonal con el circuito, los símbolos `{ }` y `[ ]`, la flecha de crecimiento y el monograma CPN, más la marca denominativa debajo. Aparece en el **login**, el **sidebar** y el **pie**.
-- **Fondo transparente**, así que el fondo que se ve es el de la app y se adapta al tema.
-- **Colores nuevos**, elegidos para tener contraste sobre fondo claro: degradado **celeste → azul → violeta**. En modo oscuro —y siempre en el sidebar, que es oscuro en cualquier tema— se avivan con `filter: brightness(1.35) saturate(1.05)`.
-- **La marca denominativa va convertida a curvas** (Montserrat pasada a trazados), así que el SVG **no depende de ninguna tipografía instalada**.
-- **Archivos:** `img/marca/cpn-marca.svg` (15 KB) e `img/marca/cpn-iso.svg` (4 KB). Se borra `cpn-marca.jpg`.
-- Verificado en navegador sobre la página real, en claro y en oscuro: la imagen carga y el avivado se aplica solo en oscuro.
-- `styles.css?v=46`, SW `recaudacion-cache-v46`, versión visible **v46**.
+#### 2026-09-15 — Logotipo original recortado y recoloreado (SW v47)
+- **Se revierte el redibujo.** El pedido era cambiar el color, no el dibujo. Vuelve **el arte original, con su forma exacta**, y lo único que cambia es el color. Aparece en el **login**, el **sidebar** y el **pie**.
+- **Cómo se recortó el fondo.** El archivo de origen es una foto de una maqueta (el escudo sobre metal cepillado con degradado). Lo que funcionó fue un **top-hat**: se estima el fondo como el mínimo local en una ventana más ancha que el trazo más grueso del logo y se conserva lo que sobresale. Tres ajustes hicieron falta: usar **croma absoluto** en vez de saturación relativa (si no, queda un halo gris), bajar el umbral de luminancia porque **el texto plateado no es tan claro como parece** y quedaba semitransparente, y descartar los reflejos pegados al borde exigiendo que todo píxel esté cerca de uno opaco.
+- **El color:** mismos tonos del original pero **más saturados y menos claros**, porque el neón se lava sobre fondo blanco. Sobre fondo oscuro —y siempre en el sidebar— se avivan con `filter: brightness(1.45) saturate(1.05)`.
+- **Archivos:** `img/marca/cpn-marca.png` (520×480, 219 KB, fondo transparente). Se borran los SVG del intento anterior.
+- Verificado en navegador sobre la página real, en claro y en oscuro.
+- `styles.css?v=47`, SW `recaudacion-cache-v47`, versión visible **v47**.
 - Archivos: `index.html`, `styles.css`, `sw.js`, `img/marca/`.
 #### 2026-09-14 — Acceso directo en el login (SW v44)
 - Igual que en la app de Horarios: se puede dejar un usuario **recordado en este dispositivo**. Al abrir, el **área y el nombre quedan puestos** y solo falta escribir el PIN — los tres pasos se reducen a uno.
