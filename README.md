@@ -5,15 +5,17 @@
 
 
 
-#### 2026-09-15 — Logotipo nuevo: neón sobre placa oscura (SW v45)
-- Se reemplaza el logotipo por el nuevo de **Carlos P. Nauto Interactive**: escudo CPN en degradado neón sobre una **placa de metal oscuro**. Aparece en el **login**, el **sidebar** y el **pie**.
-- **El logotipo viene con su placa y así se usa.** Los colores neón solo tienen contraste sobre fondo oscuro: si se recorta el fondo, sobre la tarjeta blanca del login el logotipo se vuelve ilegible. La placa, redondeada y con una sombra suave en el tema claro, se muestra como una chapa.
-- **Se eliminó el tratamiento por tema, que con este logotipo estaba al revés.** El anterior era azul oscuro sobre blanco y se fundía con `multiply` en claro e `invert(1) hue-rotate(180deg)` + `screen` en oscuro (y ese mismo forzado en el sidebar, que siempre es oscuro). Probado con el nuevo, ese filtro **deja la placa blanca y lava el neón**.
-- **Archivo nuevo:** `img/marca/cpn-marca.jpg` (640×584, 68 KB). Es **JPG y no PNG** a propósito: la placa es opaca, no necesita transparencia, y en PNG el mismo recorte pesaba **502 KB** por la textura del metal. Se borra `img/carlospn-logo.png`.
-- Verificado en navegador en el login claro y en modo oscuro: la imagen carga (640×584), no queda filtro ni `mix-blend-mode`, y la sombra aparece solo en claro.
-- `styles.css?v=45`, SW `recaudacion-cache-v45`, versión visible **v45**.
-- Archivos: `index.html`, `styles.css`, `sw.js`, `img/marca/cpn-marca.jpg`.
-
+#### 2026-09-15 — Logotipo redibujado en vectores, fondo transparente (SW v46)
+- El logotipo sobre placa negra que se publicó esta mañana **se retira**: el recuadro oscuro sobre la tarjeta blanca del login no se veía profesional.
+- **El archivo que existía era una foto de una maqueta**, no un archivo de logotipo: el escudo estaba fotografiado sobre una pared de metal cepillado con degradado. No se puede recortar ese fondo (se probó, quedan restos de los brillos del metal) ni cambiarle los colores. Para tenerlo con fondo transparente **hubo que redibujarlo**.
+- **Ahora es un SVG dibujado en curvas**: mismo escudo hexagonal con el circuito, los símbolos `{ }` y `[ ]`, la flecha de crecimiento y el monograma CPN, más la marca denominativa debajo. Aparece en el **login**, el **sidebar** y el **pie**.
+- **Fondo transparente**, así que el fondo que se ve es el de la app y se adapta al tema.
+- **Colores nuevos**, elegidos para tener contraste sobre fondo claro: degradado **celeste → azul → violeta**. En modo oscuro —y siempre en el sidebar, que es oscuro en cualquier tema— se avivan con `filter: brightness(1.35) saturate(1.05)`.
+- **La marca denominativa va convertida a curvas** (Montserrat pasada a trazados), así que el SVG **no depende de ninguna tipografía instalada**.
+- **Archivos:** `img/marca/cpn-marca.svg` (15 KB) e `img/marca/cpn-iso.svg` (4 KB). Se borra `cpn-marca.jpg`.
+- Verificado en navegador sobre la página real, en claro y en oscuro: la imagen carga y el avivado se aplica solo en oscuro.
+- `styles.css?v=46`, SW `recaudacion-cache-v46`, versión visible **v46**.
+- Archivos: `index.html`, `styles.css`, `sw.js`, `img/marca/`.
 #### 2026-09-14 — Acceso directo en el login (SW v44)
 - Igual que en la app de Horarios: se puede dejar un usuario **recordado en este dispositivo**. Al abrir, el **área y el nombre quedan puestos** y solo falta escribir el PIN — los tres pasos se reducen a uno.
 - **El PIN no se guarda nunca.** Esto acorta el camino hasta el usuario, no la autenticación: un teléfono es personal pero puede prestarse.
