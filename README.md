@@ -5,13 +5,14 @@
 
 
 
-#### 2026-09-15 — Logotipo original recortado y recoloreado (SW v47)
+#### 2026-09-15 — Logotipo original recortado y recoloreado (SW v48)
 - **Se revierte el redibujo.** El pedido era cambiar el color, no el dibujo. Vuelve **el arte original, con su forma exacta**, y lo único que cambia es el color. Aparece en el **login**, el **sidebar** y el **pie**.
 - **Cómo se recortó el fondo.** El archivo de origen es una foto de una maqueta (el escudo sobre metal cepillado con degradado). Lo que funcionó fue un **top-hat**: se estima el fondo como el mínimo local en una ventana más ancha que el trazo más grueso del logo y se conserva lo que sobresale. Tres ajustes hicieron falta: usar **croma absoluto** en vez de saturación relativa (si no, queda un halo gris), bajar el umbral de luminancia porque **el texto plateado no es tan claro como parece** y quedaba semitransparente, y descartar los reflejos pegados al borde exigiendo que todo píxel esté cerca de uno opaco.
 - **El color:** mismos tonos del original pero **más saturados y menos claros**, porque el neón se lava sobre fondo blanco. Sobre fondo oscuro —y siempre en el sidebar— se avivan con `filter: brightness(1.45) saturate(1.05)`.
 - **Archivos:** `img/marca/cpn-marca.png` (520×480, 219 KB, fondo transparente). Se borran los SVG del intento anterior.
-- Verificado en navegador sobre la página real, en claro y en oscuro.
-- `styles.css?v=47`, SW `recaudacion-cache-v47`, versión visible **v47**.
+- **Mediana 3×3 sobre el alfa:** el texto plateado sale del JPEG con motas sueltas en el borde y se veía sucio al lado de «Nauto», que es de color. Se probó además un cierre morfológico para rellenar la «C» y **se descartó**: engorda las letras y cierra el ojo de la «a».
+- Verificado en navegador sobre la página real, en claro y en oscuro, y a 240/190/120 px.
+- `styles.css?v=48`, SW `recaudacion-cache-v48`, versión visible **v48**.
 - Archivos: `index.html`, `styles.css`, `sw.js`, `img/marca/`.
 #### 2026-09-14 — Acceso directo en el login (SW v44)
 - Igual que en la app de Horarios: se puede dejar un usuario **recordado en este dispositivo**. Al abrir, el **área y el nombre quedan puestos** y solo falta escribir el PIN — los tres pasos se reducen a uno.
