@@ -5,6 +5,11 @@
 
 
 
+#### 2026-09-17 — El logotipo de marca, a un tamaño discreto (SW v49)
+- **El logo ocupaba demasiado espacio y resultaba hostil a la vista.** La causa es que `cpn-marca.png` es **casi cuadrado (520×480)**: el ancho se paga casi entero en alto. En el login, 190 px de ancho medían **175 px de alto** y el logo tapaba la tarjeta de acceso.
+- **Escala nueva, idéntica en las 3 apps:** login **190 → 96 px** (≈89 de alto), sidebar **150 → 80 px**, pie **130 → 68 px**. El pie lleva además `opacity: .85` para que se lea como firma.
+- **Archivos:** `styles.css` (`.marca-logo-login`, `.marca-logo-side`, `.marca-logo-foot`). No cambia el archivo del logo ni sus colores — **solo el tamaño**.
+
 #### 2026-09-15 — Logotipo original recortado y recoloreado (SW v48)
 - **Se revierte el redibujo.** El pedido era cambiar el color, no el dibujo. Vuelve **el arte original, con su forma exacta**, y lo único que cambia es el color. Aparece en el **login**, el **sidebar** y el **pie**.
 - **Cómo se recortó el fondo.** El archivo de origen es una foto de una maqueta (el escudo sobre metal cepillado con degradado). Lo que funcionó fue un **top-hat**: se estima el fondo como el mínimo local en una ventana más ancha que el trazo más grueso del logo y se conserva lo que sobresale. Tres ajustes hicieron falta: usar **croma absoluto** en vez de saturación relativa (si no, queda un halo gris), bajar el umbral de luminancia porque **el texto plateado no es tan claro como parece** y quedaba semitransparente, y descartar los reflejos pegados al borde exigiendo que todo píxel esté cerca de uno opaco.

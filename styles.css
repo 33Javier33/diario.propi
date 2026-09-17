@@ -488,9 +488,12 @@ footer {
    ===================== */
 .marca-logo { filter: none; mix-blend-mode: normal; }
 body.dark-mode .marca-logo { filter: brightness(1.45) saturate(1.05); }
-.marca-logo-login { width: 190px; max-width: 70%; height: auto; display: block; margin: 0 auto 1.2rem; }
-.marca-logo-side  { width: 150px; max-width: 82%; height: auto; display: block; margin: 6px auto 2px; }
-.marca-logo-foot  { width: 130px; max-width: 55%; height: auto; display: block; margin: 0 auto 6px; }
+/* El archivo es casi cuadrado (520x480), así que el ancho se paga casi
+   entero en alto: a 190px de ancho ocupaba 175px de alto y se comía la
+   portada. Esta escala es la misma en las 3 apps. */
+.marca-logo-login { width: 96px; max-width: 40vw; height: auto; display: block; margin: 0 auto 1.1rem; }
+.marca-logo-side  { width: 80px; max-width: 60%;  height: auto; display: block; margin: 6px auto 4px; }
+.marca-logo-foot  { width: 68px; max-width: 40vw; height: auto; display: block; margin: 0 auto 6px; opacity: .85; }
 
 /* El sidebar es SIEMPRE oscuro → usa el avivado en cualquier tema. */
 .marca-logo.marca-logo-side { filter: brightness(1.45) saturate(1.05); }
