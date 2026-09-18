@@ -5,6 +5,16 @@
 
 
 
+#### 2026-09-18 — Telegram eliminado por completo
+- **Se retira la integración con Telegram.** No queda código que envíe ni reciba datos por esa vía.
+- **Lo que se quitó en `Code.gs`:** el token y el chat_id, `telegramRec()`, `probarTelegramRec()`, el resumen diario `resumenDiarioRecaudacion()` (que corría con un activador de tiempo) y los **11 avisos** que se disparaban en cada operación: alta, edición y borrado de recaudación, saldo, alta y borrado de nota, divisor, reinicio de datos, importación y cierre de período.
+- **No cambia nada de lo que se ve ni se guarda.** Los avisos eran solo salida hacia el chat; las escrituras a la planilla y a Supabase quedaron intactas.
+- **Archivos:** `Code.gs`. No se tocó el front, así que el Service Worker no cambia de versión.
+
+> ⚠️ **ACCIÓN PENDIENTE — revocar el token del bot.** El token estaba escrito a mano en `Code.gs` (y otro casi idéntico en `propi.solicitada/gas/code.gs`). Borrarlos del archivo **no los invalida**: siguen en el historial de git y cualquiera con acceso al repositorio puede recuperarlos y usar el bot. Hay que entrar a **@BotFather → `/mybots` → el bot → API Token → Revoke**, o directamente **`/deletebot`** si ya no se va a usar. Mientras no se revoque, el token sigue vivo.
+>
+> Además, fuera del repositorio hay que: (1) **pegar estos tres `.gs` ya limpios en los proyectos reales de Google Apps Script** — los del repositorio son solo copias de referencia; (2) **borrar el activador de tiempo** de `resumenDiarioRecaudacion`, que si no fallará cada día al no existir la función; (3) en el proyecto GAS de socios, **borrar las Script Properties** `TELEGRAM_TOKEN` y `TELEGRAM_CHAT_ID`.
+
 #### 2026-09-17 — El logotipo de marca, a un tamaño discreto (SW v49)
 - **El logo ocupaba demasiado espacio y resultaba hostil a la vista.** La causa es que `cpn-marca.png` es **casi cuadrado (520×480)**: el ancho se paga casi entero en alto. En el login, 190 px de ancho medían **175 px de alto** y el logo tapaba la tarjeta de acceso.
 - **Escala nueva, idéntica en las 3 apps:** login **190 → 96 px** (≈89 de alto), sidebar **150 → 80 px**, pie **130 → 68 px**. El pie lleva además `opacity: .85` para que se lea como firma.

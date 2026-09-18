@@ -1,13 +1,9 @@
 // ==============================================================================
-// SCRIPT RECAUDACIONES - CON INTEGRACIÓN TELEGRAM (@GestionPtopinaBot)
+// SCRIPT RECAUDACIONES
 // Casino de Puerto Varas — Fondo Solidario
 // ==============================================================================
 
-// ── CONFIGURACIÓN TELEGRAM ────────────────────────────────────────────────────
-const TELEGRAM_TOKEN   = '8318855772:AAEDfwR7BdyF5gL7nMJjaYowvMF9hw6yfCw';
-const TELEGRAM_CHAT_ID = '5981473068';
-
-// ── SUPABASE (recaudaciones) — el bot lee de aquí, no de Sheets ────────────────
+// ── SUPABASE (recaudaciones) — los datos se leen de aquí, no de Sheets ─────────
 const SB_REC_URL = 'https://lpulmjzboogixbdxxayo.supabase.co';
 const SB_REC_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwdWxtanpib29naXhiZHh4YXlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NjY0NzMsImV4cCI6MjA5MTI0MjQ3M30.vjebyQb4Bb62ZQlNaJZveuxdBYDOmtC4bM7uwAilDzY';
 
@@ -23,78 +19,6 @@ function sbRecGet(path) {
     return Array.isArray(j) ? j : [];
   } catch (e) { Logger.log('sbRecGet error: ' + e); return []; }
 }
-
-function probarTelegramRec() {
-  telegramRec('🔔 Prueba Recaudaciones OK!');
-}
-
-function telegramRec(mensaje) {
-  try {
-    const url = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN + '/sendMessage';
-    UrlFetchApp.fetch(url, {
-      method: 'post',
-      contentType: 'application/json',
-      payload: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: mensaje,
-        parse_mode: 'HTML'
-      }),
-      muteHttpExceptions: true
-    });
-  } catch(e) {
-    console.log('Telegram REC error: ' + e.toString());
-  }
-}
-
-// Resumen diario — llamar con activador de tiempo. Lee de Supabase (recaudaciones/divisores).
-function resumenDiarioRecaudacion() {
-  try {
-    const timeZone = 'America/Santiago';
-    const hoy      = Utilities.formatDate(new Date(), timeZone, 'yyyy-MM-dd');
-    const hoyVis   = Utilities.formatDate(new Date(), timeZone, 'dd/MM/yyyy');
-
-    const recs = sbRecGet('recaudaciones?select=fecha,tipo,monto&fecha=eq.' + hoy);
-    if (!recs.length) {
-      telegramRec('📊 <b>Resumen del día ' + hoyVis + '</b>\n\nSin registros de recaudación.');
-      return;
-    }
-
-    const desglose = {};
-    let totalDia = 0;
-    recs.forEach(r => {
-      const monto = Number(r.monto) || 0;
-      const tipo  = r.tipo ? String(r.tipo).trim() : 'Sin Tipo';
-      totalDia += monto;
-      desglose[tipo] = (desglose[tipo] || 0) + monto;
-    });
-
-    const divs = sbRecGet('divisores?select=valor&fecha=eq.' + hoy);
-    const divisorHoy = (divs.length && Number(divs[0].valor) > 0) ? Number(divs[0].valor) : null;
-    const puntoNoche = divisorHoy && divisorHoy > 1
-      ? Math.round(totalDia / divisorHoy) : null;
-
-    let lineasDesglose = '';
-    Object.keys(desglose).forEach(tipo => {
-      lineasDesglose += '\n   · ' + tipo + ': $' + desglose[tipo].toLocaleString('es-CL');
-    });
-
-    const mensajeDia =
-      '📊 <b>Resumen Recaudación ' + hoyVis + '</b>\n' +
-      'Casino de Puerto Varas\n' +
-      '─────────────────────\n' +
-      '💵 Total del día: $' + totalDia.toLocaleString('es-CL') +
-      (lineasDesglose ? '\n\n📋 <b>Desglose:</b>' + lineasDesglose : '') +
-      (divisorHoy ? '\n\n➗ Divisor: ' + divisorHoy : '\n\n⚠️ Sin divisor registrado') +
-      (puntoNoche ? '\n🎯 Punto noche: $' + puntoNoche.toLocaleString('es-CL') : '') +
-      '\n─────────────────────\n' +
-      '🕐 ' + new Date().toLocaleString('es-CL');
-
-    telegramRec(mensajeDia);
-  } catch(e) {
-    console.log('Error resumen diario: ' + e.toString());
-  }
-}
-
 // ==============================================================================
 // CONFIGURACIÓN DE NOMBRES DE HOJAS
 // ==============================================================================
@@ -267,17 +191,11 @@ function getDivisoresInternal(sheet) {
 }
 
 // ==============================================================================
-// FUNCIONES CON NOTIFICACIONES TELEGRAM
+// ESCRITURA DE DATOS (recaudaciones, saldo, notas, divisores)
 // ==============================================================================
 function addRecord(data) {
   SpreadsheetApp.getActiveSpreadsheet().getSheetByName(DATA_SHEET_NAME)
     .appendRow([data.fecha, data.tipo, data.monto]);
-  telegramRec(
-    '📥 <b>Nueva recaudación registrada</b>\n' +
-    '📅 Fecha: ' + data.fecha + '\n' +
-    '🏷️ Tipo: ' + (data.tipo || 'Sin tipo') + '\n' +
-    '💵 Monto: $' + Number(data.monto).toLocaleString('es-CL')
-  );
   return createSuccessResponse("Dato agregado.");
 }
 
@@ -286,33 +204,18 @@ function updateRecord(data) {
   if (!rowIndex) return createErrorResponse("No se proporcionó índice para actualizar.");
   SpreadsheetApp.getActiveSpreadsheet().getSheetByName(DATA_SHEET_NAME)
     .getRange(rowIndex, 1, 1, 3).setValues([[data.fecha, data.tipo, data.monto]]);
-  telegramRec(
-    '✏️ <b>Recaudación editada</b>\n' +
-    '📅 Fecha: ' + data.fecha + '\n' +
-    '🏷️ Tipo: ' + (data.tipo || 'Sin tipo') + '\n' +
-    '💵 Monto nuevo: $' + Number(data.monto).toLocaleString('es-CL')
-  );
   return createSuccessResponse("Dato actualizado.");
 }
 
 function deleteRecord(data) {
   SpreadsheetApp.getActiveSpreadsheet().getSheetByName(DATA_SHEET_NAME)
     .deleteRow(data.index);
-  telegramRec(
-    '🗑️ <b>Recaudación eliminada</b>\n' +
-    'Fila: ' + data.index
-  );
   return createSuccessResponse("Dato eliminado.");
 }
 
 function updateSaldo(data) {
   SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SALDO_SHEET_NAME)
     .getRange(2, 1, 1, 2).setValues([[data.fecha, data.monto]]);
-  telegramRec(
-    '💰 <b>Saldo actualizado</b>\n' +
-    '📅 Fecha: ' + data.fecha + '\n' +
-    '💵 Monto: $' + Number(data.monto).toLocaleString('es-CL')
-  );
   return createSuccessResponse("Saldo actualizado.");
 }
 
@@ -320,11 +223,6 @@ function addNote(data) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(NOTES_SHEET_NAME);
   if (!sheet) return createErrorResponse("Hoja Notas no existe.");
   sheet.appendRow([new Date().toISOString(), data.autor, data.mensaje]);
-  telegramRec(
-    '📝 <b>Nueva nota agregada</b>\n' +
-    '👤 Autor: ' + (data.autor || 'Sin autor') + '\n' +
-    '💬 ' + (data.mensaje || '')
-  );
   return createSuccessResponse("Nota agregada.");
 }
 
@@ -333,7 +231,6 @@ function deleteNote(data) {
   if (!index) return createErrorResponse("No se proveyó índice de nota.");
   SpreadsheetApp.getActiveSpreadsheet().getSheetByName(NOTES_SHEET_NAME)
     .deleteRow(parseInt(index));
-  telegramRec('🗑️ <b>Nota eliminada</b>');
   return createSuccessResponse("Nota eliminada.");
 }
 
@@ -363,14 +260,6 @@ function updateDivisor(data) {
     sheet.appendRow([fechaCliente, divisorValor]);
   }
 
-  if (divisorValor) {
-    telegramRec(
-      '➗ <b>Divisor actualizado</b>\n' +
-      '📅 Fecha: ' + fechaCliente + '\n' +
-      '🔢 Divisor: ' + divisorValor + '\n' +
-      '🎯 (Afecta el cálculo del punto noche)'
-    );
-  }
   return createSuccessResponse("Divisor actualizado.");
 }
 
@@ -382,7 +271,6 @@ function clearAllData() {
       sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).clearContent();
     }
   });
-  telegramRec('🧹 <b>Datos de recaudación reiniciados</b>\nTodos los registros fueron borrados.');
   return createSuccessResponse('Datos reiniciados.');
 }
 
@@ -425,12 +313,6 @@ function importAll(payload) {
     if (dataToImport.valorPunto && dataToImport.valorPunto.fecha && dataToImport.valorPunto.monto) {
       saldoSheet.getRange(2, 1, 1, 2).setValues([[new Date(dataToImport.valorPunto.fecha + 'T12:00:00'), dataToImport.valorPunto.monto]]);
     }
-    telegramRec(
-      '📦 <b>Importación de datos completada</b>\n' +
-      '📊 Recaudaciones: ' + dataToImport.recaudaciones.length + '\n' +
-      '📝 Notas: ' + dataToImport.notas.length + '\n' +
-      '➗ Divisores: ' + Object.keys(dataToImport.divisores).length
-    );
     return createSuccessResponse('Importación exitosa.');
   } catch(e) {
     return createErrorResponse("Error al importar: " + e.message);
@@ -570,11 +452,6 @@ function closePeriod() {
   if (sheetSaldo && sheetSaldo.getLastRow() > 1)
     sheetSaldo.getRange(2, 1, sheetSaldo.getLastRow() - 1, sheetSaldo.getLastColumn()).clearContent();
 
-  telegramRec(
-    '📅 <b>Período cerrado: ' + nombrePeriodo + '</b>\n' +
-    '💵 Total recaudado: $' + totalGeneral.toLocaleString('es-CL') + '\n' +
-    '📊 Datos archivados en nueva pestaña.'
-  );
 
   return createSuccessResponse({ periodo: nombrePeriodo, totalGeneral: totalGeneral });
 }
