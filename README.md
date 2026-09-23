@@ -5,6 +5,16 @@
 
 
 
+#### 2026-09-23 — Tres temas: Claro, Oscuro y Negro (SW v51)
+- Se puede cambiar el tema desde el **botón de la paleta** 🎨, abajo a la derecha: **☀️ Claro** (el de siempre, por defecto), **🌙 Oscuro** y **⚫ Negro** (OLED). El tema queda **guardado en ese dispositivo**, así que cada persona puede tener el suyo.
+- **Mismos nombres y colores que propi.solicitada**, para que elegir el mismo tema deje las dos apps iguales.
+- **El tema oscuro ya existía en el CSS pero era inalcanzable:** había un bloque `body.dark-mode` con sus variables desde antes, y nada en toda la app ponía esa clase. Ahora se usa.
+- **Negro no duplica el tema oscuro:** se aplica encima de él (las dos clases juntas) y solo empuja los fondos a negro puro, incluidas la barra lateral y la barra inferior. Un solo juego de colores que mantener.
+- **Sin fogonazo blanco al abrir.** Un script en el `<head>` aplica el tema guardado *antes* de pintar nada; si esperara a `app.js`, abrir en oscuro daría un destello blanco. Como en ese momento todavía no existe el `<body>`, las clases se ponen en el `<html>` (`pre-oscuro` / `pre-negro`) y `app.js` las reemplaza apenas arranca. También se actualiza el `theme-color`, para que la barra del navegador no quede blanca.
+- **Un arreglo que apareció al probar:** el aviso ámbar del modal de ingreso tiene fondo claro fijo (a propósito, es un destacado), así que en tema oscuro su texto quedaba **blanco sobre crema**, ilegible. Ahora fuerza texto oscuro.
+- **Verificación:** 18 comprobaciones — los tres temas dan los colores exactos de fondo, tarjeta y barra del navegador; el selector abre, marca el activo, aplica, guarda y cierra al elegir o al tocar fuera; y al reabrir con tema negro el fondo ya está negro antes de que corra `app.js`. Más una auditoría automática de contraste sobre todos los textos de la app: **0 elementos ilegibles** en Oscuro y en Negro.
+- **Archivos:** `index.html`, `styles.css`, `app.js`.
+
 #### 2026-09-23 — Pts Planta y Total Puntos, traídos de socios-comicion (SW v50)
 - Se muestran los dos números que en socios-comicion viven en **Gestión de Socios**: **Pts Planta** y **Total Puntos**. Hoy son **804** y **826**.
 - **Por qué acá:** son el divisor con el que se calcula el valor por punto. Teniéndolos al lado se ve de inmediato si el divisor que se escribió corresponde a la nómina de hoy — los divisores del período (804, 810, 820, 826) son justamente esos totales.

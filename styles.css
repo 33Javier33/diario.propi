@@ -15,13 +15,46 @@
     --shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
 }
 
-body.dark-mode {
+/* ══════════════════════════════════════════════════════════════════════
+   TEMAS
+   Tres: Claro (el de siempre, por defecto), Oscuro y Negro.
+   Los valores son los mismos que usa propi.solicitada, para que las apps se
+   vean iguales cuando se elige el mismo tema.
+
+   El tema Negro NO se define aparte: se aplica sobre Oscuro (las dos clases
+   juntas) y solo empuja los fondos a negro puro. Así no hay dos juegos de
+   colores que mantener en paralelo.
+
+   Las variantes `pre-*` las pone un script en el <head>, antes de que exista
+   el <body>, para que abrir en oscuro no dé un fogonazo blanco. app.js las
+   reemplaza por las clases del body apenas arranca.
+   ══════════════════════════════════════════════════════════════════════ */
+body.dark-mode,
+:root.pre-oscuro body {
     --bg-main: #0f172a;
     --bg-card: #1e293b;
     --text-main: #f1f5f9;
     --text-muted: #94a3b8;
     --border: #334155;
 }
+
+body.tema-negro,
+:root.pre-negro body {
+    --bg-main: #000000;
+    --bg-card: #141414;
+    --border:  #1e1e1e;
+}
+/* La barra lateral es oscura fija; en Negro se va a negro con el resto. */
+body.tema-negro .side-menu,
+body.tema-negro .bottom-nav,
+:root.pre-negro .side-menu,
+:root.pre-negro .bottom-nav { background: #000000; }
+
+/* El aviso ámbar del modal de ingreso tiene fondo claro fijo (a propósito: es
+   un destacado). En tema oscuro su texto NO puede heredar el color claro del
+   resto, o queda blanco sobre crema y no se lee. */
+body.dark-mode [style*="#fff8e1"],
+body.dark-mode [style*="#fff8e1"] * { color: #713f12; }
 
 * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
 body {
@@ -306,6 +339,34 @@ input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4p
     font-size: 1.4rem; cursor: pointer; transition: 0.3s;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
+#btnTema { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); font-size: 1.2rem; }
+
+/* Las tres opciones de tema. Salen del botón de la paleta y se esconden solas
+   al elegir una o al tocar fuera. */
+#temaPicker {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+}
+#temaPicker.abierto { display: flex; }
+.tema-opt {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    background: var(--bg-main);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: 0.15s;
+}
+.tema-opt:hover { transform: scale(1.08); }
+.tema-opt.activo { border-color: var(--primary); background: rgba(99,102,241,0.15); }
+
 #btnScrollUp { background: var(--bg-card); color: var(--text-main); display: none; border: 1px solid var(--border); }
 #btnNotesFab { background: var(--warning); color: white; display: none; animation: pulse-warn 1.5s infinite; }
 

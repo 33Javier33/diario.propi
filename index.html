@@ -8,7 +8,22 @@
     <meta name="theme-color" content="#6366f1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=50">
+    <link rel="stylesheet" href="styles.css?v=51">
+    <script>
+        // El tema se aplica ANTES de pintar nada. Si esperara a app.js, al abrir
+        // con tema oscuro la pantalla daría un fogonazo blanco primero.
+        (function () {
+            try {
+                var t = localStorage.getItem('diario_tema');
+                if (t === 'oscuro' || t === 'negro') {
+                    document.documentElement.classList.add('pre-oscuro');
+                    if (t === 'negro') document.documentElement.classList.add('pre-negro');
+                }
+                var c = { claro: '#f8fafc', oscuro: '#0f172a', negro: '#000000' }[t];
+                if (c) document.querySelector('meta[name="theme-color"]').setAttribute('content', c);
+            } catch (e) {}
+        })();
+    </script>
 </head>
 <body>
 
@@ -25,6 +40,15 @@
 
     <!-- FAB BUTTONS -->
     <div class="fab-container">
+        <!-- Selector de tema. Va en los botones flotantes y no en el menú porque
+             así se alcanza igual desde el computador y desde el celular, sin
+             quitarle alto a la pantalla ni sumar un sexto ítem a la barra de abajo. -->
+        <div id="temaPicker" role="group" aria-label="Tema de la app">
+            <button type="button" class="tema-opt" data-tema="claro"  title="Tema claro">☀️</button>
+            <button type="button" class="tema-opt" data-tema="oscuro" title="Tema oscuro">🌙</button>
+            <button type="button" class="tema-opt" data-tema="negro"  title="Tema negro (OLED)">⚫</button>
+        </div>
+        <button id="btnTema" class="fab-btn" title="Cambiar el tema"><i class="fas fa-palette"></i></button>
         <button id="btnNotesFab" class="fab-btn" title="Notas nuevas"><i class="fas fa-sticky-note"></i></button>
         <button id="btnScrollUp" class="fab-btn" title="Subir"><i class="fas fa-chevron-up"></i></button>
     </div>
@@ -412,8 +436,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-api.js?v=22"></script>
-    <script src="app.js?v=26"></script>
+    <script src="app.js?v=27"></script>
 <!-- Versión visible de la app (= versión del Service Worker) -->
-<div style="position:fixed;bottom:6px;right:8px;z-index:9999;font-size:10px;color:#94a3b8;opacity:0.75;pointer-events:none;font-weight:600;">v50</div>
+<div style="position:fixed;bottom:6px;right:8px;z-index:9999;font-size:10px;color:#94a3b8;opacity:0.75;pointer-events:none;font-weight:600;">v51</div>
 </body>
 </html>

@@ -222,6 +222,60 @@ document.addEventListener('DOMContentLoaded', () => {
         return callApiRec(data.action, data);
     }
 
+    // ══════════════════════════════════════════════════════════════════════
+    // TEMAS: claro (el de siempre) · oscuro · negro
+    //
+    // Los mismos nombres y colores que propi.solicitada, para que elegir el
+    // mismo tema deje las dos apps iguales. El tema queda guardado en ESTE
+    // dispositivo, así que cada persona puede tener el suyo.
+    //
+    // Negro se aplica encima de Oscuro (las dos clases juntas): reutiliza todo
+    // su juego de colores y solo empuja los fondos a negro puro.
+    // ══════════════════════════════════════════════════════════════════════
+    const TEMAS = ['claro', 'oscuro', 'negro'];
+    const TEMA_COLOR = { claro: '#f8fafc', oscuro: '#0f172a', negro: '#000000' };
+    const TEMA_KEY = 'diario_tema';
+
+    function temaGuardado() {
+        try { const t = localStorage.getItem(TEMA_KEY); if (TEMAS.includes(t)) return t; } catch (e) {}
+        return 'claro';
+    }
+
+    window.aplicarTema = function (nombre) {
+        if (!TEMAS.includes(nombre)) nombre = 'claro';
+        const oscuro = (nombre === 'oscuro' || nombre === 'negro');
+        document.body.classList.toggle('dark-mode', oscuro);
+        document.body.classList.toggle('tema-negro', nombre === 'negro');
+        // Las clases provisorias del <head> ya cumplieron: desde acá manda el body
+        document.documentElement.classList.remove('pre-oscuro', 'pre-negro');
+        try { localStorage.setItem(TEMA_KEY, nombre); } catch (e) {}
+        // Barra del navegador / del sistema, para que no quede blanca en oscuro
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', TEMA_COLOR[nombre]);
+        document.querySelectorAll('.tema-opt').forEach(b => {
+            b.classList.toggle('activo', b.getAttribute('data-tema') === nombre);
+        });
+    };
+
+    function initTemas() {
+        aplicarTema(temaGuardado());
+        const picker = document.getElementById('temaPicker');
+        const btn = document.getElementById('btnTema');
+        if (btn && picker) {
+            btn.onclick = (e) => { e.stopPropagation(); picker.classList.toggle('abierto'); };
+            picker.querySelectorAll('.tema-opt').forEach(b => {
+                b.onclick = (e) => {
+                    e.stopPropagation();
+                    aplicarTema(b.getAttribute('data-tema'));
+                    picker.classList.remove('abierto');
+                };
+            });
+            // Tocar en cualquier otra parte lo cierra
+            document.addEventListener('click', () => picker.classList.remove('abierto'));
+        }
+    }
+    initTemas();
+
     // ── Puntos de la nómina (Total Puntos / Pts Planta de socios-comicion) ──
     // Son el divisor con que se calcula el valor por punto, así que se muestran
     // pegados a él y también en el Historial, donde se revisan los días.
