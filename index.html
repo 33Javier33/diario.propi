@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#6366f1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=49">
+    <link rel="stylesheet" href="styles.css?v=50">
 </head>
 <body>
 
@@ -104,6 +104,9 @@
         <div id="vpMenu">
             <span class="vp-label">Total Valor por Punto</span>
             <strong class="vp-monto" id="vp-menu-valor">$0</strong>
+            <!-- Puntos de la nómina (vienen de Gestión de Socios). Son el divisor
+                 con que se calcula el punto, así que van justo debajo. -->
+            <div class="vp-puntos" id="vp-menu-puntos"></div>
         </div>
         <div class="menu-links-container">
             <a href="#" class="menu-link active-link" data-target="agregarPanel">
@@ -160,7 +163,10 @@
             <!-- Valor por punto fijo al hacer scroll. Solo en celular: en
                  escritorio ya está en la barra lateral. -->
             <div id="vpSticky">
-                <span class="vp-label">Valor por Punto</span>
+                <div style="min-width:0;">
+                    <span class="vp-label">Valor por Punto</span>
+                    <div class="vp-puntos" id="vp-sticky-puntos"></div>
+                </div>
                 <strong class="vp-monto" id="vp-sticky-valor">$0</strong>
             </div>
 
@@ -178,6 +184,7 @@
                         <button class="help-tip-btn" onclick="showHelpTip('valorPunto')">?</button>
                     </span>
                     <div class="value" id="tot-div">$0</div>
+                    <div class="vp-puntos" id="vp-card-puntos"></div>
                 </div>
             </div>
 
@@ -230,6 +237,9 @@
                 <div class="card">
                     <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:2rem;">
                         <h2><i class="fas fa-clock-rotate-left" style="color:var(--primary);"></i> Historial</h2>
+                        <!-- Puntos de la nómina, para tener a mano el divisor
+                             mientras se revisan los días del período. -->
+                        <div class="vp-puntos" id="vp-hist-puntos"></div>
                         <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
                             <button id="btnMin" class="btn btn-outline btn-sm">Expandir/Min</button>
                             <button id="btnSortDesc" class="btn btn-outline btn-sm">Reciente</button>
@@ -401,9 +411,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-api.js?v=21"></script>
-    <script src="app.js?v=25"></script>
+    <script src="supabase-api.js?v=22"></script>
+    <script src="app.js?v=26"></script>
 <!-- Versión visible de la app (= versión del Service Worker) -->
-<div style="position:fixed;bottom:6px;right:8px;z-index:9999;font-size:10px;color:#94a3b8;opacity:0.75;pointer-events:none;font-weight:600;">v49</div>
+<div style="position:fixed;bottom:6px;right:8px;z-index:9999;font-size:10px;color:#94a3b8;opacity:0.75;pointer-events:none;font-weight:600;">v50</div>
 </body>
 </html>

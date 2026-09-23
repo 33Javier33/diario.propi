@@ -5,6 +5,20 @@
 
 
 
+#### 2026-09-23 — Pts Planta y Total Puntos, traídos de socios-comicion (SW v50)
+- Se muestran los dos números que en socios-comicion viven en **Gestión de Socios**: **Pts Planta** y **Total Puntos**. Hoy son **804** y **826**.
+- **Por qué acá:** son el divisor con el que se calcula el valor por punto. Teniéndolos al lado se ve de inmediato si el divisor que se escribió corresponde a la nómina de hoy — los divisores del período (804, 810, 820, 826) son justamente esos totales.
+- **Cuatro lugares**, los tres donde ya aparecía el valor por punto más el historial:
+  - barra lateral (escritorio), debajo de «Total Valor por Punto»;
+  - franja fija (celular), bajo la etiqueta;
+  - tarjeta «Total Valor por Punto», bajo el monto;
+  - encabezado del **Historial**, para tenerlos a mano al revisar los días.
+- **El cálculo se repite igual que en socios-comicion** (`js/api.js` + `js/socios.js`) para que los dos sistemas muestren lo mismo: solo socios activos con fecha de ingreso; un socio suma recién desde el **día 15** del mes en que empiezan sus puntos; **Gastos Comisión vale 1 punto fijo**; se usa el puntaje guardado y, si viniera en 0, el que corresponde por antigüedad (4 de base, 2 por año, 2 en Bóveda) con el tope de su área.
+- **No bloquea la carga:** la lectura va fuera del `Promise.all` de los datos del diario. Si la base de socios no responde, el diario carga igual y solo no se muestran los puntos — el bloque se oculta en vez de dejar un hueco.
+- Se aprovecha el cliente `dbSoc` que la app ya tenía para la auditoría y el login por PIN; no hay credenciales nuevas.
+- **Verificación:** 12 comprobaciones del cálculo contra los 66 socios reales (826 y 804 exactos, más 8 casos borde de la regla del día 15, Gastos Comisión, topes por área y áreas escritas en minúscula) y 9 comprobaciones de que los cuatro bloques aparecen donde corresponde en escritorio y celular.
+- **Archivos:** `supabase-api.js` (`diarioGetPuntosNomina`), `app.js`, `index.html`, `styles.css`.
+
 #### 2026-09-18 — Telegram eliminado por completo
 - **Se retira la integración con Telegram.** No queda código que envíe ni reciba datos por esa vía.
 - **Lo que se quitó en `Code.gs`:** el token y el chat_id, `telegramRec()`, `probarTelegramRec()`, el resumen diario `resumenDiarioRecaudacion()` (que corría con un activador de tiempo) y los **11 avisos** que se disparaban en cada operación: alta, edición y borrado de recaudación, saldo, alta y borrado de nota, divisor, reinicio de datos, importación y cierre de período.

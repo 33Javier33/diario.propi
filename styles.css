@@ -558,6 +558,25 @@ body.dark-mode .marca-logo { filter: brightness(1.45) saturate(1.05); }
     color: var(--secondary);
 }
 
+/* Puntos de la nómina (Total Puntos / Pts Planta), debajo del valor por punto.
+   Son el divisor con que se calcula el punto, así que se leen juntos. */
+.vp-puntos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    margin-top: 5px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--text-muted);
+}
+.vp-puntos:empty { display: none; }
+.vp-puntos b { font-weight: 900; color: var(--text-color); }
+#vpMenu .vp-puntos   { color: rgba(255, 255, 255, 0.55); }
+#vpMenu .vp-puntos b { color: #e2e8f0; }
+#vpSticky .vp-puntos { margin-top: 2px; font-size: 0.64rem; }
+#vp-hist-puntos      { margin-top: 0; }
+
 /* En escritorio manda la barra lateral; en celular, la franja fija. */
 @media (min-width: 992px) {
     #vpMenu   { display: block; }

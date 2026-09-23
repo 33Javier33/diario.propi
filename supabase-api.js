@@ -226,6 +226,84 @@ window.diarioGetSociosByArea = async function(areaSel) {
     } catch(e) { return []; }
 };
 
+// ══════════════════════════════════════════════════════════════════════
+// PUNTOS DE LA NÓMINA (vienen de Gestión de Socios, en socios-comicion)
+//
+// Son los dos números que allá muestra el panel de socios: "Total Puntos" y
+// "Pts Planta". Acá importan porque son el divisor con el que se calcula el
+// valor por punto, así que tenerlos al lado permite ver de inmediato si el
+// divisor que se escribió corresponde a la nómina de hoy.
+//
+// El cálculo se repite igual que en socios-comicion (js/api.js y js/socios.js)
+// para que los dos sistemas muestren lo mismo:
+//   · solo socios activos y con fecha de ingreso;
+//   · un socio "se ve" recién desde el día 15 del mes en que empiezan sus
+//     puntos — antes de esa fecha no suma;
+//   · Gastos Comisión vale 1 punto fijo;
+//   · se usa el puntaje guardado y, si viniera en 0, el que corresponde por
+//     antigüedad (4 de base, 2 por año, 2 en Bóveda) con el tope de su área.
+// ══════════════════════════════════════════════════════════════════════
+function _ptsNormArea(a) {
+    return String(a || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+
+// Puntos de UN socio, con las mismas reglas que socios-comicion.
+function _ptsDeSocio(s, hoy) {
+    const crudo = (s.fecha_inicio_puntos && String(s.fecha_inicio_puntos).trim()) || s.fecha_ingreso;
+    if (!crudo) return { puntos: 0, visible: false };
+    const p = String(crudo).split('-');
+    const anio = parseInt(p[0], 10);
+    const mes  = parseInt(p[1], 10) - 1;
+    if (isNaN(anio) || isNaN(mes)) return { puntos: 0, visible: false };
+
+    // Regla del día 15: los puntos empiezan a contar ese día, no antes.
+    const inicio = new Date(anio, mes, 15);
+    const visible = hoy >= inicio;
+    if (!visible) return { puntos: 0, visible: false };
+
+    const area = _ptsNormArea(s.area);
+    if (area.includes('gastos')) return { puntos: 1, visible: true };
+
+    const guardados = Number(s.puntos);
+    if (Number.isFinite(guardados) && guardados > 0) return { puntos: guardados, visible: true };
+
+    // Sin puntaje guardado se calcula por antigüedad (mismo tope por área).
+    let anios = hoy.getFullYear() - anio;
+    if (hoy.getMonth() < mes || (hoy.getMonth() === mes && hoy.getDate() < 15)) anios--;
+    if (anios < 0) anios = 0;
+    let tope = 10;
+    if (area === 'mesas') tope = 20;
+    else if (area === 'maquinas' || area === 'tecnicos') tope = 12;
+    else if (area === 'boveda') tope = 10;
+    else if (area.includes('cambista')) tope = 8;
+    const desde = (area === 'boveda') ? 2 : 4;
+    return { puntos: Math.min(desde + anios * 2, tope), visible: true };
+}
+
+// Devuelve { total, planta, socios } o null si no se pudo leer.
+window.diarioGetPuntosNomina = async function () {
+    try {
+        const { data, error } = await dbSoc.from('socios')
+            .select('contrato, area, puntos, fecha_ingreso, fecha_inicio_puntos')
+            .eq('activo', true);
+        if (error || !Array.isArray(data)) return null;
+        const hoy = new Date();
+        let total = 0, planta = 0, socios = 0;
+        data.forEach(s => {
+            if (!s.fecha_ingreso) return;
+            const { puntos, visible } = _ptsDeSocio(s, hoy);
+            if (!visible) return;
+            socios++;
+            total += puntos;
+            if (s.contrato === 'Planta') planta += puntos;
+        });
+        return { total, planta, socios };
+    } catch (e) {
+        console.warn('[puntos] no se pudieron leer los puntos de la nómina:', e.message);
+        return null;
+    }
+};
+
 // ── PIN de diario.propi — verificación SERVIDOR (Edge Function pin-auth) ──
 // El PIN nunca se lee ni se compara en el navegador: la tabla diario_pins está
 // cerrada al rol anon. Solo la Edge Function (service_role) la toca.

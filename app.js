@@ -222,6 +222,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return callApiRec(data.action, data);
     }
 
+    // ── Puntos de la nómina (Total Puntos / Pts Planta de socios-comicion) ──
+    // Son el divisor con que se calcula el valor por punto, así que se muestran
+    // pegados a él y también en el Historial, donde se revisan los días.
+    // Se leen una vez por carga: la nómina cambia de mes en mes, no de minuto
+    // en minuto, y si falla la lectura simplemente no se muestra nada.
+    let _puntosNomina = null;
+    async function cargarPuntosNomina() {
+        if (typeof diarioGetPuntosNomina !== 'function') return;
+        const p = await diarioGetPuntosNomina();
+        if (!p) return;
+        _puntosNomina = p;
+        pintarPuntosNomina();
+    }
+
+    function pintarPuntosNomina() {
+        if (!_puntosNomina) return;
+        const { total, planta } = _puntosNomina;
+        const html = `<span>Pts Planta <b>${planta}</b></span><span>Total Puntos <b>${total}</b></span>`;
+        ['vp-menu-puntos', 'vp-sticky-puntos', 'vp-card-puntos', 'vp-hist-puntos'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = html;
+        });
+    }
+
     async function cargar(loader = true) {
         if (loader) showLoad(true);
         try {
@@ -238,6 +262,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             if (loader) showLoad(false);
         }
+        // Va aparte del Promise.all: si la base de socios no responde, el diario
+        // tiene que cargar igual. Solo se pierde el dato de los puntos.
+        cargarPuntosNomina();
     }
 
     // --- AUTO-SYNC NOTES (every 30s) ---
