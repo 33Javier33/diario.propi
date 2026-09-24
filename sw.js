@@ -1,5 +1,5 @@
 // --- CONFIGURACIÓN DE CACHÉ ---
-const CACHE_NAME = 'recaudacion-cache-v51';
+const CACHE_NAME = 'recaudacion-cache-v52';
 
 // Archivos que la aplicación necesita para funcionar sin conexión.
 const urlsToCache = [
@@ -10,6 +10,38 @@ const urlsToCache = [
   '/img/marca/cpn-marca.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css'
 ];
+
+// --- NOTIFICACIONES (llegan aunque la app esté cerrada) ---
+// El aviso lo manda el servidor, así que aparece con la app cerrada y el
+// teléfono bloqueado. De ahí el reloj lo espeja solo: es la única forma de que
+// esto llegue a la muñeca, porque el reloj no tiene navegador donde abrir la app.
+self.addEventListener('push', event => {
+    let data = {};
+    try { data = event.data ? event.data.json() : {}; }
+    catch (e) { data = { title: 'Recaudación', body: (event.data && event.data.text()) || '' }; }
+    const title = data.title || 'Recaudación';
+    const options = {
+        body: data.body || '',
+        icon: 'img/marca/cpn-marca.png',
+        badge: 'img/marca/cpn-marca.png',
+        tag: data.tag || 'diario-push',
+        renotify: true,
+        vibrate: [90, 50, 90],
+        data: { url: data.url || '/' }
+    };
+    event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    const url = (event.notification.data && event.notification.data.url) || '/';
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+            for (const c of list) { if ('focus' in c) return c.focus(); }
+            if (self.clients.openWindow) return self.clients.openWindow(url);
+        })
+    );
+});
 
 // --- CICLO DE VIDA DEL SERVICE WORKER ---
 

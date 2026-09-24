@@ -856,6 +856,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
         cargar();
         iniciarWatchdogInactividad();
+        // Avisos del otro turno. El permiso se pide en el primer toque dentro de
+        // la app, no acá: pedirlo apenas entra es lo que hace que la gente lo
+        // rechace de reflejo, y un permiso rechazado no se puede volver a pedir.
+        try {
+            if (Notification.permission === 'granted') { window.diarioSuscribirPush(); }
+            else if (Notification.permission === 'default') {
+                document.addEventListener('click', function _pedirUnaVez() {
+                    window.diarioPedirPermisoPush();
+                    document.removeEventListener('click', _pedirUnaVez);
+                }, { once: true });
+            }
+        } catch (e) {}
         // Presencia en recaudación: empezar a escuchar y, si el panel activo es
         // "Agregar" (el de inicio), marcar que este socio está en recaudaciones.
         try {

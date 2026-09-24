@@ -227,6 +227,72 @@ window.diarioGetSociosByArea = async function(areaSel) {
 };
 
 // ══════════════════════════════════════════════════════════════════════
+// NOTIFICACIONES DEL DIARIO
+//
+// Sirven para enterarse de lo que hace el otro turno sin tener la app abierta,
+// y son además la única vía que llega a un reloj inteligente: el reloj no tiene
+// navegador donde abrir la app, pero sí espeja las notificaciones del teléfono.
+//
+// Cada equipo se suscribe con `DIARIO:<socioId>`. Ese prefijo hace dos cosas:
+// separa a los usuarios del diario de los del resto del sistema —la tabla
+// `push_subscriptions` es compartida con socios-comicion ('ADMIN') y con
+// propi.solicitada (el id del socio)— y permite que el servidor EXCLUYA al
+// autor, para que nadie reciba el aviso de lo que acaba de hacer él mismo.
+// ══════════════════════════════════════════════════════════════════════
+const DIARIO_VAPID = 'BFzJrgZgoGMHxdHbqCyiftayb-JINxQNy3ek3h1YRH9yoZQIBp7zfFgr8IG72rLkzRpBsLPY2XVvy5k4G_gA6RI';
+
+function _diarioB64(base64) {
+    const pad = '='.repeat((4 - base64.length % 4) % 4);
+    const b = (base64 + pad).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(b);
+    const arr = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return arr;
+}
+
+window.diarioSuscribirPush = async function () {
+    try {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
+        if (Notification.permission !== 'granted') return;
+        const socioId = sessionStorage.getItem('user_socioId');
+        if (!socioId) return;                 // sin sesión no hay a quién avisar
+        const reg = await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true, applicationServerKey: _diarioB64(DIARIO_VAPID)
+        });
+        if (!sub) return;
+        const j = sub.toJSON ? sub.toJSON() : sub;
+        if (!j.endpoint) return;
+        await dbSoc.from('push_subscriptions').upsert({
+            id: crypto.randomUUID(),
+            socio_id: 'DIARIO:' + String(socioId),
+            endpoint: j.endpoint,
+            p256dh: (j.keys && j.keys.p256dh) || '',
+            auth: (j.keys && j.keys.auth) || '',
+            user_agent: navigator.userAgent || ''
+        }, { onConflict: 'endpoint' });
+    } catch (e) {
+        console.warn('[push] no se pudo suscribir:', e.message);
+    }
+};
+
+// Pide el permiso en la primera interacción, no al cargar: los navegadores
+// descartan (y algunos penalizan) los permisos pedidos sin que el usuario
+// haya tocado nada.
+window.diarioPedirPermisoPush = function () {
+    try {
+        if (!('Notification' in window)) return;
+        if (Notification.permission === 'granted') { window.diarioSuscribirPush(); return; }
+        if (Notification.permission === 'default') {
+            Notification.requestPermission()
+                .then(p => { if (p === 'granted') window.diarioSuscribirPush(); })
+                .catch(() => {});
+        }
+    } catch (e) {}
+};
+
+// ══════════════════════════════════════════════════════════════════════
 // PUNTOS DE LA NÓMINA (vienen de Gestión de Socios, en socios-comicion)
 //
 // Son los dos números que allá muestra el panel de socios: "Total Puntos" y

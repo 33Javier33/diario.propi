@@ -5,6 +5,19 @@
 
 
 
+#### 2026-09-24 — Notificaciones del diario (y avisos al reloj) (SW v52)
+
+- **Qué llega:** cuando alguien registra una **recaudación** o publica una **nota** en el bloc, al resto del turno le llega un aviso al teléfono — con la app cerrada y el teléfono bloqueado.
+- **Por qué importa para el reloj:** un reloj inteligente **no tiene navegador** donde abrir la app (watchOS nunca ha traído Safari, y la mayoría de los Wear OS tampoco trae uno). Las notificaciones son la única vía que llega a la muñeca: el reloj espeja las del teléfono. Por eso la respuesta a «¿se puede hacer responsiva para reloj?» es que el camino útil es este, no el CSS.
+- **Nadie recibe el aviso de lo que hizo él mismo.** Cada equipo se suscribe con `DIARIO:<socioId>`. El prefijo separa a los usuarios del diario de los del resto del sistema —la tabla `push_subscriptions` es compartida con socios-comicion (`ADMIN`) y con propi.solicitada (el id del socio)— y el sufijo permite que el servidor excluya al autor.
+- **El permiso se pide en el primer toque dentro de la app, no al entrar.** Pedirlo apenas abre es lo que hace que la gente lo rechace de reflejo, y un permiso rechazado no se puede volver a pedir.
+- **Las notas avisan a los demás turnos, no al admin** — es mensajería interna. Las recaudaciones sí avisan a los dos: al admin como siempre, y ahora también al turno.
+- **Cambios fuera del repositorio (Supabase):**
+  - Edge Function `push-notify` → **versión 9**. Cambio aditivo: se agregó `pushDiario()` y una rama para `notas_recaudacion`; las ramas de egresos, días PT, recaudación-al-admin y mensajes quedaron **idénticas**. La v8 sigue disponible para volver atrás.
+  - Proyecto REC: nuevo disparador `trg_push_nota` sobre `notas_recaudacion`, copia del `trg_push_recaudacion` que ya existía.
+- **Verificación, contra la base real:** una recaudación de prueba devolvió `admin {sent:3, total:4}` (el aviso al admin **sigue funcionando igual**) y `diario {total:2}` de 3 suscripciones — **excluyó al autor**. Una nota de prueba devolvió solo `diario {total:2}`, sin tocar al admin. Y al insertar una nota de verdad el disparador se activó solo (petición 227, HTTP 200). Las suscripciones y la nota de prueba se borraron después; quedan 8 notas y 24 recaudaciones, los mismos números de antes.
+- **Archivos:** `sw.js` (manejadores `push` y `notificationclick`), `supabase-api.js` (`diarioSuscribirPush`, `diarioPedirPermisoPush`), `app.js`, `index.html`.
+
 #### 2026-09-23 — Tres temas: Claro, Oscuro y Negro (SW v51)
 - Se puede cambiar el tema desde el **botón de la paleta** 🎨, abajo a la derecha: **☀️ Claro** (el de siempre, por defecto), **🌙 Oscuro** y **⚫ Negro** (OLED). El tema queda **guardado en ese dispositivo**, así que cada persona puede tener el suyo.
 - **Mismos nombres y colores que propi.solicitada**, para que elegir el mismo tema deje las dos apps iguales.
