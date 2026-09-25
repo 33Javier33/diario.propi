@@ -1,5 +1,5 @@
 // --- CONFIGURACIÓN DE CACHÉ ---
-const CACHE_NAME = 'recaudacion-cache-v52';
+const CACHE_NAME = 'recaudacion-cache-v53';
 
 // Archivos que la aplicación necesita para funcionar sin conexión.
 const urlsToCache = [
@@ -8,6 +8,7 @@ const urlsToCache = [
   '/app.js',
   '/styles.css',
   '/img/marca/cpn-marca.png',
+  '/icons/icon-192x192.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css'
 ];
 
@@ -22,8 +23,8 @@ self.addEventListener('push', event => {
     const title = data.title || 'Recaudación';
     const options = {
         body: data.body || '',
-        icon: 'img/marca/cpn-marca.png',
-        badge: 'img/marca/cpn-marca.png',
+        icon: 'icons/icon-192x192.png',
+        badge: 'icons/icon-192x192.png',
         tag: data.tag || 'diario-push',
         renotify: true,
         vibrate: [90, 50, 90],

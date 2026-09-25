@@ -5,6 +5,18 @@
 
 
 
+#### 2026-09-25 — Ícono nuevo de la app (SW v53)
+- El ícono de la pantalla de inicio pasa a ser el **logotipo de la marca sobre placa oscura**, el mismo que en socios-comicion.
+- **Los íconos anteriores estaban rotos de dos maneras:**
+  - **No medían lo que decían.** `icon-192x192.png` era en realidad **1331×1331 y 866 KB**; `icon-512x512.png` era **2048×2048 y 4,3 MB**. Entre los dos, **5,2 MB** para un par de íconos.
+  - **El manifiesto declaraba cuatro tamaños y solo existían dos** (256 y 384 daban 404).
+  Ahora los cuatro existen, cada uno mide exactamente lo declarado, y la carpeta entera pesa **1 MB**.
+- **Faltaban los enlaces en el HTML:** no había `apple-touch-icon` ni `favicon`. Sin el primero, al agregar la app a la pantalla de inicio en iPhone el sistema inventa un ícono con una captura de la página.
+- **Se agregó una versión *maskable* aparte.** Android recorta el ícono a la forma del launcher (círculo, cuadrado redondeado…) y el borde se pierde: con el ícono a sangre, «Interactive» quedaba cortado. La variante maskable lleva el logo al **80% centrado** sobre el gris casi negro de la placa, que se tomó midiendo la franja bajo el texto —no del contorno, porque las esquinas redondeadas del original son claras y daban un marco gris que no pegaba con nada.
+- El ícono de las **notificaciones** también pasa a ser este, en vez del logotipo de fondo transparente que se veía raro sobre el aviso.
+- **Verificación:** los 5 íconos del manifiesto se descargan (HTTP 200), decodifican como imagen y miden lo que declaran; el manifiesto es JSON válido; y la página tiene manifiesto, apple-touch-icon y favicon. Sin ningún 404.
+- **Archivos:** `icons/` (5 archivos), `manifest.json`, `index.html`, `sw.js`.
+
 #### 2026-09-24 — Notificaciones del diario (y avisos al reloj) (SW v52)
 
 - **Qué llega:** cuando alguien registra una **recaudación** o publica una **nota** en el bloc, al resto del turno le llega un aviso al teléfono — con la app cerrada y el teléfono bloqueado.
