@@ -5,6 +5,17 @@
 
 
 
+#### 2026-09-25 — La versión, junto a la marca (SW v55)
+
+- **El número no está escrito a mano: se lee de la caché que el Service Worker tiene activa en este dispositivo.** Esa es la diferencia que importa — lo que ves es la versión que *de verdad* estás usando, no la que dice el código. Si el navegador todavía te está sirviendo la anterior, el número te lo dice.
+- Va **junto a la marca**, que es donde se busca. El módulo pinta todo elemento con la clase `app-version`, así que agregar el dato en otro lugar es poner un `<span class="app-version">` y nada más.
+- **Un solo origen para el número.** Antes estaba escrito a mano en el HTML y además en el nombre de la caché del Service Worker: dos lugares que podían quedar diciendo cosas distintas. Ahora manda el Service Worker.
+- **Casos cubiertos:** si todavía no hay Service Worker (primera visita, incógnito) cae al número del código en vez de dejar un hueco; si conviven la caché vieja y la nueva muestra **la más alta**, que es la que va a quedar; y filtra por el prefijo de su propia app, porque `socios-comicion` y `Horarios` comparten dominio y sin eso una mostraría la versión de la otra.
+- **Se repinta solo** cuando el Service Worker termina de activarse, sin recargar.
+- **Verificación:** 12 comprobaciones — las cuatro apps muestran su propia versión y no la de la vecina, el caso sin Service Worker, y el de dos cachés a la vez. Una falla real encontrada y corregida en el camino: en diario.propi la chapita fija va **después** del script, así que en la primera pasada todavía no existía y se quedaba con el guion; el módulo ahora repinta al terminar de cargar el HTML.
+- Aparece en **tres** lugares junto al logotipo —la portada de acceso, la barra lateral y el pie— más la chapita de abajo a la derecha, todos con el mismo número.
+- **Archivos:** `version.js` (nuevo), `index.html`, `sw.js`.
+
 #### 2026-09-25 — El ícono nuevo no llegaba: los archivos cambiaron de nombre (SW v54)
 - **Síntoma:** después de cambiar el ícono, los teléfonos seguían mostrando el viejo.
 - **Causa: el ícono se reemplazó conservando el nombre del archivo.** Todo lo que cachea imágenes lo hace **por URL** —el navegador, el CDN de Vercel y la app ya instalada—, así que `icon-192x192.png` seguía entregando los bytes antiguos aunque el archivo en el repositorio fuera otro. Y `vercel.json` declaraba `no-cache` para el HTML, el JS, el CSS y el manifiesto, **pero no para las imágenes**: eran justamente las que faltaban en esa lista.

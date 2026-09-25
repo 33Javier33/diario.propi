@@ -1,11 +1,12 @@
 // --- CONFIGURACIÓN DE CACHÉ ---
-const CACHE_NAME = 'recaudacion-cache-v54';
+const CACHE_NAME = 'recaudacion-cache-v55';
 
 // Archivos que la aplicación necesita para funcionar sin conexión.
 const urlsToCache = [
   '/',
   '/index.html',
   '/app.js',
+  '/version.js',
   '/styles.css',
   '/img/marca/cpn-marca.png',
   '/icons/icono-cpn-192x192.png',
