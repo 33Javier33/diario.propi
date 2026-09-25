@@ -1,5 +1,5 @@
 // --- CONFIGURACIÓN DE CACHÉ ---
-const CACHE_NAME = 'recaudacion-cache-v55';
+const CACHE_NAME = 'recaudacion-cache-v56';
 
 // Archivos que la aplicación necesita para funcionar sin conexión.
 const urlsToCache = [
@@ -92,4 +92,15 @@ self.addEventListener('fetch', event => {
       return caches.match(event.request);
     })
   );
+});
+
+// Responde con su propia versión. Lo pregunta version.js: es el único dato
+// fiable, porque puede haber una caché más nueva instalada y EN ESPERA —acá
+// la versión nueva no se activa sola— y desde la página no hay forma de
+// distinguir cuál de las dos está controlando de verdad.
+self.addEventListener('message', event => {
+    if (event.data && event.data.type === 'VERSION') {
+        const v = CACHE_NAME;
+        if (event.ports && event.ports[0]) event.ports[0].postMessage(v);
+    }
 });
