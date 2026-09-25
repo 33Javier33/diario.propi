@@ -5,6 +5,16 @@
 
 
 
+#### 2026-09-25 — El ícono nuevo no llegaba: los archivos cambiaron de nombre (SW v54)
+- **Síntoma:** después de cambiar el ícono, los teléfonos seguían mostrando el viejo.
+- **Causa: el ícono se reemplazó conservando el nombre del archivo.** Todo lo que cachea imágenes lo hace **por URL** —el navegador, el CDN de Vercel y la app ya instalada—, así que `icon-192x192.png` seguía entregando los bytes antiguos aunque el archivo en el repositorio fuera otro. Y `vercel.json` declaraba `no-cache` para el HTML, el JS, el CSS y el manifiesto, **pero no para las imágenes**: eran justamente las que faltaban en esa lista.
+- **Arreglo en dos partes:**
+  1. Los archivos pasaron a llamarse `icono-cpn-*.png`. Una URL nueva no puede tener una copia vieja en ninguna caché, así que el cambio llega sí o sí.
+  2. Se agregaron `/icons/(.*)` y `/img/(.*)` a las reglas de `vercel.json`, para que la próxima vez que se cambie un ícono baste con reemplazarlo.
+- **En iPhone igual hay que borrar la app de la pantalla de inicio y volver a agregarla**: iOS lee el ícono una sola vez, al instalar, y ningún cambio de nombre ni de cabecera lo evita.
+- **Verificación:** los 5 íconos del manifiesto se descargan (HTTP 200), decodifican como imagen y miden lo declarado; no queda ninguna referencia al nombre viejo en todo el repositorio; `vercel.json` y `manifest.json` son JSON válido.
+- **Archivos:** `icons/` (renombrados), `manifest.json`, `index.html`, `sw.js`, `vercel.json`.
+
 #### 2026-09-25 — Ícono nuevo de la app (SW v53)
 - El ícono de la pantalla de inicio pasa a ser el **logotipo de la marca sobre placa oscura**, el mismo que en socios-comicion.
 - **Los íconos anteriores estaban rotos de dos maneras:**
