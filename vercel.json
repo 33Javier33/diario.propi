@@ -55,7 +55,6 @@
       ]
     },
     {
-      "_comentario": "Las imágenes no estaban en esta lista: al cambiar el ícono dejando el mismo nombre de archivo, el navegador y el CDN seguían entregando el viejo. Ahora se revalidan como el resto.",
       "source": "/icons/(.*)",
       "headers": [
         {

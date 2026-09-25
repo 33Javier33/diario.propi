@@ -5,6 +5,14 @@
 
 
 
+#### 2026-09-25 — El despliegue estaba fallando: una clave inválida en vercel.json
+
+- **La causa de que nada llegara: el despliegue venía fallando.** Al documentar las reglas nuevas de caché metí una clave `"_comentario"` dentro de `vercel.json`. Vercel valida ese archivo contra un esquema estricto y **rechaza el despliegue entero** ante una propiedad desconocida. Los commits se subían bien, pero la app quedaba congelada en la versión anterior.
+- **Se confirmó con el historial:** la clave entró en el commit del renombre de íconos, y desde ahí **3 commits seguidos nunca llegaron a publicarse**. Eso explica en cadena todo lo que "no cambiaba": los íconos, el número de versión y el resto.
+- **La pista fue que propi.solicitada sí se actualizaba.** Era la única app sin esa clave, porque sus reglas se agregaron por otra vía.
+- **Arreglo:** se quitó la clave y se validaron las tres configuraciones — 10 reglas cada una, todas con claves permitidas.
+- **Para que no vuelva a pasar** se agregó `revisar-despliegue.py` a cada repositorio: comprueba que `vercel.json` solo use claves que Vercel acepta y que todo archivo local que carga el HTML tenga no-caché o `?v=`. Hay que correrlo antes de publicar.
+
 #### 2026-09-25 — Por qué el número no cambiaba: el archivo nunca llegaba (SW v57)
 
 - **El arreglo de ayer nunca llegó a los teléfonos.** `version.js` **no estaba en la lista de no-caché** de `vercel.json` y además se publicó dos veces con la misma dirección (`?v=1`): el navegador se quedó con la copia del primer día —la que tenía el error de mostrar la versión en espera— y nunca volvió a pedir el archivo. Por eso el número no cambiaba.
