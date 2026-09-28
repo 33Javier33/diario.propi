@@ -5,6 +5,21 @@
 
 
 
+#### 2026-09-28 — Entrar con el QR que emite la administración (SW v62)
+
+El QR que se genera en socios-comicion abre esta app con el **área y el nombre ya elegidos**: al socio solo le queda el PIN. Es el mismo atajo que ya hacía el acceso guardado (`favAplicar`), pero sirve la primera vez, cuando todavía no hay nada guardado.
+
+- **El QR no trae los datos**, trae un código opaco (`?qr=<32 hex>`) que se canjea contra Supabase. Ni el nombre ni el área viajan en la URL.
+- **El mismo QR sirve una vez acá y una vez en propi.solicitada.** Al escanearlo, el socio elige a dónde entrar.
+- **El QR manda sobre el acceso guardado.** Si trae un código válido deja elegido a *ese* socio; si no hay código o no sirve, se cae al atajo de siempre.
+- El área de la ficha puede venir con otra capitalización que la del desplegable (`mesas` vs `Mesas`), así que se busca **sin distinguir mayúsculas**. Si el área no está en la lista, o el socio no aparece en ella, **lo dice y deja elegir a mano** en vez de quedarse a medias.
+
+**Un problema que apareció al probarlo:** en la primera visita el Service Worker se activa de inmediato (`skipWaiting`), toma el control y la página **se recarga sola**. El código ya había salido de la URL, así que la recarga se lo llevaba — y la primera visita es justo la del socio que estrena la app con su QR. Ahora el código se guarda en `sessionStorage` en cuanto se lee y de ahí se recupera tras la recarga; se olvida en cuanto se canjea, para no reintentar uno ya usado.
+
+**Verificación:** 12 comprobaciones — que deje el área y el nombre elegidos con el PIN vacío y el aviso correcto, que el código no quede en la URL, que se canjee marcando esta app, que se olvide después de usarlo, y los tres casos que no deben romper nada: código ya usado, área que no está en la lista, y socio que no aparece en su área.
+
+**Archivos:** `qr-entrada.js` (nuevo), `app.js`, `index.html`, `sw.js`, `version.js`, `vercel.json`.
+
 #### 2026-09-28 — La foto del socio en la franja de la sesión (SW v61)
 
 - Si el socio **tiene foto cargada**, ahora aparece junto a su nombre en la franja de la sesión y en la barra lateral. Si no la tiene, se sigue viendo el monigote 👤 de siempre — que es el caso de la mayoría.

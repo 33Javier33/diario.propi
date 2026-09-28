@@ -980,8 +980,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof favPintarBoton === 'function') favPintarBoton();
     };
 
-    // Deja puestos el área y el nombre recordados; solo queda el PIN.
-    if (typeof favAplicar === 'function') setTimeout(favAplicar, 0);
+    // Entrada por QR primero: si la URL trae un código válido, deja puestos el
+    // área y el nombre de ESE socio. Si no hay código o no sirve, se cae al
+    // atajo guardado, que hace lo mismo con el último socio que entró acá.
+    setTimeout(async () => {
+        let porQR = false;
+        try {
+            if (typeof qrIntentarEntradaDiario === 'function') porQR = await qrIntentarEntradaDiario();
+        } catch (e) { console.warn('[QR] ', e && e.message); }
+        if (!porQR && typeof favAplicar === 'function') favAplicar();
+    }, 0);
 
     document.getElementById('loginForm').onsubmit = async (e) => {
         e.preventDefault();
