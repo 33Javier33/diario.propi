@@ -5,6 +5,16 @@
 
 
 
+#### 2026-09-28 — La foto del socio en la franja de la sesión (SW v61)
+
+- Si el socio **tiene foto cargada**, ahora aparece junto a su nombre en la franja de la sesión y en la barra lateral. Si no la tiene, se sigue viendo el monigote 👤 de siempre — que es el caso de la mayoría.
+- **Chica, para no estorbar:** 22 px redonda en la franja del celular y 26 px en la barra lateral. La franja sigue midiendo lo mismo (38 px), así que no le come alto a la página.
+- **Se puede tocar para verla en grande.** Al pincharla se abre el mismo visor que ya se usaba para las fotos de las notas — no se agregó un visor nuevo. El cursor es `zoom-in` para que se note que se puede tocar.
+- **El monigote desaparece cuando hay foto**, con `#ses-foto:not(:empty) + .ses-ico { display: none; }`, para que no queden las dos cosas al lado.
+- **De dónde sale la foto:** `diarioGetSociosByArea` ahora también trae `foto_url`; el enlace queda en el `<option>` del socio y se guarda en `sessionStorage` al entrar, igual que el nombre y el área. No hay ninguna consulta extra.
+- **Verificación:** 13 comprobaciones, todas correctas — con foto (tamaño, forma redonda, cursor, que el visor abra de verdad y la muestre más grande, que el monigote se oculte), sin foto (que no aparezca nada raro y vuelva el monigote) y en computador (que salga en la barra lateral con el nombre y el área).
+- **Archivos:** `index.html`, `styles.css`, `app.js`, `supabase-api.js`, `sw.js`, `version.js`.
+
 #### 2026-09-28 — La sesión queda fija al hacer scroll, igual que el valor por punto (SW v60)
 
 - La franja con el nombre se iba hacia arriba al bajar por la página. Ahora se queda **fija arriba**, igual que el valor por punto: el nombre de quien tiene la sesión está siempre a la vista, que era el punto de mostrarlo.

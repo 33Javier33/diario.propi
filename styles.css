@@ -688,3 +688,8 @@ body.dark-mode .marca-logo { filter: brightness(1.45) saturate(1.05); }
 
 /* Igual que el valor por punto: en escritorio manda la barra lateral. */
 @media (min-width: 992px) { #barraFija { display: none; } }
+
+/* La foto reemplaza al monigote 👤 cuando el socio tiene una: si no hubiera
+   regla, se verían los dos. */
+#sesionSticky .ses-quien { display: flex; align-items: center; gap: 7px; }
+#sesionSticky #ses-foto:not(:empty) + .ses-ico { display: none; }

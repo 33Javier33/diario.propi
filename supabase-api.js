@@ -213,7 +213,7 @@ function _normArea(s) { return String(s || '').normalize('NFD').replace(/[\u0300
 window.diarioGetSociosByArea = async function(areaSel) {
     const target = _normArea(areaSel);
     try {
-        const { data, error } = await dbSoc.from('socios').select('id, nombre, apellido, area').order('nombre', { ascending: true });
+        const { data, error } = await dbSoc.from('socios').select('id, nombre, apellido, area, foto_url').order('nombre', { ascending: true });
         if (error || !data) return [];
         return data.filter(s => {
             const a = _normArea(s.area);
@@ -222,7 +222,7 @@ window.diarioGetSociosByArea = async function(areaSel) {
             if (target === 'maquinas')  return a.includes('maquina');
             if (target === 'tecnicos')  return a.includes('tecnic');
             return a === target;
-        }).map(s => ({ id: s.id, nombre: ((s.nombre || '') + ' ' + (s.apellido || '')).trim(), area: s.area }));
+        }).map(s => ({ id: s.id, nombre: ((s.nombre || '') + ' ' + (s.apellido || '')).trim(), area: s.area, foto: s.foto_url || '' }));
     } catch(e) { return []; }
 };
 

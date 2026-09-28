@@ -286,8 +286,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const area   = String(sessionStorage.getItem('user_area') || '').trim();
         const desdeMs = Number(sessionStorage.getItem('user_desde')) || 0;
 
+        const foto = String(sessionStorage.getItem('user_foto') || '').trim();
+
+        // La foto es chica —cabe en la franja sin empujar nada— y al tocarla se
+        // abre en grande con el mismo visor que ya usan las fotos de las notas.
+        const avatar = (px) => foto
+            ? '<img src="' + foto.replace(/"/g, '&quot;') + '"'
+              + ' onclick="verFotoGrande(\'' + foto.replace(/'/g, '%27') + '\')"'
+              + ' title="Ver la foto en grande"'
+              + ' style="width:' + px + 'px;height:' + px + 'px;border-radius:50%;object-fit:cover;'
+              + 'flex-shrink:0;cursor:zoom-in;border:1.5px solid currentColor;vertical-align:middle;">'
+            : '';
+
         const badge = document.getElementById('activeUserBadge');
-        if (badge) badge.textContent = 'SESIÓN: ' + nombre.toUpperCase() + (area ? ' · ' + area.toUpperCase() : '');
+        if (badge) {
+            const txt = 'SESIÓN: ' + nombre.toUpperCase() + (area ? ' · ' + area.toUpperCase() : '');
+            badge.innerHTML = foto
+                ? '<span style="display:flex;align-items:center;gap:8px;justify-content:center;">'
+                  + avatar(26) + '<span>' + txt + '</span></span>'
+                : txt;
+        }
+
+        const elFoto = document.getElementById('ses-foto');
+        if (elFoto) elFoto.innerHTML = avatar(22);
 
         const elN = document.getElementById('ses-nombre');
         const elA = document.getElementById('ses-area');
@@ -945,7 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         _selUser.innerHTML = '<option value="" disabled selected>2. Elegir tu nombre...</option>'
-            + socios.map(s => `<option value="${s.id}" data-nombre="${(s.nombre || '').replace(/"/g, '&quot;')}">${s.nombre}</option>`).join('');
+            + socios.map(s => `<option value="${s.id}" data-nombre="${(s.nombre || '').replace(/"/g, '&quot;')}" data-foto="${(s.foto || '').replace(/"/g, '&quot;')}">${s.nombre}</option>`).join('');
         _selUser.disabled = false;
         if (typeof favPintarBoton === 'function') favPintarBoton();
     };
@@ -993,6 +1014,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hora de entrada: la franja muestra "desde HH:MM" para que se note
         // cuando una sesión lleva horas abierta sin que nadie la cerrara.
         sessionStorage.setItem('user_desde', String(Date.now()));
+        sessionStorage.setItem('user_foto',
+            (_selUser && _selUser.selectedOptions[0] && _selUser.selectedOptions[0].dataset.foto) || '');
         // Registrar el ingreso (login) en la auditoría de socios-comicion
         if (typeof _audit === 'function') {
             _audit('Acceso', 'Ingreso a diario.propi · Área: ' + area,
