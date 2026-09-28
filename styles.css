@@ -590,15 +590,22 @@ body.dark-mode .marca-logo { filter: brightness(1.45) saturate(1.05); }
     line-height: 1.1;
 }
 
+/* La posición fija la lleva #barraFija, que envuelve a esta franja y a la de
+   la sesión, para que las dos se queden arriba juntas. */
+#barraFija {
+    position: sticky; top: 0; z-index: 60;
+    /* Fondo opaco: la franja de la sesión es translúcida y, al quedar fija,
+       el contenido de la página se vería pasar por detrás. */
+    background: var(--bg-main);
+    padding-top: 2px;
+}
+
 #vpSticky {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    position: sticky;
-    top: 0;
-    z-index: 60;
-    margin: 0 0 12px;
+    margin: 0 0 8px;
     padding: 8px 14px;
     border-radius: 0 0 14px 14px;
     background: var(--bg-card);
@@ -680,4 +687,4 @@ body.dark-mode .marca-logo { filter: brightness(1.45) saturate(1.05); }
 #sesionSticky .ses-desde { flex-shrink: 0; opacity: 0.75; font-weight: 600; }
 
 /* Igual que el valor por punto: en escritorio manda la barra lateral. */
-@media (min-width: 992px) { #sesionSticky { display: none; } }
+@media (min-width: 992px) { #barraFija { display: none; } }

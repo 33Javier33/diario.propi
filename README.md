@@ -5,6 +5,14 @@
 
 
 
+#### 2026-09-28 — La sesión queda fija al hacer scroll, igual que el valor por punto (SW v60)
+
+- La franja con el nombre se iba hacia arriba al bajar por la página. Ahora se queda **fija arriba**, igual que el valor por punto: el nombre de quien tiene la sesión está siempre a la vista, que era el punto de mostrarlo.
+- **Las dos franjas van dentro de una sola envoltura fija** (`#barraFija`), en vez de fijar cada una por su lado. Así bajan juntas sin tener que calcular a mano la altura de la de arriba para posicionar la de abajo — un número que se rompería en cuanto cambie el contenido de esa franja.
+- **Se le puso fondo opaco a la envoltura.** La franja de la sesión es translúcida (verde suave) y, al quedar fija, el contenido de la página se veía pasar por detrás.
+- **Verificación:** 8 comprobaciones — tras bajar 526 px, el valor por punto queda a 2 px del borde y la sesión a 45 px, pegadas una bajo la otra; la barra tiene fondo opaco; y en computador toda la envoltura se oculta porque ahí manda la barra lateral, que sigue mostrando la sesión.
+- **Archivos:** `index.html`, `styles.css`.
+
 #### 2026-09-28 — Quién tiene la sesión abierta, también en el celular (SW v59)
 
 - **El dato existía pero no se veía donde hacía falta.** «SESIÓN: NOMBRE» estaba en la **barra lateral**, que solo aparece en pantallas de 992 px o más. En el celular —que es donde se registra la recaudación— no había ninguna forma de saber quién había quedado dentro.

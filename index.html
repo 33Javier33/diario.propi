@@ -13,7 +13,7 @@
     <meta name="theme-color" content="#6366f1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=52">
+    <link rel="stylesheet" href="styles.css?v=53">
     <script>
         // El tema se aplica ANTES de pintar nada. Si esperara a app.js, al abrir
         // con tema oscuro la pantalla daría un fogonazo blanco primero.
@@ -191,6 +191,10 @@
                  los paneles sin tapar la barra de navegación ni el contenido. -->
             <!-- Valor por punto fijo al hacer scroll. Solo en celular: en
                  escritorio ya está en la barra lateral. -->
+            <!-- Las dos franjas van dentro de UNA sola envoltura fija: así bajan
+                 juntas al hacer scroll sin tener que calcular a mano la altura
+                 de la de arriba para posicionar la de abajo. -->
+            <div id="barraFija">
             <div id="vpSticky">
                 <div style="min-width:0;">
                     <span class="vp-label">Valor por Punto</span>
@@ -206,6 +210,7 @@
                 <span class="ses-quien">👤 <b id="ses-nombre">—</b><span id="ses-area"></span></span>
                 <span class="ses-desde" id="ses-desde"></span>
             </div>
+            </div><!-- /barraFija -->
 
             <div id="recPresenciaCard"></div>
 
