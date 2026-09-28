@@ -276,6 +276,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     initTemas();
 
+    // ── Quién tiene la sesión abierta ──────────────────────────────────
+    // Se pinta en los dos lugares desde acá: la barra lateral (computador) y
+    // la franja de arriba (celular). Antes solo existía la de la barra
+    // lateral, que en el celular no se muestra: no había forma de saber quién
+    // había quedado dentro si no cerró sesión.
+    function pintarSesionActiva(displayName) {
+        const nombre = String(displayName || sessionStorage.getItem('user') || '').trim();
+        const area   = String(sessionStorage.getItem('user_area') || '').trim();
+        const desdeMs = Number(sessionStorage.getItem('user_desde')) || 0;
+
+        const badge = document.getElementById('activeUserBadge');
+        if (badge) badge.textContent = 'SESIÓN: ' + nombre.toUpperCase() + (area ? ' · ' + area.toUpperCase() : '');
+
+        const elN = document.getElementById('ses-nombre');
+        const elA = document.getElementById('ses-area');
+        const elD = document.getElementById('ses-desde');
+        if (elN) elN.textContent = nombre || '—';
+        if (elA) elA.textContent = area ? ' · ' + area : '';
+        if (elD && desdeMs) {
+            const d = new Date(desdeMs);
+            const p = n => String(n).padStart(2, '0');
+            const horas = Math.floor((Date.now() - desdeMs) / 3600000);
+            // Pasadas 3 horas se avisa: lo más probable es que quedó abierta.
+            elD.textContent = 'desde ' + p(d.getHours()) + ':' + p(d.getMinutes())
+                            + (horas >= 3 ? '  ·  ' + horas + ' h abierta' : '');
+        }
+    }
+    // Se refresca cada minuto para que el "X h abierta" no se quede pegado.
+    setInterval(() => { if (sessionStorage.getItem('user')) pintarSesionActiva(); }, 60000);
+
     // ── Puntos de la nómina (Total Puntos / Pts Planta de socios-comicion) ──
     // Son el divisor con que se calcula el valor por punto, así que se muestran
     // pegados a él y también en el Historial, donde se revisan los días.
@@ -859,7 +889,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('mainContent').style.display = 'flex';
         document.body.classList.add('loggedin');
-        document.getElementById('activeUserBadge').textContent = 'SESIÓN: ' + String(displayName || '').toUpperCase();
+        pintarSesionActiva(displayName);
         document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
         cargar();
         iniciarWatchdogInactividad();
@@ -960,6 +990,9 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('user', currentUser);
         sessionStorage.setItem('user_area', area);
         sessionStorage.setItem('user_socioId', socioId);
+        // Hora de entrada: la franja muestra "desde HH:MM" para que se note
+        // cuando una sesión lleva horas abierta sin que nadie la cerrara.
+        sessionStorage.setItem('user_desde', String(Date.now()));
         // Registrar el ingreso (login) en la auditoría de socios-comicion
         if (typeof _audit === 'function') {
             _audit('Acceso', 'Ingreso a diario.propi · Área: ' + area,

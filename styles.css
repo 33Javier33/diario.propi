@@ -661,3 +661,23 @@ body.dark-mode .marca-logo { filter: brightness(1.45) saturate(1.05); }
     border: 1px solid rgba(147, 197, 253, 0.35);
     pointer-events: none;
 }
+
+/* ── Quién tiene la sesión abierta (celular) ──
+   En escritorio esto va en la barra lateral; acá no hay barra lateral, así que
+   sin esta franja no había forma de saber quién quedó dentro si no cerró. */
+#sesionSticky {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    margin: 0 0 12px; padding: 7px 14px;
+    border-radius: 12px;
+    background: rgba(16, 185, 129, 0.10);
+    border: 1px solid rgba(16, 185, 129, 0.30);
+    font-size: 0.72rem; font-weight: 700;
+    color: var(--secondary);
+}
+#sesionSticky .ses-quien { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#sesionSticky .ses-quien b { text-transform: uppercase; letter-spacing: 0.03em; }
+#sesionSticky #ses-area { opacity: 0.75; font-weight: 600; }
+#sesionSticky .ses-desde { flex-shrink: 0; opacity: 0.75; font-weight: 600; }
+
+/* Igual que el valor por punto: en escritorio manda la barra lateral. */
+@media (min-width: 992px) { #sesionSticky { display: none; } }

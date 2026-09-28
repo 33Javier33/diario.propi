@@ -13,7 +13,7 @@
     <meta name="theme-color" content="#6366f1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=51">
+    <link rel="stylesheet" href="styles.css?v=52">
     <script>
         // El tema se aplica ANTES de pintar nada. Si esperara a app.js, al abrir
         // con tema oscuro la pantalla daría un fogonazo blanco primero.
@@ -197,6 +197,14 @@
                     <div class="vp-puntos" id="vp-sticky-puntos"></div>
                 </div>
                 <strong class="vp-monto" id="vp-sticky-valor">$0</strong>
+            </div>
+
+            <!-- Quién tiene la sesión abierta. En el computador esto ya sale en
+                 la barra lateral, pero en el celular no hay barra lateral: sin
+                 esto no había forma de saber quién quedó dentro. -->
+            <div id="sesionSticky">
+                <span class="ses-quien">👤 <b id="ses-nombre">—</b><span id="ses-area"></span></span>
+                <span class="ses-desde" id="ses-desde"></span>
             </div>
 
             <div id="recPresenciaCard"></div>
@@ -441,7 +449,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-api.js?v=23"></script>
-    <script src="app.js?v=29"></script>
+    <script src="app.js?v=30"></script>
     <script src="version.js?v=3"></script>
 <!-- Versión visible de la app (= versión del Service Worker) -->
 <!-- El número lo pone version.js leyendo la caché del Service Worker. -->

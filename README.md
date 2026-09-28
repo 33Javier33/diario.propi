@@ -5,6 +5,16 @@
 
 
 
+#### 2026-09-28 — Quién tiene la sesión abierta, también en el celular (SW v59)
+
+- **El dato existía pero no se veía donde hacía falta.** «SESIÓN: NOMBRE» estaba en la **barra lateral**, que solo aparece en pantallas de 992 px o más. En el celular —que es donde se registra la recaudación— no había ninguna forma de saber quién había quedado dentro.
+- Ahora hay una franja arriba, bajo el valor por punto, con **👤 nombre · área**. El área importa: dos socios pueden llamarse igual, y ya pasó con seis pares de nombres repetidos.
+- **Dice desde qué hora está abierta**, y si lleva **3 horas o más** lo avisa («5 h abierta»). Esa es la señal de que alguien se fue sin cerrar. Se refresca sola cada minuto.
+- **Un solo lugar escribe los dos indicadores** (`pintarSesionActiva`), así la barra lateral y la franja no pueden decir cosas distintas. La franja se oculta en escritorio para no duplicar, el mismo patrón que ya usa el valor por punto.
+- Funciona también al **restaurar** la sesión: si se recarga la página, la hora de entrada se conserva y la cuenta sigue corriendo desde la original.
+- **Verificación:** 11 comprobaciones — se ve en celular con nombre, área y hora; se oculta en escritorio mientras la barra lateral sí la muestra; avisa a las 5 horas; y no molesta con el aviso cuando la sesión es reciente.
+- **Archivos:** `index.html`, `styles.css`, `app.js`.
+
 #### 2026-09-28 — El navegador pedía actualizar la contraseña en cada acción (SW v58)
 
 - **Síntoma:** el navegador preguntaba «¿Actualizar la contraseña?» en **cada acción** —agregar un billete en el arqueo, abrir un modal, cualquier cosa—, no solo al entrar.
