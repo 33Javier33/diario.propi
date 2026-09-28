@@ -849,6 +849,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LOGIN (área → socio → PIN de 4 dígitos guardado en Supabase) ---
     function _diarioEntrarApp(displayName) {
+        // El campo del PIN se vacía y deja de ser `type="password"` mientras se
+        // usa la app. Si queda con valor, el gestor de contraseñas del navegador
+        // lo re-evalúa ante cualquier cambio de la página y sale a preguntar
+        // "¿Actualizar la contraseña?" en cada acción. Vuelve a ser contraseña
+        // al cerrar sesión, que es cuando de verdad se usa.
+        const _pin = document.getElementById('password');
+        if (_pin) { _pin.value = ''; _pin.type = 'text'; }
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('mainContent').style.display = 'flex';
         document.body.classList.add('loggedin');
