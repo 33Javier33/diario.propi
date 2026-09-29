@@ -167,7 +167,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 <strong>TarjetaMDA</strong> — Ingresos por pago con tarjeta.<br>
                 <strong>EfectivoMDA</strong> — Ingresos en efectivo.<br>
                 <strong>SalaDeJuegos</strong> — Recaudación de la sala de juegos.<br>
-                <strong>Boveda</strong> — Fondos de bóveda o caja fuerte.`
+                <strong>Boveda</strong> — Fondos de bóveda o caja fuerte.<br><br>
+                Si cuentas por denominación, el tipo decide qué se cuenta:
+                <strong>Sala de Juegos son fichas</strong> (de $1.000.000 a $500) y
+                los otros tres son billetes y monedas.`
+        },
+        desglose: {
+            title: '🧮 Contar por denominación',
+            content: `Anota cuántos billetes o fichas hay de cada uno, en vez de escribir el monto.<br><br>
+                El <strong>monto se calcula solo</strong> con la suma, así que no puede quedar un número
+                que no cuadre con lo que hay en el sobre.<br><br>
+                Y lo que cuentes <strong>viaja a socios-comicion</strong>: al verificar, las cantidades
+                llegan ya puestas y el encargado solo revisa y confirma.<br><br>
+                <strong>Enter</strong> salta a la denominación siguiente, para contar sin soltar el teclado.<br><br>
+                Es opcional: si no marcas la casilla, el monto se escribe como siempre.`
         },
         divisor: {
             title: 'Cantidad de Personas / Puntos',

@@ -5,6 +5,24 @@
 
 
 
+#### 2026-09-29 — La ayuda explicaba la mitad de la app (SW v64)
+
+El Manual de Uso tenía **4 secciones** y se había quedado atrás: nada del conteo por denominación, del ingreso por QR, de la franja de sesión, de los temas ni de las notificaciones. Ahora son **9**.
+
+**Lo que se agregó:**
+
+- **4. Contar por denominación** — que es opcional, que el monto sale de la suma, que Enter salta al siguiente campo, y que lo contado viaja a socios-comicion para prellenar la verificación. Con la advertencia de que **Sala de Juegos son fichas** ($1.000.000 a $500) y que se guardan aparte porque a la bóveda llega efectivo.
+- **5. Entrar con el QR** — escanear, elegir app, que sirve una vez en cada una y vence a los 3 días, y qué pasa si ya se usó.
+- **6. Quién tiene la sesión abierta** — la franja fija con el nombre, la hora y la foto.
+- **7. Valor por punto y puntos de la nómina** — de dónde salen Pts Planta y Total Puntos.
+- **8. Temas y notificaciones**.
+
+**En los «?»:** se agregó el del **conteo por denominación**, junto a la casilla, y el de **Categorías** ahora avisa que el tipo decide qué se cuenta — fichas en Sala de Juegos, billetes en los otros tres. Van 6 tips.
+
+**Verificación:** 21 comprobaciones — que el manual tenga las 9 secciones y explique las 11 cosas que faltaban, que los tips abran con contenido, y que el de categorías nombre las fichas. (El de `divisor` vive en una tarjeta del historial y solo existe con datos cargados; eso es así por diseño y la prueba lo distingue.)
+
+**Archivos:** `index.html`, `app.js`, `sw.js`, `version.js`.
+
 #### 2026-09-29 — Registrar contando por denominación (SW v63)
 
 Además de anotar el monto a mano, ahora se puede **cargar el conteo por denominación** al registrar. Es opcional: el formulario de siempre no cambió.

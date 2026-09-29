@@ -267,6 +267,7 @@
                         <label class="desg-usar-wrap">
                             <input type="checkbox" id="desgUsar">
                             <span>🧮 Contar por denominación</span>
+                            <button type="button" class="help-tip-btn" onclick="event.preventDefault();showHelpTip('desglose')">?</button>
                             <small>El monto se calcula solo y llega listo a la verificación</small>
                         </label>
 
@@ -387,6 +388,51 @@
                             <p>Mensajería interna entre turnos. El punto amarillo indica mensajes sin leer. El sistema verifica automáticamente cada 30 segundos.</p>
                         </div>
                     </div>
+
+                    <div class="help-section">
+                        <div class="help-section-header"><i class="fas fa-calculator"></i><span>4. Contar por denominación</span></div>
+                        <div class="help-section-body">
+                            <p>Al registrar puedes marcar <strong>🧮 Contar por denominación</strong> y anotar cuántos billetes o fichas hay de cada uno. Es <strong>opcional</strong>: si no la marcas, todo sigue como siempre.</p>
+                            <div class="help-step"><div class="help-step-num">1</div><div>El <strong>monto deja de escribirse</strong>: sale de la suma. Así no queda un número que no cuadre con lo que hay en el sobre.</div></div>
+                            <div class="help-step"><div class="help-step-num">2</div><div>Usa <strong>+</strong> y <strong>−</strong>, o escribe la cantidad. <strong>Enter</strong> salta a la denominación siguiente para contar sin soltar el teclado.</div></div>
+                            <div class="help-step"><div class="help-step-num">3</div><div>Lo que cuentes <strong>viaja a socios-comicion</strong>: al verificar, las cantidades llegan ya puestas y el encargado solo revisa y confirma.</div></div>
+                            <p style="margin-top:10px;"><strong>🎰 Sala de Juegos son fichas</strong>, de $1.000.000 a $500. Los otros tipos son billetes y monedas chilenas. La grilla cambia sola al cambiar el tipo.</p>
+                            <p><small>Las fichas se guardan aparte de los billetes: a la bóveda llega efectivo, no fichas, así que nunca entran al arqueo de caja.</small></p>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <div class="help-section-header"><i class="fas fa-qrcode"></i><span>5. Entrar con el QR</span></div>
+                        <div class="help-section-body">
+                            <p>Si la administración te dio un <strong>QR</strong>, escanéalo con la cámara del teléfono: la app se abre con tu <strong>área y tu nombre ya elegidos</strong> y solo tienes que poner tu PIN.</p>
+                            <div class="help-step"><div class="help-step-num">1</div><div>Al escanear te pregunta a qué app entrar: este Diario o la App de Socios.</div></div>
+                            <div class="help-step"><div class="help-step-num">2</div><div>El mismo código sirve <strong>una vez en cada app</strong> y vence a los 3 días.</div></div>
+                            <div class="help-step"><div class="help-step-num">3</div><div>Si el código ya se usó o venció, la app te lo dice y entras eligiendo tu área y tu nombre como siempre.</div></div>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <div class="help-section-header"><i class="fas fa-user-clock"></i><span>6. Quién tiene la sesión abierta</span></div>
+                        <div class="help-section-body">
+                            <p>Arriba se ve <strong>quién entró y desde qué hora</strong>, con su foto si la tiene. Queda fijo al bajar por la página, igual que el valor por punto, para saber siempre si alguien dejó su sesión sin cerrar.</p>
+                            <p><small>Toca la foto para verla en grande.</small></p>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <div class="help-section-header"><i class="fas fa-coins"></i><span>7. Valor por punto y puntos de la nómina</span></div>
+                        <div class="help-section-body">
+                            <p>El <strong>Total Valor por Punto</strong> es la suma de todos los resultados de noche del historial. Debajo van los <strong>Pts Planta</strong> y el <strong>Total Puntos</strong>, que vienen de Gestión de Socios en socios-comicion: son el divisor con que se calcula el punto.</p>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <div class="help-section-header"><i class="fas fa-palette"></i><span>8. Temas y notificaciones</span></div>
+                        <div class="help-section-body">
+                            <p><strong>🎨 Tema:</strong> con el botón de la paleta cambias entre claro, oscuro y negro. Queda guardado en tu teléfono.</p>
+                            <p><strong>🔔 Notificaciones:</strong> si las aceptas, te avisan en el teléfono cuando llega una recaudación o una nota nueva, aunque la app esté cerrada.</p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -476,7 +522,7 @@
     <script src="supabase-api.js?v=25"></script>
     <script src="qr-entrada.js?v=1"></script>
     <script src="desglose.js?v=1"></script>
-    <script src="app.js?v=33"></script>
+    <script src="app.js?v=34"></script>
     <script src="version.js?v=3"></script>
 <!-- Versión visible de la app (= versión del Service Worker) -->
 <!-- El número lo pone version.js leyendo la caché del Service Worker. -->
