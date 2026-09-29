@@ -13,7 +13,7 @@
     <meta name="theme-color" content="#6366f1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=54">
+    <link rel="stylesheet" href="styles.css?v=55">
     <script>
         // El tema se aplica ANTES de pintar nada. Si esperara a app.js, al abrir
         // con tema oscuro la pantalla daría un fogonazo blanco primero.
@@ -261,11 +261,31 @@
                         </div>
                         <label style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">FECHA DEL REGISTRO</label>
                         <input type="date" id="fecha" required>
+                        <!-- Contar por denominación es opcional. Al activarlo, el monto
+                             deja de tipearse y sale de la suma, y lo contado viaja a
+                             socios-comicion para prellenar la verificación. -->
+                        <label class="desg-usar-wrap">
+                            <input type="checkbox" id="desgUsar">
+                            <span>🧮 Contar por denominación</span>
+                            <small>El monto se calcula solo y llega listo a la verificación</small>
+                        </label>
+
+                        <div id="desgPanel" style="display:none;">
+                            <div class="desg-cabecera" id="desgCabecera">💵 Billetes y monedas</div>
+                            <div id="desgGrilla"></div>
+                            <div class="desg-total-fila">
+                                <span>Total contado</span>
+                                <strong id="desgTotal">$0</strong>
+                            </div>
+                            <button type="button" class="desg-limpiar" onclick="desg_limpiar()">Limpiar el conteo</button>
+                        </div>
+
                         <label style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">MONTO RECAUDADO</label>
                         <div class="monto-wrapper">
                             <i>$</i>
                             <input type="tel" id="monto" oninput="formatearMonto(this)" placeholder="0" required>
                         </div>
+                        <small id="desgNotaMonto" style="display:none; color:var(--text-muted); font-size:0.78rem; margin:-4px 0 10px; display:none;">Sale de la suma del conteo de arriba.</small>
                         <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:1rem;">
                             <i class="fas fa-floppy-disk"></i> Guardar Registro
                         </button>
@@ -453,9 +473,10 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-api.js?v=24"></script>
+    <script src="supabase-api.js?v=25"></script>
     <script src="qr-entrada.js?v=1"></script>
-    <script src="app.js?v=32"></script>
+    <script src="desglose.js?v=1"></script>
+    <script src="app.js?v=33"></script>
     <script src="version.js?v=3"></script>
 <!-- Versión visible de la app (= versión del Service Worker) -->
 <!-- El número lo pone version.js leyendo la caché del Service Worker. -->

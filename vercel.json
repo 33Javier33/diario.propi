@@ -37,6 +37,15 @@
       ]
     },
     {
+      "source": "/desglose.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/supabase-api.js",
       "headers": [
         {

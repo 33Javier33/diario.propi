@@ -517,7 +517,12 @@ async function apiGetDivisores() {
 
 function _fmtM(v) { return '$' + (Number(v) || 0).toLocaleString('es-CL'); }
 
-async function apiAddRecaudacion(fecha, tipo, monto) {
+// `desglose` es opcional: { billetes: {den: cant}, fichas: {den: cant} }.
+// Va en columnas propias, separadas de `billetes` —que es el conteo del
+// encargado en la bóveda y el único que se suma al arqueo—. Y las fichas van
+// aparte de los billetes porque son otra unidad: en Sala de Juegos la noche
+// cuenta fichas, pero a la bóveda llega efectivo.
+async function apiAddRecaudacion(fecha, tipo, monto, desglose) {
     try {
         // Quién agrega el dato (login nuevo: nombre + área)
         const _nombre  = sessionStorage.getItem('user') || '';
@@ -525,12 +530,29 @@ async function apiAddRecaudacion(fecha, tipo, monto) {
         const _socioId = sessionStorage.getItem('user_socioId') || '';
         const _porNombre = _nombre ? (_area ? _nombre + ' (' + _area + ')' : _nombre) : null;
 
+        const _bil = desglose && desglose.billetes && Object.keys(desglose.billetes).length ? desglose.billetes : null;
+        const _fic = desglose && desglose.fichas   && Object.keys(desglose.fichas).length   ? desglose.fichas   : null;
+
         const id = crypto.randomUUID();
-        let { error } = await dbRec.from('recaudaciones').insert({
+        const fila = {
             id, fecha, tipo: tipo || 'Sin Tipo', monto: Number(monto),
             registrado_por_id: _socioId || null,
             registrado_por_nombre: _porNombre
-        });
+        };
+        if (_bil || _fic) {
+            fila.billetes_declarados = _bil;
+            fila.fichas_declaradas   = _fic;
+            fila.declarado_por       = _porNombre;
+            fila.declarado_at        = new Date().toISOString();
+        }
+        let { error } = await dbRec.from('recaudaciones').insert(fila);
+        // Si las columnas del desglose no existieran todavía, no se pierde el
+        // registro: se reintenta sin ellas y el monto igual queda guardado.
+        if (error && error.message && /declarad/.test(error.message)) {
+            delete fila.billetes_declarados; delete fila.fichas_declaradas;
+            delete fila.declarado_por; delete fila.declarado_at;
+            ({ error } = await dbRec.from('recaudaciones').insert(fila));
+        }
         // Si las columnas registrado_por_* no existieran, reintentar sin ellas
         if (error && error.message && error.message.includes('registrado_por')) {
             ({ error } = await dbRec.from('recaudaciones').insert({ id, fecha, tipo: tipo || 'Sin Tipo', monto: Number(monto) }));
@@ -787,7 +809,7 @@ async function callApiRec(action, payload) {
         case 'getSaldo':      return apiGetSaldo();
         case 'getNotes':      return apiGetNotas();
         case 'getDivisores':  return apiGetDivisores();
-        case 'add':           return apiAddRecaudacion(payload.fecha, payload.tipo, payload.monto);
+        case 'add':           return apiAddRecaudacion(payload.fecha, payload.tipo, payload.monto, payload.desglose);
         case 'update':        return apiUpdateRecaudacion(payload.index || payload.id, payload.fecha, payload.tipo, payload.monto);
         case 'delete':        return apiDeleteRecaudacion(payload.index || payload.id);
         case 'updateSaldo':   return apiUpdateSaldo(payload.fecha, payload.monto);

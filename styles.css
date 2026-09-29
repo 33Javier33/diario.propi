@@ -693,3 +693,49 @@ body.dark-mode .marca-logo { filter: brightness(1.45) saturate(1.05); }
    regla, se verían los dos. */
 #sesionSticky .ses-quien { display: flex; align-items: center; gap: 7px; }
 #sesionSticky #ses-foto:not(:empty) + .ses-ico { display: none; }
+
+/* ── Conteo por denominación al registrar ──────────────────────────────────
+   La grilla imita la de la verificación en socios-comicion a propósito: quien
+   cuenta de noche y quien verifica en bóveda ven la misma disposición, así que
+   comparar una con otra no exige traducir nada. */
+.desg-usar-wrap {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    background: var(--card-bg, #fff); border: 1.5px dashed var(--border, #e2e8f0);
+    border-radius: 12px; padding: 10px 12px; margin-bottom: 14px; cursor: pointer;
+}
+.desg-usar-wrap input { width: 18px; height: 18px; cursor: pointer; flex-shrink: 0; }
+.desg-usar-wrap span { font-weight: 700; font-size: 0.9rem; }
+.desg-usar-wrap small { flex-basis: 100%; color: var(--text-muted); font-size: 0.75rem; }
+#desgPanel {
+    border: 1.5px solid var(--border, #e2e8f0); border-radius: 12px;
+    padding: 10px 12px; margin-bottom: 14px;
+}
+.desg-cabecera { font-weight: 800; font-size: 0.85rem; margin-bottom: 8px; color: var(--primary); }
+.desg-fila {
+    display: flex; align-items: center; gap: 7px;
+    padding: 5px 0; border-bottom: 1px solid var(--border, #f1f5f9);
+}
+.desg-den { flex: 1; font-size: 0.85rem; font-weight: 700; }
+.desg-btn {
+    width: 30px; height: 30px; border: none; border-radius: 6px; color: #fff;
+    font-size: 1.05rem; line-height: 1; cursor: pointer; flex-shrink: 0;
+}
+.desg-menos { background: #ef4444; }
+.desg-mas   { background: #10b981; }
+.desg-fila input {
+    width: 58px; text-align: center; font-weight: 700; font-size: 0.9rem;
+    border: 1px solid var(--border, #cbd5e1); border-radius: 6px; padding: 4px;
+    margin: 0; flex-shrink: 0;
+}
+.desg-sub { flex: 0 0 96px; text-align: right; font-size: 0.78rem; color: var(--text-muted); }
+.desg-total-fila {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 10px; padding-top: 9px; border-top: 2px solid var(--border, #e2e8f0);
+    font-size: 0.9rem; font-weight: 700;
+}
+.desg-total-fila strong { font-size: 1.15rem; color: var(--primary); }
+.desg-limpiar {
+    width: 100%; margin-top: 9px; background: none; color: var(--text-muted);
+    border: 1px solid var(--border, #e2e8f0); border-radius: 8px;
+    padding: 7px; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+}

@@ -716,19 +716,26 @@ document.addEventListener('DOMContentLoaded', () => {
         await cargar();
     };
 
+    // Conteo por denominación (opcional) — ver desglose.js
+    if (typeof desg_enganchar === 'function') desg_enganchar();
+
     // --- ADD RECORD ---
     document.getElementById('agregarForm').onsubmit = async (e) => {
         e.preventDefault();
         showLoad(true, 'Guardando...');
         const tipo = document.querySelector('input[name="tipo"]:checked').value;
+        const desglose = (typeof desg_paraGuardar === 'function') ? desg_paraGuardar() : null;
         await post({
             action: 'add', tipo,
             fecha: document.getElementById('fecha').value,
-            monto: parseInt(document.getElementById('monto').value.replace(/\./g, ''))
+            monto: parseInt(document.getElementById('monto').value.replace(/\./g, '')),
+            desglose
         });
         document.getElementById('agregarForm').reset();
         document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
-        showToast('Dato registrado');
+        // reset() desmarca la casilla pero no cierra el panel ni limpia la grilla
+        if (typeof desg_alternar === 'function') desg_alternar();
+        showToast(desglose ? 'Registrado con el conteo — llega listo a la verificación' : 'Dato registrado');
         await cargar();
     };
 

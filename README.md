@@ -5,6 +5,29 @@
 
 
 
+#### 2026-09-29 — Registrar contando por denominación (SW v63)
+
+Además de anotar el monto a mano, ahora se puede **cargar el conteo por denominación** al registrar. Es opcional: el formulario de siempre no cambió.
+
+Con el conteo cargado pasan dos cosas: el **monto deja de tipearse** —sale de la suma, así que no puede quedar un número que no cuadre con lo que hay en el sobre— y lo contado **viaja a socios-comicion**, donde la verificación llega con las cantidades ya puestas y el encargado solo revisa y confirma.
+
+**Son dos juegos de denominaciones, no uno:**
+
+| Tipo | Qué se cuenta |
+|---|---|
+| Sala de Juegos | **Fichas**: 1.000.000 · 500.000 · 200.000 · 100.000 · 50.000 · 20.000 · 10.000 · 5.000 · 1.000 · 500 |
+| TarjetaMDA, EfectivoMDA, Bóveda | **Billetes y monedas**: 20.000 · 10.000 · 5.000 · 2.000 · 1.000 · 500 · 100 · 50 · 10 |
+
+La grilla se vuelve a pintar al cambiar el tipo: dejar la anterior haría contar sobre casillas que ya no corresponden.
+
+**Las fichas van en su propio campo** (`fichas_declaradas`), aparte de los billetes (`billetes_declarados`). En Sala de Juegos la noche cuenta fichas pero **a la bóveda llega efectivo**, así que las fichas no deben entrar nunca al arqueo de caja. Teniéndolas separadas en la base, el código del arqueo —que solo lee el conteo verificado— no puede tomarlas por error.
+
+Enter salta a la siguiente denominación, para contar sin soltar el teclado.
+
+**Verificación:** parte de 38 comprobaciones de punta a punta — que la opción arranque apagada y el monto se siga escribiendo como siempre; que en efectivo aparezcan las 9 denominaciones y en Sala de Juegos las 10 fichas; que exista la ficha de $1.000.000 y **no** la de $2.000, que es billete; que el total y el monto se calculen solos; y que lo guardado vaya al campo que corresponde según el tipo.
+
+**Archivos:** `desglose.js` (nuevo), `app.js`, `supabase-api.js`, `index.html`, `styles.css`, `sw.js`, `version.js`, `vercel.json`.
+
 #### 2026-09-28 — Entrar con el QR que emite la administración (SW v62)
 
 El QR que se genera en socios-comicion abre esta app con el **área y el nombre ya elegidos**: al socio solo le queda el PIN. Es el mismo atajo que ya hacía el acceso guardado (`favAplicar`), pero sirve la primera vez, cuando todavía no hay nada guardado.
