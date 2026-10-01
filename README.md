@@ -5,6 +5,26 @@
 
 
 
+#### 2026-10-01 — Las notas mostraban las etiquetas en crudo (SW v65)
+
+**Síntoma:** en el Bloc de Notas aparecían los códigos de formato como texto, en vez del texto con formato:
+
+```
+<div style="text-align:center"><b>Aviso importante</b></div><div>Turno <u>cambiado</u></div>
+```
+
+**Causa:** las notas se escriben en socios-comicion con un editor que permite **negrita, cursiva, subrayado, alineación y listas**, y se guardan como HTML. Acá se pintaban con `escHtml()`, que es justamente lo contrario: convierte las etiquetas en texto visible.
+
+**Arreglo:** se portó el mismo criterio que ya usaba propi.solicitada con estas notas — las que traen formato se pintan **saneadas** y las de texto plano siguen igual que antes.
+
+- Solo sobreviven `b, strong, i, em, u, br, p, div, span, ul, ol, li, a` y los estilos `text-align`, `font-weight`, `font-style`, `text-decoration`. Todo lo demás se convierte en texto.
+- **El filtro no es decorativo:** sin él, cualquier cosa pegada en el editor desde otra página entraría tal cual y podría ejecutar código en esta app. Los enlaces solo pasan si son `http`/`https` — `javascript:` y `data:` se descartan, dejando el texto.
+- `white-space: pre-wrap` queda **solo en las notas de texto plano**, que lo necesitan para sus saltos de línea. En las que traen formato agregaría líneas en blanco de más, porque el HTML ya trae sus propios párrafos.
+
+**Verificación:** 28 comprobaciones, con las notas entrando por el camino real de la app (`window._diarioReload`), no inyectadas a mano. Que no quede ninguna etiqueta visible; que la negrita pese 700, el subrayado tenga `underline`, la cursiva sea `italic`, el centrado y la alineación a la derecha se apliquen y la lista tenga sus viñetas; que las notas viejas conserven su `pre-wrap`; y que una nota con `<script>`, una imagen con `onerror`, un enlace `javascript:` y un `position:fixed` **no ejecuten nada ni dejen rastro**, pero sí conserven su texto legítimo.
+
+**Archivos:** `app.js`, `index.html`, `sw.js`, `version.js`.
+
 #### 2026-09-29 — La ayuda explicaba la mitad de la app (SW v64)
 
 El Manual de Uso tenía **4 secciones** y se había quedado atrás: nada del conteo por denominación, del ingreso por QR, de la franja de sesión, de los temas ni de las notificaciones. Ahora son **9**.

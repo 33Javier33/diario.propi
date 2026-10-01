@@ -14,6 +14,82 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
+    // ══════════════════════════════════════════════════════════════════════
+    // NOTAS CON FORMATO
+    //
+    // Las notas se escriben en socios-comicion con un editor que permite
+    // negrita, cursiva, subrayado, alineación y listas, y se guardan como
+    // HTML. Acá se mostraban con escHtml(), así que en vez del texto con
+    // formato salían las etiquetas en crudo:
+    //     <div style="text-align:center"><b>Aviso</b> <u>importante</u></div>
+    //
+    // Ahora se pintan como corresponde, pero SANEADAS: solo sobreviven estas
+    // etiquetas y estos estilos, y todo lo demás se convierte en texto. Sin
+    // ese filtro, cualquier cosa pegada en el editor desde otra página
+    // entraría tal cual y podría ejecutar código en esta app.
+    //
+    // Las notas viejas son texto plano y siguen mostrándose igual que antes.
+    // Es el mismo criterio que ya usa propi.solicitada con estas notas.
+    // ══════════════════════════════════════════════════════════════════════
+    const _NOTA_TAGS_OK = ['B','STRONG','I','EM','U','BR','P','DIV','SPAN','UL','OL','LI','A'];
+    const _NOTA_CSS_OK  = ['text-align','font-weight','font-style','text-decoration'];
+
+    function notaTraeFormato(txt) {
+        return /<(b|strong|i|em|u|br|p|div|span|ul|ol|li|a)\b[^>]*>/i.test(String(txt || ''));
+    }
+
+    function sanearNota(html) {
+        if (!html) return '';
+        let doc;
+        try { doc = new DOMParser().parseFromString('<div id="r">' + html + '</div>', 'text/html'); }
+        catch (e) { return escHtml(html); }
+        const raiz = doc.getElementById('r');
+        if (!raiz) return escHtml(html);
+        (function limpiar(nodo) {
+            [...nodo.childNodes].forEach(h => {
+                if (h.nodeType === 3) return;                     // texto: se deja
+                if (h.nodeType !== 1) { h.remove(); return; }     // comentarios y demás: fuera
+                if (!_NOTA_TAGS_OK.includes(h.tagName)) {
+                    // Etiqueta no permitida: se conserva su texto, no la etiqueta.
+                    limpiar(h);
+                    while (h.firstChild) nodo.insertBefore(h.firstChild, h);
+                    h.remove();
+                    return;
+                }
+                [...h.attributes].forEach(a => {
+                    const n = a.name.toLowerCase();
+                    if (n === 'style') return;
+                    if (n === 'href' && h.tagName === 'A') return;
+                    h.removeAttribute(a.name);
+                });
+                if (h.hasAttribute('style')) {
+                    const keep = _NOTA_CSS_OK
+                        .map(p => { const v = h.style.getPropertyValue(p); return v ? p + ':' + v : ''; })
+                        .filter(Boolean).join(';');
+                    if (keep) h.setAttribute('style', keep); else h.removeAttribute('style');
+                }
+                if (h.tagName === 'A') {
+                    const href = (h.getAttribute('href') || '').trim();
+                    // Solo http/https: `javascript:` y `data:` quedan fuera.
+                    if (!/^https?:\/\//i.test(href)) {
+                        while (h.firstChild) nodo.insertBefore(h.firstChild, h);
+                        h.remove();
+                        return;
+                    }
+                    h.setAttribute('target', '_blank');
+                    h.setAttribute('rel', 'noopener noreferrer');
+                }
+                limpiar(h);
+            });
+        })(raiz);
+        return raiz.innerHTML;
+    }
+
+    // Una nota lista para pintar: con formato si lo trae, si no como siempre.
+    function notaHTML(txt) {
+        return notaTraeFormato(txt) ? sanearNota(txt) : escHtml(txt || '');
+    }
+
     // ── Inactividad (15 minutos, también en segundo plano / fuera de pestaña) ──
     // Se usa un timestamp de última actividad (hora real): así el cierre funciona
     // aunque el SO congele los timers al dejar la app en segundo plano — al volver
@@ -634,7 +710,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button onclick="borrarNota('${n.originalIndex}')" style="background:none;border:1px solid #fee2e2;color:#ef4444;border-radius:6px;padding:2px 7px;cursor:pointer;font-size:0.85em">🗑️</button>
                     </div>
                 </div>
-                <div style="font-size:1rem;line-height:1.6;margin-bottom:10px;white-space:pre-wrap">${escHtml(n.mensaje)}</div>
+                <!-- pre-wrap solo en las notas de texto plano: respeta sus saltos de
+                     línea. En las que traen formato, el HTML ya trae sus propios
+                     párrafos y el pre-wrap agregaría líneas en blanco de más. -->
+                <div style="font-size:1rem;line-height:1.6;margin-bottom:10px;${notaTraeFormato(n.mensaje) ? '' : 'white-space:pre-wrap'}">${notaHTML(n.mensaje)}</div>
                 ${n.destacadosNombres ? `<div style="display:inline-flex;align-items:center;gap:5px;background:#fef3c7;border:1px solid #fde68a;border-radius:20px;padding:3px 11px;font-size:0.74em;color:#92400e;font-weight:700;margin-bottom:10px;">⭐ Destacado para: ${escHtml(n.destacadosNombres)}</div>` : ''}
                 ${n.foto_url ? `<img src="${escHtml(n.foto_url)}" onclick="verFotoGrande('${(n.foto_url+'').replace(/'/g,'%27')}')" style="max-width:200px;max-height:220px;border-radius:10px;margin-bottom:10px;object-fit:cover;cursor:zoom-in;display:block;border:1px solid var(--border,#e2e8f0)">` : ''}
                 <div style="display:flex;gap:6px;flex-wrap:wrap">${rxBtns}</div>
