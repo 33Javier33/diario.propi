@@ -127,7 +127,11 @@ function desg_alternar() {
     if (panel) panel.style.display = usar ? 'block' : 'none';
     if (monto) {
         monto.readOnly = usar;
-        monto.style.background = usar ? 'var(--bg-muted, #f1f5f9)' : '';
+        // El campo se ve apagado mientras lo calcula el conteo. Va con la
+        // variable del tema (--bg-card), no con un gris fijo: con un color
+        // puesto a mano quedaría claro sobre el tema oscuro.
+        monto.style.background = usar ? 'var(--bg-card)' : '';
+        monto.style.opacity = usar ? '0.75' : '';
         if (usar) { desg_pintarGrilla(); }
         else { monto.value = ''; }
     }

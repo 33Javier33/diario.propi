@@ -5,6 +5,29 @@
 
 
 
+#### 2026-10-01 — El recuadro de «Contar por denominación» salía blanco (SW v66)
+
+**Síntoma:** con el tema oscuro, el recuadro de la casilla aparecía **blanco** y su texto casi invisible encima.
+
+**Causa, y es mía:** escribí `var(--card-bg, #fff)`. En diario.propi la variable se llama **`--bg-card`**, no `--card-bg`. Al no existir, el navegador usaba el respaldo `#fff` y pintaba el recuadro blanco — mientras el texto, que sí usaba variables correctas, se quedaba claro.
+
+Vino de copiar el patrón desde socios-comicion, donde la variable **sí** se llama `--card-bg`. Las dos apps usan nombres distintos para lo mismo: `--bg-card`/`--text-main` acá, `--card-bg`/`--text-color` allá.
+
+**Arreglado, y de paso todas las de su clase:**
+
+- `--card-bg` → `--bg-card`, con el color de texto puesto **explícito** (`--text-main`) para no depender de lo que herede.
+- Los campos del conteo ahora llevan el fondo y el color del tema, como el resto de los campos de la app; sin eso el navegador los pintaba blancos en modo oscuro.
+- `#desgPanel` toma el fondo de la tarjeta en vez de quedar transparente.
+- El monto, mientras lo calcula el conteo, se apaga con `--bg-card` y opacidad, no con un gris fijo.
+- Se quitaron los respaldos de color inventados (`#fff`, `#e2e8f0`, `#cbd5e1`) que tapaban el problema: ahora si una variable falta, se nota.
+- Se corrigió además `var(--text-color)` en `.vp-puntos b`, el mismo error en la línea de Pts Planta.
+
+**Verificación:** 16 mediciones de contraste reales, tomadas con los colores que calcula el navegador en los **tres temas**. Todas por encima del mínimo WCAG — lo más justo es 4,47:1 donde se pide 3. El recuadro mide 255,255,255 en claro, 30,41,59 en oscuro y 20,20,20 en negro: ya no hay blanco fijo.
+
+Se revisaron las otras dos apps por el mismo error: socios-comicion usa los nombres correctos y propi.solicitada no usa variables en ese código. El fallo era solo acá.
+
+**Archivos:** `styles.css`, `desglose.js`, `index.html`, `sw.js`, `version.js`.
+
 #### 2026-10-01 — Las notas mostraban las etiquetas en crudo (SW v65)
 
 **Síntoma:** en el Bloc de Notas aparecían los códigos de formato como texto, en vez del texto con formato:
