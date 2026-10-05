@@ -3,6 +3,20 @@
 
 ## Historial de Cambios
 
+#### 2026-10-05 — Entrar con huella o rostro, en vez del PIN (SW v67)
+
+**Optativo, y el PIN nunca se va.** En la pantalla de ingreso aparece **👆 Entrar como *Nombre*** solo si **ese dispositivo** tiene la huella registrada; el formulario con área, nombre y PIN sigue completo arriba.
+
+**Se activa desde adentro, después de entrar con el PIN.** El interruptor está en la barra lateral, sobre «Cerrar Sesión». Se apaga cuando se quiera, y es por dispositivo.
+
+**Qué se guarda:** el **identificador** de la credencial que crea el dispositivo, más a quién corresponde (id, nombre, área y foto) para poder abrir la sesión igual que el ingreso con PIN. La huella nunca sale del sensor. **El PIN no se guarda en ninguna parte.**
+
+**Qué NO es, y acá importa más que en Horarios:** no hay servidor que verifique la firma — es un **candado local**. Y el PIN de diario.propi **sí se verifica en el servidor** en cada ingreso; entrando con huella ese paso no ocurre. Lo que vale entonces es que el dispositivo reconoció a su dueño y que **antes, en ese mismo dispositivo, alguien entró con el PIN correcto** — sin eso no se puede activar. El ingreso queda en la auditoría como `huella_diario`, distinto de `pin_diario`, para que se note cuál fue.
+
+**Verificación:** 18 comprobaciones con un **sensor biométrico virtual** del navegador — que sin activarla la pantalla de ingreso no cambie; que **sin haber entrado con PIN no deje activarla**; que al registrarla guarde el identificador y **nunca el PIN** (revisando todo el almacenamiento del dispositivo); que al entrar deje la sesión idéntica a la del PIN, foto incluida; que **si la huella no coincide no abra sesión**; apagarla; y que sin sensor ni se ofrezca.
+
+**Archivos:** `biometria.js` (nuevo), `app.js`, `index.html`, `sw.js`, `version.js`.
+
 
 
 #### 2026-10-01 — El recuadro de «Contar por denominación» salía blanco (SW v66)

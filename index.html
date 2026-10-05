@@ -89,6 +89,13 @@
                 <button type="button" id="btnFavorito" onclick="favAlternar()" style="display:none; width:100%; margin:6px 0 2px; background:none; border:1px dashed var(--border); border-radius:10px; padding:8px; font-size:0.82em; font-weight:700; color:var(--text-muted); cursor:pointer;">☆ Recordarme en este dispositivo</button>
                 <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Ingresar</button>
             </form>
+            <!-- Entrar con huella o rostro. Solo aparece si ESTE dispositivo la
+                 tiene registrada; el PIN de arriba siempre sigue estando. -->
+            <button type="button" id="btnHuella" onclick="bioEntrar()" style="display:none; width:100%; margin-top:10px;
+                    align-items:center; justify-content:center; gap:8px; background:none; border:1.5px solid var(--primary);
+                    border-radius:10px; padding:11px; font-size:0.95em; font-weight:800; color:var(--primary); cursor:pointer;">
+                👆 Entrar con huella o rostro
+            </button>
             <button type="button" onclick="showLoginHelp()" style="margin-top:14px; background:none; border:none; color:var(--primary); font-weight:700; font-size:0.9rem; cursor:pointer; text-decoration:underline;">
                 ℹ️ ¿Cómo ingreso ahora?
             </button>
@@ -152,7 +159,13 @@
                 <i class="fas fa-question-circle"></i> Ayuda
             </a>
         </div>
-        <a href="#" id="logoutBtn" style="color:#f87171; margin-top:auto; padding:2rem; border-top:1px solid rgba(255,255,255,0.05);">
+        <!-- Entrar con huella en este dispositivo. Optativo; el PIN siempre queda. -->
+        <button type="button" id="btnHuellaAjuste" onclick="bioToggle()" style="display:none; margin-top:auto;
+                background:none; border:none; border-top:1px solid rgba(255,255,255,0.05); color:var(--text-muted);
+                padding:1.1rem 2rem; text-align:left; font:inherit; font-size:0.9em; font-weight:700; cursor:pointer;">
+            👆 Entrar con huella o rostro
+        </button>
+        <a href="#" id="logoutBtn" style="color:#f87171; padding:1.4rem 2rem; border-top:1px solid rgba(255,255,255,0.05);">
             <i class="fas fa-power-off"></i> Cerrar Sesión
         </a>
     </nav>
@@ -522,8 +535,9 @@
     <script src="supabase-api.js?v=25"></script>
     <script src="qr-entrada.js?v=1"></script>
     <script src="desglose.js?v=2"></script>
-    <script src="app.js?v=35"></script>
-    <script src="version.js?v=3"></script>
+    <script src="biometria.js?v=1"></script>
+    <script src="app.js?v=36"></script>
+    <script src="version.js?v=4"></script>
 <!-- Versión visible de la app (= versión del Service Worker) -->
 <!-- El número lo pone version.js leyendo la caché del Service Worker. -->
 <div class="app-version" style="position:fixed;bottom:6px;right:8px;z-index:9999;font-size:10px;color:#94a3b8;opacity:0.75;pointer-events:none;font-weight:600;">—</div>

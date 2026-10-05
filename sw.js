@@ -1,5 +1,5 @@
 // --- CONFIGURACIÓN DE CACHÉ ---
-const CACHE_NAME = 'recaudacion-cache-v66';
+const CACHE_NAME = 'recaudacion-cache-v67';
 
 // Archivos que la aplicación necesita para funcionar sin conexión.
 const urlsToCache = [
@@ -8,6 +8,7 @@ const urlsToCache = [
   '/app.js',
   '/qr-entrada.js',
   '/desglose.js',
+  '/biometria.js',
   '/version.js',
   '/styles.css',
   '/img/marca/cpn-marca.png',

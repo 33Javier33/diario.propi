@@ -999,6 +999,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LOGIN (área → socio → PIN de 4 dígitos guardado en Supabase) ---
     function _diarioEntrarApp(displayName) {
+        // El interruptor de la huella se pinta en cualquier camino de entrada:
+        // con PIN, con la sesión restaurada o con la huella misma.
+        setTimeout(() => { if (typeof bioPintarAjuste === 'function') bioPintarAjuste(); }, 0);
         // El campo del PIN se vacía y deja de ser `type="password"` mientras se
         // usa la app. Si queda con valor, el gestor de contraseñas del navegador
         // lo re-evalúa ante cualquier cambio de la página y sale a preguntar
@@ -1088,6 +1091,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof qrIntentarEntradaDiario === 'function') porQR = await qrIntentarEntradaDiario();
         } catch (e) { console.warn('[QR] ', e && e.message); }
         if (!porQR && typeof favAplicar === 'function') favAplicar();
+        if (typeof bioPintarLogin === 'function') bioPintarLogin();
     }, 0);
 
     document.getElementById('loginForm').onsubmit = async (e) => {
@@ -1129,6 +1133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 { metodo: 'pin_diario', area: area, socio_id: socioId, app: 'diario.propi' });
         }
         _diarioEntrarApp(currentUser);
+        if (typeof bioPintarAjuste === 'function') bioPintarAjuste();
     };
 
     // --- TOGGLE PASSWORD ---
@@ -1147,6 +1152,24 @@ document.addEventListener('DOMContentLoaded', () => {
     window.closeLoginHelp = function () {
         const m = document.getElementById('loginHelpModal');
         if (m) m.style.display = 'none';
+    };
+
+    // Entrar con huella: deja la sesión igual que el ingreso con PIN. No se
+    // repite la verificación contra el servidor —la huella no es el PIN—, y
+    // por eso solo se puede activar después de haber entrado con el PIN bueno
+    // en ESTE dispositivo. Queda anotado en la auditoría como tal.
+    window.bioAbrirSesion = function (g) {
+        currentUser = g.nombre || g.socioId;
+        sessionStorage.setItem('user', currentUser);
+        sessionStorage.setItem('user_area', g.area || '');
+        sessionStorage.setItem('user_socioId', g.socioId);
+        sessionStorage.setItem('user_desde', String(Date.now()));
+        sessionStorage.setItem('user_foto', g.foto || '');
+        if (typeof _audit === 'function') {
+            _audit('Acceso', 'Ingreso a diario.propi con huella · Área: ' + (g.area || ''),
+                { metodo: 'huella_diario', area: g.area || '', socio_id: g.socioId, app: 'diario.propi' });
+        }
+        _diarioEntrarApp(currentUser);
     };
 
     // --- AUTO-LOGIN FROM SESSION ---
