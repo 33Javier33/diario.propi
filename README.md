@@ -3,6 +3,18 @@
 
 ## Historial de Cambios
 
+#### 2026-10-08 — Ícono propio: la ficha «TIPS · APOYO» (SW v68)
+
+Hasta ahora esta app y la de la comisión usaban **el mismo ícono** —la marca del desarrollador—, así que instaladas una al lado de la otra en el teléfono no había cómo distinguirlas.
+
+Ahora Recaudaciones tiene el suyo: la **ficha circular roja con el signo peso, el corazón y la palabra TIPS**, recortada justo en el borde del aro y con todo lo de afuera transparente. Se reemplazaron los cinco tamaños del manifiesto (192, 256, 384, 512 y el *maskable* de 512).
+
+El *maskable* va aparte: la ficha al **80 %** del lienzo sobre el rojo del aro (`#933131`), que es la zona segura de Android. Así, recorte el sistema un círculo, un cuadrado redondeado o una gota, la ficha nunca queda cortada.
+
+Los nombres de archivo (`icono-cpn-*.png`) se dejaron tal cual: cambiarlos obligaba a tocar el manifiesto, el `index.html` y la lista de caché del Service Worker sin ganar nada.
+
+**Archivos:** `icons/icono-cpn-192x192.png`, `-256x256`, `-384x384`, `-512x512`, `-maskable-512`, `sw.js`, `version.js`, `index.html`.
+
 #### 2026-10-05 — Entrar con huella o rostro, en vez del PIN (SW v67)
 
 **Optativo, y el PIN nunca se va.** En la pantalla de ingreso aparece **👆 Entrar como *Nombre*** solo si **ese dispositivo** tiene la huella registrada; el formulario con área, nombre y PIN sigue completo arriba.
