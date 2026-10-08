@@ -541,5 +541,118 @@
 <!-- Versión visible de la app (= versión del Service Worker) -->
 <!-- El número lo pone version.js leyendo la caché del Service Worker. -->
 <div class="app-version" style="position:fixed;bottom:6px;right:8px;z-index:9999;font-size:10px;color:#94a3b8;opacity:0.75;pointer-events:none;font-weight:600;">—</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     AVISO: EL ÍCONO CAMBIÓ
+     Cambiar los íconos del manifiesto NO cambia el que está pegado en la
+     pantalla de inicio. El teléfono lo copió el día que se instaló la app
+     y se queda con esa copia: en Android, Chrome revisa el manifiesto como
+     mucho una vez al día y la actualización puede demorar días; en iPhone
+     no cambia nunca. La única forma segura es sacar la app y volver a
+     agregarla, y eso no hay código que lo haga solo: tiene que hacerlo la
+     persona. Por eso se avisa.
+
+     Sale UNA sola vez, y solo a quien cumpla las tres cosas:
+       · tiene la app INSTALADA (en el navegador el ícono de la pestaña ya
+         se actualizó solo, no hay nada que explicar);
+       · ya venía usándola de antes (una instalación nueva trae el ícono
+         nuevo de fábrica);
+       · no lo cerró antes con "Entendido".
+
+     Es código con fecha de vencimiento: pasado AVISO_ICONO_HASTA no se
+     muestra más y este bloque se puede borrar entero.
+     ══════════════════════════════════════════════════════════════════ -->
+<div id="avisoIcono" style="display:none;position:fixed;inset:0;z-index:100001;background:rgba(2,6,23,0.62);align-items:center;justify-content:center;padding:18px;font-family:inherit;">
+  <div style="background:#13263d;color:#e2e8f0;border-radius:16px;max-width:430px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.45);overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:12px;padding:16px 18px;background:#0f1e31;">
+      <img src="icons/icono-cpn-192x192.png" alt="" width="46" height="46" style="border-radius:50%;flex-shrink:0;">
+      <div style="min-width:0;">
+        <div style="font-weight:800;font-size:0.98em;">La app tiene ícono nuevo</div>
+        <div style="font-size:0.76em;opacity:0.75;margin-top:2px;">Este de acá al lado</div>
+      </div>
+    </div>
+    <div style="padding:15px 18px;font-size:0.85em;line-height:1.6;">
+      <p style="margin:0 0 12px;">
+        Tu teléfono guardó el ícono viejo el día que instalaste la app y <b>no lo cambia solo</b>.
+        Para ver el nuevo hay que sacarla de la pantalla de inicio y volver a agregarla.
+        <b>No se pierde nada</b>: ni tus datos, ni tu sesión, ni lo que esté guardado en la nube.
+      </p>
+      <div style="background:rgba(148,163,184,0.12);border-radius:10px;padding:10px 12px;margin-bottom:9px;">
+        <div style="font-weight:800;font-size:0.92em;margin-bottom:4px;">🤖 Android</div>
+        <div style="opacity:0.9;">Mantén apretado el ícono → <b>Desinstalar</b>.<br>
+        Abre la app en Chrome y usa <b>Menú ⋮ → Instalar aplicación</b>.</div>
+      </div>
+      <div style="background:rgba(148,163,184,0.12);border-radius:10px;padding:10px 12px;">
+        <div style="font-weight:800;font-size:0.92em;margin-bottom:4px;">🍎 iPhone</div>
+        <div style="opacity:0.9;">Mantén apretado el ícono → <b>Eliminar app</b>.<br>
+        Abre la app en Safari y usa <b>Compartir ⬆️ → Agregar a inicio</b>.</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding:0 18px 16px;">
+      <button id="avisoIconoLuego" type="button" style="flex:1;background:transparent;color:#cbd5e1;border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:10px;font-size:0.84em;font-weight:700;cursor:pointer;font-family:inherit;">Ahora no</button>
+      <button id="avisoIconoOk" type="button" style="flex:1;background:#4ade80;color:#0f2136;border:none;border-radius:10px;padding:10px;font-size:0.84em;font-weight:800;cursor:pointer;font-family:inherit;">Entendido</button>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    var CLAVE = 'aviso_icono_tips';          // 'pendiente' | 'listo'
+    var AVISO_ICONO_HASTA = '2027-03-31';
+    // Rastros de que esta app ya se venía USANDO en este teléfono. Ojo: no
+    // sirve cualquier clave. `diario_tema` y `diario_login_help_v2` las
+    // escribe la app sola al abrirse por primera vez, así que un teléfono
+    // recién estrenado también las tendría. Estas solo aparecen si alguien
+    // de verdad entró y trabajó.
+    var DE_ANTES = ['_rec_last_seen', '_rec_my_reactions',
+                    'diario_last_backup_day', 'lastNote'];
+
+    function instalada() {
+      try {
+        if (navigator.standalone === true) return true;           // iPhone
+        return ['standalone', 'fullscreen', 'minimal-ui'].some(function (m) {
+          return window.matchMedia('(display-mode: ' + m + ')').matches;
+        });
+      } catch (e) { return false; }
+    }
+    function veniaDeAntes() {
+      try {
+        return DE_ANTES.some(function (k) { return localStorage.getItem(k) !== null; });
+      } catch (e) { return false; }
+    }
+    // Se decide UNA sola vez, la primera vez que corre este código en este
+    // teléfono, y la respuesta queda guardada. Si se preguntara en cada
+    // arranque, alguien que instaló la app DESPUÉS del cambio terminaría
+    // viendo el aviso igual, en cuanto juntara datos de uso.
+    function estado() {
+      var e = null;
+      try { e = localStorage.getItem(CLAVE); } catch (x) {}
+      if (e === null) {
+        e = veniaDeAntes() ? 'pendiente' : 'listo';
+        try { localStorage.setItem(CLAVE, e); } catch (x) {}
+      }
+      return e;
+    }
+    function corresponde() {
+      if (new Date().toISOString().slice(0, 10) > AVISO_ICONO_HASTA) return false;
+      return estado() === 'pendiente' && instalada();
+    }
+    function cerrar(paraSiempre) {
+      var c = document.getElementById('avisoIcono');
+      if (c) c.style.display = 'none';
+      if (paraSiempre) { try { localStorage.setItem(CLAVE, 'listo'); } catch (e) {} }
+    }
+    function mostrar() {
+      var c = document.getElementById('avisoIcono');
+      if (!c) return;
+      c.style.display = 'flex';
+      document.getElementById('avisoIconoOk').onclick = function () { cerrar(true); };
+      document.getElementById('avisoIconoLuego').onclick = function () { cerrar(false); };
+    }
+    // Se espera un poco: primero que la app termine de levantar, para no
+    // taparle el login a alguien que recién está entrando.
+    if (corresponde()) setTimeout(mostrar, 2200);
+    window.avisoIconoMostrar = mostrar;   // para probarlo a mano desde la consola
+  })();
+</script>
 </body>
 </html>
