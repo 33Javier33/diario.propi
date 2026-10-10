@@ -3,6 +3,22 @@
 
 ## Historial de Cambios
 
+#### 2026-10-10 — La nota recién llegada no se leía en tema oscuro (SW v71)
+
+Al llegar una nota nueva, su tarjeta quedaba **blanca** mientras el texto seguía claro: el mensaje recién llegado —justo el que uno quiere leer— era **el único ilegible de la lista**. Lo mismo pasaba con las notas fijadas.
+
+**La causa.** El fondo de esas dos lo escribía a mano `app.js` al armar el HTML: `background:#eff6ff` para la nueva y `#fffde7` para la fijada. Colores claros fijos, sin variante de tema. Las notas normales no lo tenían (`background:''`), así que esas sí tomaban el color del tema y se veían bien — por eso el problema era solo del mensaje nuevo.
+
+Ahora el fondo sale de una clase (`es-nueva` / `es-fijada`) y cada tema pone el suyo. Los tonos oscuros son el mismo azul y el mismo ámbar, rebajados hasta que el texto pase holgado: **13:1** el mensaje y **6,9:1** la línea del autor.
+
+**Y un segundo caso que estaba escondido.** Los botones de reacción (👍 ❤️ 😂) tenían fondo `#f8fafc` fijo y el número de la cuenta no traía color propio, así que heredaba el claro del tema oscuro. Con cero reacciones no se notaba —solo se ve el emoji—, pero apenas alguien reaccionaba el número quedaba **blanco sobre blanco**. También pasó a clases con variables.
+
+De paso, la línea «Por X — fecha» usaba `--text-muted`, que sobre el azul de la nota nueva daba **4,37:1**, bajo el mínimo de 4,5. Tiene su propio gris, un punto más oscuro: ahora da entre **5,5 y 5,9:1** en los tres fondos, y mejora también en las notas normales.
+
+Medido en los **tres temas**, con una nota nueva, una fijada y una normal: 36 comprobaciones, todas por encima del mínimo.
+
+**Archivos:** `app.js`, `styles.css`, `index.html`, `sw.js`, `version.js`.
+
 #### 2026-10-10 — «Pts Planta» y «Total Puntos» no coincidían con socios-comicion (SW v70)
 
 Los dos números que esta app muestra junto al divisor **no eran los mismos** que los del panel de Gestión de Socios. Esta app se había quedado con la **regla vieja**.

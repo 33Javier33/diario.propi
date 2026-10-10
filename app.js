@@ -689,21 +689,25 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('notesContainer').innerHTML = sorted.map(n => {
             const isNew = lastSeen > 0 && new Date(n.fecha).getTime() > lastSeen;
             const border = n.pinned ? '#f59e0b' : isNew ? '#3b82f6' : 'var(--primary)';
-            const bg = n.pinned ? '#fffde7' : isNew ? '#eff6ff' : '';
+            // El fondo de la nota fijada y el de la nueva salen de styles.css
+            // (clases `es-fijada` / `es-nueva`) y no de un color escrito acá:
+            // escritos acá eran claros fijos, y en tema oscuro la tarjeta
+            // quedaba blanca con el texto claro encima, ilegible.
+            const clase = n.pinned ? ' es-fijada' : isNew ? ' es-nueva' : '';
             const rxBtns = EMOJIS.map(e => {
                 const arr = Array.isArray((n.reactions||{})[e]) ? (n.reactions||{})[e] : [];
                 const cnt = arr.length;
                 const mine = myRx[n.originalIndex]?.[e];
                 const names = arr.filter(u => u !== 'Admin').join(', ') || arr.join(', ');
-                return `<button onclick="_notaReaccion('${n.originalIndex}','${e}')" title="${names}" style="background:${mine?'#dbeafe':'#f8fafc'};border:1px solid ${mine?'#93c5fd':'#e2e8f0'};border-radius:20px;padding:2px 10px;cursor:pointer;font-size:0.82em;transition:0.15s">${e}${cnt?' '+cnt:''}</button>`;
+                return `<button onclick="_notaReaccion('${n.originalIndex}','${e}')" title="${names}" class="nota-rx${mine?' mia':''}">${e}${cnt?' '+cnt:''}</button>`;
             }).join('');
             return `
-            <div class="card note-card" style="border-left:4px solid ${border};background:${bg};margin-bottom:10px;padding:12px 14px">
+            <div class="card note-card${clase}" style="border-left:4px solid ${border};margin-bottom:10px;padding:12px 14px">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
                     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px">
                         ${n.pinned?'<span style="background:#f59e0b;color:#fff;font-size:0.68em;font-weight:700;padding:1px 7px;border-radius:20px">📌 FIJADA</span>':''}
                         ${isNew?'<span style="background:#3b82f6;color:#fff;font-size:0.68em;font-weight:700;padding:1px 7px;border-radius:20px">NUEVO</span>':''}
-                        <span style="font-size:0.75rem;color:var(--text-muted);font-weight:600">Por <b>${escHtml(n.autor||'?')}</b> — ${escHtml(new Date(n.fecha).toLocaleString())}</span>
+                        <span class="nota-meta">Por <b>${escHtml(n.autor||'?')}</b> — ${escHtml(new Date(n.fecha).toLocaleString())}</span>
                     </div>
                     <div style="display:flex;gap:4px;flex-shrink:0">
                         <button onclick="_notaPin('${n.originalIndex}',${!n.pinned})" title="${n.pinned?'Desfijar':'Fijar'}" style="background:none;border:1px solid #e2e8f0;border-radius:6px;padding:2px 7px;cursor:pointer;font-size:0.85em">${n.pinned?'📌':'📍'}</button>

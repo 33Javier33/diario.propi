@@ -9,6 +9,17 @@
     --text-main: #1e293b;
     --text-muted: #64748b;
     --border: #e2e8f0;
+    /* Notas destacadas y botones de reacción. Los claros son los mismos
+       tonos de siempre; los temas Oscuro y Negro definen los suyos. */
+    --nota-nueva:  #eff6ff;
+    --nota-fijada: #fffde7;
+    --rx-bg: #f8fafc; --rx-bd: #e2e8f0;
+    --rx-bg-mia: #dbeafe; --rx-bd-mia: #93c5fd;
+    /* Gris de la línea «Por X — fecha». Es más oscuro que --text-muted
+       porque va sobre los fondos teñidos de la nota nueva y la fijada,
+       donde el gris de siempre se quedaba en 4,37:1. Con este da 5,5 a
+       5,9:1 en los tres fondos. */
+    --nota-meta: #56657b;
     --radius: 20px;
     --sidebar-width: 280px;
     --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -36,6 +47,11 @@ body.dark-mode,
     --text-main: #f1f5f9;
     --text-muted: #94a3b8;
     --border: #334155;
+    --nota-nueva:  #172a45;
+    --nota-fijada: #2a2410;
+    --rx-bg: #1e293b; --rx-bd: #475569;
+    --rx-bg-mia: #1e3a5f; --rx-bd-mia: #60a5fa;
+    --nota-meta: #a7b4c6;
 }
 
 body.tema-negro,
@@ -43,6 +59,11 @@ body.tema-negro,
     --bg-main: #000000;
     --bg-card: #141414;
     --border:  #1e1e1e;
+    --nota-nueva:  #0d1b2e;
+    --nota-fijada: #1c180a;
+    --rx-bg: #1c1c1c; --rx-bd: #3a3a3a;
+    --rx-bg-mia: #16304d; --rx-bd-mia: #60a5fa;
+    --nota-meta: #a7b4c6;
 }
 /* La barra lateral es oscura fija; en Negro se va a negro con el resto. */
 body.tema-negro .side-menu,
@@ -452,6 +473,34 @@ input:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4p
    NOTES
    ===================== */
 .note-card { border-left: 6px solid var(--primary); position: relative; }
+
+/* ── Notas destacadas: nueva y fijada ──────────────────────────────────
+   El fondo de estas dos venía escrito a mano en el HTML que arma app.js
+   (`background:#eff6ff` para la nueva, `#fffde7` para la fijada). Eran
+   colores claros fijos, sin variante de tema: en Oscuro y en Negro la
+   tarjeta quedaba blanca mientras el texto seguía siendo claro, así que
+   el mensaje recién llegado —justo el que uno quiere leer— era el único
+   ilegible de la lista.
+
+   Ahora el color sale de una variable y cada tema pone la suya. Los tonos
+   oscuros son el mismo azul y el mismo ámbar, pero rebajados hasta que el
+   texto de la nota pase holgado: 13:1 el texto principal y 5,6:1 la fecha
+   en gris. */
+.note-card.es-nueva  { background: var(--nota-nueva); }
+.note-card.es-fijada { background: var(--nota-fijada); }
+
+/* ── Botones de reacción (👍 ❤️ 😂) ──
+   Mismo problema, más escondido: el fondo era `#f8fafc` fijo y el número
+   de la cuenta no traía color propio, así que heredaba el claro del tema
+   oscuro. Con cero reacciones no se notaba —solo se ve el emoji—, pero
+   apenas alguien reaccionaba, el número quedaba blanco sobre blanco. */
+.nota-rx {
+    background: var(--rx-bg); border: 1px solid var(--rx-bd);
+    color: var(--text-main); border-radius: 20px; padding: 2px 10px;
+    cursor: pointer; font-size: 0.82em; transition: 0.15s;
+}
+.nota-rx.mia { background: var(--rx-bg-mia); border-color: var(--rx-bd-mia); }
+.nota-meta { font-size: 0.75rem; color: var(--nota-meta); font-weight: 600; }
 .note-author { color: var(--primary); font-weight: 800; text-transform: capitalize; }
 .note-btn-del {
     position: absolute; top: 1.2rem; right: 1.2rem;
