@@ -300,50 +300,140 @@ window.diarioPedirPermisoPush = function () {
 // valor por punto, así que tenerlos al lado permite ver de inmediato si el
 // divisor que se escribió corresponde a la nómina de hoy.
 //
-// El cálculo se repite igual que en socios-comicion (js/api.js y js/socios.js)
-// para que los dos sistemas muestren lo mismo:
-//   · solo socios activos y con fecha de ingreso;
-//   · un socio "se ve" recién desde el día 15 del mes en que empiezan sus
-//     puntos — antes de esa fecha no suma;
-//   · Gastos Comisión vale 1 punto fijo;
-//   · se usa el puntaje guardado y, si viniera en 0, el que corresponde por
-//     antigüedad (4 de base, 2 por año, 2 en Bóveda) con el tope de su área.
+// ── POR QUÉ ESTO ES UNA COPIA, Y QUÉ PASA SI SE TOCA ──────────────────
+// Estas reglas son las MISMAS de socios-comicion. Allá viven en
+// `js/constants.js` (reglaPuntosArea, reglaPuntosFechas, aniosPuntosA) y en
+// `js/api.js` (procesarSocioDesdeGoogle). Acá están copiadas porque son dos
+// despliegues distintos y no comparten archivos.
+//
+// Copiar tiene un costo y ya se pagó una vez: esta app se quedó con la regla
+// VIEJA —dar los puntos el día 15 del mes de ingreso— después de que la
+// comisión la corrigiera. A quien entraba el 4 de septiembre, acá le contaba
+// puntos desde el 15 de septiembre y allá desde el 15 de octubre, así que los
+// paneles mostraban "Total Puntos" y "Pts Planta" distintos. Probado sobre
+// todas las fechas de ingreso de un año contra dos años de observación:
+// las 365 se separaban en algún momento.
+//
+// Si mañana cambia la política, hay que cambiar LOS DOS lados. La prueba
+// `test_puntos_dos_apps.js` corre las dos implementaciones sobre los mismos
+// socios y falla si vuelven a separarse.
+//
+// La política, tal cual:
+//   · PRIMERA ENTREGA — el primer día 15 que cae EN O DESPUÉS de cumplir el
+//     primer mes completo de contrato.
+//   · RENOVACIÓN ANUAL — el 15 del mes de INGRESO, todos los años.
+//   Ejemplos: entra el 4 sep → cumple un mes el 4 oct → primeros puntos el
+//   15 oct, sube cada 15 de septiembre. Entra el 23 oct → cumple un mes el
+//   23 nov → primeros puntos el 15 dic, sube cada 15 de octubre.
+//
+// Y los puntos: 4 de base, +2 por año cumplido, hasta el tope del área.
+// Bóveda es la única excepción: arranca en 2, con tope 10. Gastos Comisión
+// vale 1 punto fijo. Si el socio trae puntaje guardado y es mayor que 0,
+// manda ese.
 // ══════════════════════════════════════════════════════════════════════
+
+// Copia de areaNormalizada (socios-comicion/js/constants.js). Sin tildes y
+// sin espacios: en la base el área venía escrita de varias formas
+// ("Bóveda", "Máquinas"), y una comparación exacta no las reconocía.
 function _ptsNormArea(a) {
-    return String(a || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    return String(a || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .toLowerCase().replace(/\s+/g, '').trim();
 }
 
-// Puntos de UN socio, con las mismas reglas que socios-comicion.
-function _ptsDeSocio(s, hoy) {
-    const crudo = (s.fecha_inicio_puntos && String(s.fecha_inicio_puntos).trim()) || s.fecha_ingreso;
-    if (!crudo) return { puntos: 0, visible: false };
-    const p = String(crudo).split('-');
-    const anio = parseInt(p[0], 10);
-    const mes  = parseInt(p[1], 10) - 1;
-    if (isNaN(anio) || isNaN(mes)) return { puntos: 0, visible: false };
+// Copia de reglaPuntosArea.
+function _ptsReglaArea(area) {
+    const a = _ptsNormArea(area);
+    if (a.includes('gastos')) return { base: 1, tope: 1, gastos: true };
+    if (a.includes('boveda')) return { base: 2, tope: 10 };
+    let tope = 10;
+    if (a.includes('mesa')) tope = 20;
+    else if (a.includes('maquina')) tope = 12;
+    else if (a.includes('tecnico')) tope = 12;
+    else if (a.includes('cambista')) tope = 8;
+    return { base: 4, tope };
+}
 
-    // Regla del día 15: los puntos empiezan a contar ese día, no antes.
-    const inicio = new Date(anio, mes, 15);
-    const visible = hoy >= inicio;
+// Copia de fechaCumpleUnMes. Si el día no existe en el mes siguiente (31 de
+// enero), se toma el último de ese mes y no el 3 de marzo que daría JavaScript.
+function _ptsCumpleUnMes(anio, mes0, dia) {
+    const ultimo = new Date(anio, mes0 + 2, 0).getDate();
+    return new Date(anio, mes0 + 1, Math.min(dia, ultimo));
+}
+
+// Copia de primerDia15Desde: el primer día 15 en o después de `d`.
+function _ptsPrimerDia15Desde(d) {
+    return d.getDate() <= 15
+        ? new Date(d.getFullYear(), d.getMonth(), 15)
+        : new Date(d.getFullYear(), d.getMonth() + 1, 15);
+}
+
+// Copia de reglaPuntosFechas.
+function _ptsReglaFechas(fechaIngresoISO) {
+    const p = String(fechaIngresoISO || '').substring(0, 10).split('-').map(Number);
+    if (p.length !== 3 || !p[0] || !p[1] || !p[2]) return null;
+    const anio = p[0], mes0 = p[1] - 1, dia = p[2];
+    const primeraEntrega = _ptsPrimerDia15Desde(_ptsCumpleUnMes(anio, mes0, dia));
+    let primerAniversario = new Date(anio, mes0, 15);
+    while (primerAniversario <= primeraEntrega) {
+        primerAniversario = new Date(primerAniversario.getFullYear() + 1, mes0, 15);
+    }
+    return { primeraEntrega: primeraEntrega, mesAniversario: mes0, anioIngreso: anio,
+             primerAniversario: primerAniversario };
+}
+
+// Copia de aniosPuntosA: cuántos aumentos anuales lleva a la fecha `hoy`.
+function _ptsAniosA(fechaIngresoISO, hoy) {
+    const r = _ptsReglaFechas(fechaIngresoISO);
+    if (!r) return 0;
+    const h = hoy || new Date();
+    if (h < r.primerAniversario) return 0;
+    let n = h.getFullYear() - r.primerAniversario.getFullYear() + 1;
+    if (h.getMonth() < r.mesAniversario ||
+        (h.getMonth() === r.mesAniversario && h.getDate() < 15)) n--;
+    return Math.max(0, n);
+}
+
+// Puntos de UN socio. Es procesarSocioDesdeGoogle (socios-comicion/js/api.js)
+// reducido a lo que acá hace falta: los puntos y si ya cuentan.
+function _ptsDeSocio(s, hoy) {
+    const fechaStr = s.fecha_ingreso;
+    if (!fechaStr) return { puntos: 0, visible: false };
+    const fechaActual = hoy || new Date();
+
+    // `fecha_inicio_puntos` manda solo cuando DIFIERE de la fecha de ingreso:
+    // es la salida manual para los casos que no siguen la regla. Cuando viene
+    // igual (o vacía) no es un override, es un eco del ingreso.
+    const _hayOverride = !!(s.fecha_inicio_puntos && String(s.fecha_inicio_puntos).trim()
+                            && String(s.fecha_inicio_puntos).trim() !== String(fechaStr).trim());
+    const _reglaFechas = _ptsReglaFechas(_hayOverride ? String(s.fecha_inicio_puntos).trim() : fechaStr);
+    if (!_reglaFechas) return { puntos: 0, visible: false };
+
+    let fechaParaPuntos, mes15, anio15, anios;
+    if (_hayOverride) {
+        // Override: ese mes, día 15, y de ahí los aniversarios cada año.
+        const q = String(s.fecha_inicio_puntos).trim().substring(0, 10).split('-').map(Number);
+        anio15 = q[0]; mes15 = q[1] - 1;
+        fechaParaPuntos = new Date(anio15, mes15, 15);
+        anios = fechaActual.getFullYear() - anio15;
+        if (fechaActual.getMonth() < mes15 ||
+            (fechaActual.getMonth() === mes15 && fechaActual.getDate() < 15)) anios--;
+        if (anios < 0) anios = 0;
+    } else {
+        fechaParaPuntos = _reglaFechas.primeraEntrega;
+        anios = _ptsAniosA(fechaStr, fechaActual);
+    }
+
+    // Los puntos recién existen desde la primera entrega.
+    const visible = fechaActual >= fechaParaPuntos;
     if (!visible) return { puntos: 0, visible: false };
 
-    const area = _ptsNormArea(s.area);
-    if (area.includes('gastos')) return { puntos: 1, visible: true };
+    const regla = _ptsReglaArea(s.area);
+    if (regla.gastos) return { puntos: 1, visible: true };
 
+    // El puntaje guardado manda si es positivo; 0 y null son "sin dato".
     const guardados = Number(s.puntos);
     if (Number.isFinite(guardados) && guardados > 0) return { puntos: guardados, visible: true };
-
-    // Sin puntaje guardado se calcula por antigüedad (mismo tope por área).
-    let anios = hoy.getFullYear() - anio;
-    if (hoy.getMonth() < mes || (hoy.getMonth() === mes && hoy.getDate() < 15)) anios--;
-    if (anios < 0) anios = 0;
-    let tope = 10;
-    if (area === 'mesas') tope = 20;
-    else if (area === 'maquinas' || area === 'tecnicos') tope = 12;
-    else if (area === 'boveda') tope = 10;
-    else if (area.includes('cambista')) tope = 8;
-    const desde = (area === 'boveda') ? 2 : 4;
-    return { puntos: Math.min(desde + anios * 2, tope), visible: true };
+    return { puntos: Math.min(regla.base + anios * 2, regla.tope), visible: true };
 }
 
 // Devuelve { total, planta, socios } o null si no se pudo leer.

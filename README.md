@@ -3,6 +3,29 @@
 
 ## Historial de Cambios
 
+#### 2026-10-10 — «Pts Planta» y «Total Puntos» no coincidían con socios-comicion (SW v70)
+
+Los dos números que esta app muestra junto al divisor **no eran los mismos** que los del panel de Gestión de Socios. Esta app se había quedado con la **regla vieja**.
+
+| | Cuándo empiezan a contar los puntos |
+|---|---|
+| **socios-comicion** (correcto) | El primer día **15 que cae en o después de cumplir el primer mes** de contrato |
+| **diario.propi** (lo que hacía) | El día **15 del mes de ingreso** |
+
+Con el Ejemplo A de la política —ingresa el **4 de septiembre**— la comisión le da los puntos el **15 de octubre** y acá se los contaba desde el **15 de septiembre**: un mes antes. Esos puntos de más inflaban el Total y, si era de Planta, también el Pts Planta.
+
+**No era un caso aislado.** Probado sobre las 365 fechas de ingreso de un año contra dos años de días de observación: **las 365 se separaban en algún momento**, el 6,3 % de las combinaciones. La regla vieja también corría el aniversario anual, porque lo anclaba al mes de inicio de puntos en vez de al mes de ingreso.
+
+**El arreglo:** se copiaron las reglas reales de `socios-comicion/js/constants.js` (`reglaPuntosArea`, `reglaPuntosFechas`, `aniosPuntosA`) y de `js/api.js` (`procesarSocioDesdeGoogle`), incluido el detalle de que **`fecha_inicio_puntos` solo manda cuando difiere de la fecha de ingreso** — si viene igual no es una excepción manual, es un eco del ingreso.
+
+Después del cambio: **293.460 combinaciones de fecha, área y puntaje, ninguna distinta.**
+
+> **Por qué está copiado y no compartido.** Son dos despliegues distintos y no comparten archivos. Copiar ya costó este error una vez, así que si mañana cambia la política hay que cambiar **los dos** lados. La prueba `test_puntos_dos_apps.js` corre las dos implementaciones sobre los mismos socios y falla si vuelven a separarse.
+
+Se revisó también **propi.solicitada**: ya estaba alineada (7 áreas y 76.285 fechas comparadas, todas iguales).
+
+**Archivos:** `supabase-api.js`, `index.html`, `sw.js`, `version.js`.
+
 #### 2026-10-08 — Aviso: el ícono cambió, hay que reinstalar la app (SW v69)
 
 Se cambió el ícono y en los teléfonos no pasó nada. **No es una falla:** cambiar los íconos del manifiesto **no cambia el que está pegado en la pantalla de inicio**. El teléfono copió el ícono el día que se instaló la app y se queda con esa copia.
