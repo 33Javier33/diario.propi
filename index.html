@@ -317,18 +317,18 @@
                              mientras se revisan los días del período. -->
                         <div class="vp-puntos" id="vp-hist-puntos"></div>
                         <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-                            <button id="btnMin" class="btn btn-outline btn-sm">Expandir/Min</button>
-                            <button id="btnSortDesc" class="btn btn-outline btn-sm">Reciente</button>
-                            <button id="btnSortAsc" class="btn btn-outline btn-sm">Antiguo</button>
+                            <button id="btnMin" class="btn btn-outline btn-sm" style="color:var(--primary);"><i class="fas fa-maximize"></i> Expandir/Min</button>
+                            <button id="btnSortDesc" class="btn btn-outline btn-sm" style="color:var(--primary);"><i class="fas fa-arrow-down-wide-short"></i> Reciente</button>
+                            <button id="btnSortAsc" class="btn btn-outline btn-sm" style="color:var(--primary);"><i class="fas fa-arrow-up-short-wide"></i> Antiguo</button>
                             <input type="text" id="filtro" placeholder="Buscar fecha..." style="margin-bottom:0; flex:1; min-width:150px;">
-                            <button id="histVistaBtn" class="btn btn-outline btn-sm" onclick="hist_toggleVista()" title="Ver los días en dos columnas">▦ Dos columnas</button>
+                            <button id="histVistaBtn" class="btn btn-outline btn-sm" onclick="hist_toggleVista()" title="Ver los días en dos columnas" style="color:var(--primary);"><i class="fas fa-table-columns"></i> Dos columnas</button>
                         </div>
                         <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top:12px; border-top:1px solid var(--border);">
-                            <button id="btnExport" class="btn btn-outline btn-sm">Exportar Backup</button>
-                            <button id="btnImportTrigger" class="btn btn-outline btn-sm" style="color:var(--warning)">Restaurar JSON</button>
+                            <button id="btnExport" class="btn btn-outline btn-sm" style="color:var(--secondary);"><i class="fas fa-file-export"></i> Exportar Backup</button>
+                            <button id="btnImportTrigger" class="btn btn-outline btn-sm" style="color:var(--warning)"><i class="fas fa-file-import"></i> Restaurar JSON</button>
                             <button id="btnRestaurarCopia" class="btn btn-outline btn-sm" style="color:var(--primary)"><i class="fas fa-shield-halved"></i> Copias de seguridad</button>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <button id="btnLimpiar" class="btn btn-danger btn-sm">Vaciar Todo</button>
+                                <button id="btnLimpiar" class="btn btn-danger btn-sm"><i class="fas fa-trash-can"></i> Vaciar Todo</button>
                                 <button type="button" class="help-tip-btn" onclick="showHelpTip('vaciarTodo')">?</button>
                             </div>
                             <input type="file" id="jsonInput" style="display:none;" accept=".json">
@@ -536,7 +536,7 @@
     <script src="qr-entrada.js?v=1"></script>
     <script src="desglose.js?v=2"></script>
     <script src="biometria.js?v=1"></script>
-    <script src="app.js?v=37"></script>
+    <script src="app.js?v=38"></script>
     <script src="version.js?v=5"></script>
 <!-- Versión visible de la app (= versión del Service Worker) -->
 <!-- El número lo pone version.js leyendo la caché del Service Worker. -->

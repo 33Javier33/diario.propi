@@ -574,7 +574,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const on = hist_vistaMosaico();
         if (cont) cont.classList.toggle('mosaico', on);
         if (btn) {
-            btn.textContent = on ? '▦ Dos columnas' : '☰ Una columna';
+            // innerHTML y no textContent: el botón lleva icono, y asignar
+            // texto plano se lo borraba al primer clic.
+            btn.innerHTML = on
+                ? '<i class="fas fa-table-columns"></i> Dos columnas'
+                : '<i class="fas fa-bars"></i> Una columna';
             btn.title = on ? 'Volver a una sola columna' : 'Ver los días en dos columnas';
         }
     }

@@ -3,6 +3,28 @@
 
 ## Historial de Cambios
 
+#### 2026-10-21 — Botones del Historial: color e icono (SW v72)
+
+Los botones del Historial salían en blanco, sin color ni icono, al lado de otros que sí los tenían. Ahora el color dice **de qué tipo** es cada acción, en vez de ser decorativo:
+
+| | |
+|---|---|
+| **Índigo** — controles de vista | Expandir/Min · Reciente · Antiguo · Dos columnas |
+| **Verde** — acción segura | Exportar Backup |
+| **Ámbar** — hay que fijarse | Restaurar JSON · Guardar Período |
+| **Rojo** — destructiva | Vaciar Todo |
+
+Los cuatro de vista van del mismo color a propósito: son la misma clase de acción, y darle un color distinto a cada uno sería ruido.
+
+Iconos de Font Awesome 6 acordes al tamaño que ya tenían (`btn-sm`): `fa-maximize`, `fa-arrow-down-wide-short`, `fa-arrow-up-short-wide`, `fa-table-columns`, `fa-file-export`, `fa-file-import`, `fa-trash-can`.
+
+De paso: **«Dos columnas»** usaba el carácter `▦` en vez de un icono, y **«Restaurar JSON»** y **«Vaciar Todo»** no tenían ninguno, quedando dispares junto a sus vecinos.
+
+**Un detalle que habría roto el cambio al primer clic:** `hist_aplicarVista()` reescribía ese botón con `textContent`, lo que borra el HTML — el icono habría desaparecido apenas se alternara la vista. Pasó a `innerHTML`.
+
+Verificado que en pantalla de 390px los botones siguen sin desbordar.
+
+
 #### 2026-10-10 — La nota recién llegada no se leía en tema oscuro (SW v71)
 
 Al llegar una nota nueva, su tarjeta quedaba **blanca** mientras el texto seguía claro: el mensaje recién llegado —justo el que uno quiere leer— era **el único ilegible de la lista**. Lo mismo pasaba con las notas fijadas.
