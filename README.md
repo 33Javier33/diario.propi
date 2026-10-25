@@ -3,6 +3,18 @@
 
 ## Historial de Cambios
 
+#### 2026-10-25 — La fecha se queda donde la dejaron (SW v73)
+
+Al guardar un dato, el formulario se limpiaba y la fecha volvía a **hoy**. Quien estaba cargando varios registros de otro día tenía que ir al calendario en cada uno.
+
+Ahora el campo recuerda la última fecha elegida y vuelve a ella después de guardar. Dura lo que dura la app abierta (`sessionStorage`): al volver a entrar mañana el campo dice hoy otra vez, no el día que se estuvo corrigiendo.
+
+**Y de paso, un error que empeoraba justo lo mismo.** El "hoy" se calculaba con `toISOString()`, que da la fecha en **UTC** — tres o cuatro horas adelante de Chile. A partir de las 20:00 o 21:00 el campo aparecía con **el día siguiente**, y en un casino que trabaja de noche eso es casi todos los turnos: había que corregir la fecha incluso para registrar el día en curso.
+
+Medido con el reloj puesto a las 22:30 del 3 de septiembre en horario de Chile: la forma vieja decía `2026-09-04`; la nueva dice `2026-09-03`.
+
+Nueve comprobaciones automáticas, incluidas la de la zona horaria y la de que no se caiga si el navegador bloquea el almacenamiento (modo privado).
+
 #### 2026-10-21 — Botones del Historial: color e icono (SW v72)
 
 Los botones del Historial salían en blanco, sin color ni icono, al lado de otros que sí los tenían. Ahora el color dice **de qué tipo** es cada acción, en vez de ser decorativo:

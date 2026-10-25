@@ -15,6 +15,55 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ══════════════════════════════════════════════════════════════════════
+    // LA FECHA SE QUEDA DONDE LA DEJARON
+    //
+    // Al guardar un dato el formulario se limpia, y la fecha volvía a HOY.
+    // Quien está cargando varios días atrasados tenía que moverla de nuevo
+    // en cada registro. Ahora se recuerda la última que se eligió y el campo
+    // vuelve a ella.
+    //
+    // Va en sessionStorage a propósito: dura lo que dura la app abierta. Al
+    // volver a entrar mañana lo correcto es que diga hoy otra vez, no el día
+    // que se estuvo corrigiendo ayer.
+    //
+    // Y el "hoy" se arma con la fecha LOCAL. `toISOString()` da la fecha en
+    // UTC, que en Chile va 3 o 4 horas adelante: a partir de las 20:00 o
+    // 21:00 el campo aparecía con el día siguiente. En un casino, que trabaja
+    // de noche, eso es casi todos los turnos.
+    // ══════════════════════════════════════════════════════════════════════
+    const FECHA_SS = 'diarioFechaPegajosa:';
+
+    function hoyISO() {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+             + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function fechaRecordada(id) {
+        try { return sessionStorage.getItem(FECHA_SS + id) || ''; } catch (e) { return ''; }
+    }
+
+    // Deja el campo en la última fecha elegida en esta sesión, o en hoy.
+    function fechaPegajosaPoner(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.value = fechaRecordada(id) || hoyISO();
+    }
+
+    // Engancha el campo una sola vez y lo deja puesto.
+    function fechaPegajosaEnganchar(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (el.dataset.pegajosa !== '1') {
+            el.dataset.pegajosa = '1';
+            el.addEventListener('change', () => {
+                try { sessionStorage.setItem(FECHA_SS + id, el.value || ''); } catch (e) {}
+            });
+        }
+        fechaPegajosaPoner(id);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
     // NOTAS CON FORMATO
     //
     // Las notas se escriben en socios-comicion con un editor que permite
@@ -832,7 +881,10 @@ document.addEventListener('DOMContentLoaded', () => {
             desglose
         });
         document.getElementById('agregarForm').reset();
-        document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+        // reset() vacía el campo; se vuelve a poner la fecha que se venía
+        // usando, no hoy — cargar diez datos de otro día no debe costar diez
+        // viajes al calendario.
+        fechaPegajosaPoner('fecha');
         // reset() desmarca la casilla pero no cierra el panel ni limpia la grilla
         if (typeof desg_alternar === 'function') desg_alternar();
         showToast(desglose ? 'Registrado con el conteo — llega listo a la verificación' : 'Dato registrado');
@@ -1021,7 +1073,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('mainContent').style.display = 'flex';
         document.body.classList.add('loggedin');
         pintarSesionActiva(displayName);
-        document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+        fechaPegajosaEnganchar('fecha');
         cargar();
         iniciarWatchdogInactividad();
         // Avisos del otro turno. El permiso se pide en el primer toque dentro de
