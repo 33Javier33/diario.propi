@@ -806,4 +806,11 @@ body.dark-mode .marca-logo { filter: brightness(1.45) saturate(1.05); }
 .divisor-aviso { margin: -6px 0 14px; padding: 9px 12px; border-radius: 10px; font-size: 0.8rem; line-height: 1.4;
                  background: #fff7ed; border: 1px solid #fdba74; color: #9a3412; }
 .divisor-aviso.oculto { display: none; }
+.divisor-puntos { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: -6px 0 12px; }
+.divisor-puntos[hidden] { display: none; }
+.divisor-puntos-tit { font-size: 0.74rem; color: var(--text-muted); width: 100%; }
+.divisor-pt { border: 1px solid #c7d2fe; background: #eef2ff; color: #3730a3; border-radius: 999px;
+    padding: 5px 11px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+.divisor-pt b { font-weight: 800; }
+body.dark-mode .divisor-pt { background: #1e1b4b; border-color: #4338ca; color: #c7d2fe; }
 body.dark-mode .divisor-aviso { background: #3b2410; border-color: #9a3412; color: #fed7aa; }

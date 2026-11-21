@@ -3,6 +3,10 @@
 
 ## Historial de Cambios
 
+#### 2026-11-21 — Pts Planta y Total Puntos junto al divisor (SW v75)
+- El campo del divisor muestra como texto de ayuda los puntos de hoy (p. ej. «Pts Planta 810 · Total Puntos 836»). Debajo hay dos botones que lo rellenan con un toque.
+- Son los mismos números del panel de socios-comicion. Se calculan en `puntosSociosActuales()` (`supabase-api.js`): suma los puntos de los socios activos cuyos puntos ya empezaron (primer día 15 tras cumplir un mes, o fecha de inicio manual). Cambian solos cuando cambian los puntos y nunca se guardan sin que el socio lo decida.
+
 #### 2026-11-21 — Recaudación "Total General" y aviso del divisor (SW v74)
 - Nueva opción **Total General · todas las áreas** en el formulario, para las noches en que solo se sabe el total y no el monto de cada área. También aparece al editar un registro.
 - Regla (`_recConflictoGeneral` en `supabase-api.js`): una noche se carga **por área o con un Total General, nunca ambas**. Si se intenta mezclar, se muestra el aviso, no se guarda y el formulario conserva lo escrito.

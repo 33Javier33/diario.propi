@@ -505,6 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
             render();
             // El campo del divisor del formulario trae el de esa noche si ya existe.
             if (typeof window._pintarDivisorNuevo === 'function') window._pintarDivisorNuevo();
+            if (typeof window._pintarPuntosDivisor === 'function') window._pintarPuntosDivisor();
             checkNotesInd();
         } finally {
             if (loader) showLoad(false);
@@ -912,6 +913,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (av) av.classList.toggle('oculto', parseFloat(String(inp.value).replace(',', '.')) > 0);
     }
     window._pintarDivisorNuevo = _pintarDivisorNuevo;
+
+    // Pts Planta / Total Puntos de hoy: texto de ayuda del divisor y botones
+    // para rellenarlo. Son solo una referencia: el socio decide.
+    async function _pintarPuntosDivisor() {
+        const inp = document.getElementById('divisorNuevo');
+        const caja = document.getElementById('divisorPuntos');
+        if (!inp || !caja || typeof window.puntosSociosActuales !== 'function') return;
+        const p = await window.puntosSociosActuales();
+        if (!p || !(p.total > 0)) return;            // sin datos: queda el «Ej: 52»
+        inp.placeholder = 'Pts Planta ' + p.planta + ' · Total Puntos ' + p.total;
+        caja.querySelector('[data-campo="planta"] b').textContent = p.planta;
+        caja.querySelector('[data-campo="total"] b').textContent = p.total;
+        caja.dataset.planta = p.planta; caja.dataset.total = p.total;
+        caja.hidden = false;
+    }
+    window._pintarPuntosDivisor = _pintarPuntosDivisor;
+    (function () {
+        const caja = document.getElementById('divisorPuntos');
+        if (!caja) return;
+        caja.addEventListener('click', (e) => {
+            const b = e.target.closest('.divisor-pt');
+            if (!b) return;
+            const v = caja.dataset[b.dataset.campo];
+            const inp = document.getElementById('divisorNuevo');
+            if (!v || !inp) return;
+            inp.value = v;
+            _pintarDivisorNuevo();
+        });
+        _pintarPuntosDivisor();
+    })();
     (function () {
         const inp = document.getElementById('divisorNuevo');
         if (inp) inp.addEventListener('input', () => _pintarDivisorNuevo());
