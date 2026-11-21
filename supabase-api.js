@@ -17,7 +17,7 @@ const dbRec = supabase.createClient(SUPABASE_URL_REC, SUPABASE_KEY_REC);
 (function () {
     const DB = dbRec;                // cliente del proyecto de recaudaciones
     const APP = 'Diario';            // etiqueta de esta app
-    const TIPO_LABEL = { TarjetaMDA: 'Tarjeta MDA', EfectivoMDA: 'Efectivo MDA', SalaDeJuegos: 'Sala de Juegos', Boveda: 'Bóveda' };
+    const TIPO_LABEL = { TarjetaMDA: 'Tarjeta MDA', EfectivoMDA: 'Efectivo MDA', SalaDeJuegos: 'Sala de Juegos', Boveda: 'Bóveda', TotalGeneral: 'Total General (todas las áreas)' };
     const KEY = 'rp_' + Math.random().toString(36).slice(2) + Date.now();
     let ch = null, mio = null, toastT = null, listo = false, hbT = null, otrosDb = [];
     let miSocioId = '';   // para que el mismo socio no se vea a sí mismo en otra app
@@ -612,8 +612,31 @@ function _fmtM(v) { return '$' + (Number(v) || 0).toLocaleString('es-CL'); }
 // encargado en la bóveda y el único que se suma al arqueo—. Y las fichas van
 // aparte de los billetes porque son otra unidad: en Sala de Juegos la noche
 // cuenta fichas, pero a la bóveda llega efectivo.
+// ── Una noche se carga POR ÁREA o con un TOTAL GENERAL, nunca las dos ──────────
+// «TotalGeneral» es para cuando no se conoce el monto de cada área, solo el total
+// de la noche. Mezclarlas en una misma fecha contaría la misma plata dos veces.
+// Devuelve el motivo del bloqueo, o null. Si no se puede leer la base, no bloquea.
+// Las mismas reglas están en socios-comicion y propi.solicitada.
+async function _recConflictoGeneral(fecha, tipo, excluirId) {
+    try {
+        const { data, error } = await dbRec.from('recaudaciones').select('id, tipo').eq('fecha', fecha);
+        if (error || !data) return null;
+        const tipos = data.filter(r => String(r.id) !== String(excluirId || '')).map(r => r.tipo);
+        const esGen = tipo === 'TotalGeneral';
+        if (esGen && tipos.includes('TotalGeneral'))
+            return 'Esa noche ya tiene un Total General. Si el monto está mal, edítalo en vez de agregar otro.';
+        if (esGen && tipos.length)
+            return 'Esa noche ya tiene montos por área. No se puede agregar un Total General: la recaudación se contaría dos veces.';
+        if (!esGen && tipos.includes('TotalGeneral'))
+            return 'Esa noche está cargada con un Total General. No se pueden agregar montos por área: la recaudación se contaría dos veces. Si quieres cargarla por área, primero borra el Total General.';
+        return null;
+    } catch (e) { return null; }
+}
+
 async function apiAddRecaudacion(fecha, tipo, monto, desglose) {
     try {
+        const _conf = await _recConflictoGeneral(fecha, tipo || 'Sin Tipo');
+        if (_conf) return recErr(_conf);
         // Quién agrega el dato (login nuevo: nombre + área)
         const _nombre  = sessionStorage.getItem('user') || '';
         const _area    = sessionStorage.getItem('user_area') || '';
@@ -662,6 +685,9 @@ async function apiAddRecaudacion(fecha, tipo, monto, desglose) {
 
 async function apiUpdateRecaudacion(id, fecha, tipo, monto) {
     try {
+        // Cambiar tipo o fecha también puede mezclar área y total general.
+        const _conf = await _recConflictoGeneral(fecha, tipo || 'Sin Tipo', id);
+        if (_conf) return recErr(_conf);
         const { error } = await dbRec.from('recaudaciones').update({ fecha, tipo, monto: Number(monto) }).eq('id', id);
         if (error) throw error;
         _notificarCambio('recaudaciones');

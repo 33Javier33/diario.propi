@@ -801,3 +801,9 @@ body.dark-mode .marca-logo { filter: brightness(1.45) saturate(1.05); }
     border: 1px solid var(--border); border-radius: 8px;
     padding: 7px; font-size: 0.78rem; font-weight: 700; cursor: pointer;
 }
+
+/* Aviso del divisor en «Nuevo Registro»: se ve mientras el campo está vacío. */
+.divisor-aviso { margin: -6px 0 14px; padding: 9px 12px; border-radius: 10px; font-size: 0.8rem; line-height: 1.4;
+                 background: #fff7ed; border: 1px solid #fdba74; color: #9a3412; }
+.divisor-aviso.oculto { display: none; }
+body.dark-mode .divisor-aviso { background: #3b2410; border-color: #9a3412; color: #fed7aa; }

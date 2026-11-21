@@ -13,7 +13,7 @@
     <meta name="theme-color" content="#6366f1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=57">
+    <link rel="stylesheet" href="styles.css?v=58">
     <script>
         // El tema se aplica ANTES de pintar nada. Si esperara a app.js, al abrir
         // con tema oscuro la pantalla daría un fogonazo blanco primero.
@@ -271,7 +271,13 @@
                                 <input type="radio" name="tipo" value="Boveda">
                                 <div class="category-card"><i class="fas fa-vault"></i><span>Boveda</span></div>
                             </label>
+                            <!-- Cuando no se sabe cuánto fue cada área, solo el total de la noche. -->
+                            <label class="category-option" style="grid-column:1 / -1;">
+                                <input type="radio" name="tipo" value="TotalGeneral">
+                                <div class="category-card"><i class="fas fa-layer-group"></i><span>Total General · todas las áreas</span></div>
+                            </label>
                         </div>
+                        <small id="tipoGeneralNota" style="display:none; color:var(--text-muted); font-size:0.78rem; margin:-12px 0 14px;">Úsalo solo si no sabes el monto de cada área. Una noche va por área <b>o</b> con total general, no las dos.</small>
                         <label style="display:block; margin-bottom:8px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">FECHA DEL REGISTRO</label>
                         <input type="date" id="fecha" required>
                         <!-- Contar por denominación es opcional. Al activarlo, el monto
@@ -300,6 +306,12 @@
                             <input type="tel" id="monto" oninput="formatearMonto(this)" placeholder="0" required>
                         </div>
                         <small id="desgNotaMonto" style="display:none; color:var(--text-muted); font-size:0.78rem; margin:-4px 0 10px; display:none;">Sale de la suma del conteo de arriba.</small>
+
+                        <!-- Divisor del día: opcional, pero sin él no se calcula el valor
+                             del punto de esa noche. Se avisa, no se obliga. -->
+                        <label style="display:block; margin:6px 0 8px; font-weight:700; font-size:0.85rem; color:var(--text-muted);">DIVISOR DEL DÍA <span style="font-weight:600; text-transform:none;">(opcional)</span></label>
+                        <input type="number" id="divisorNuevo" min="1" step="0.01" placeholder="Ej: 52" inputmode="decimal">
+                        <div id="divisorAviso" class="divisor-aviso">⚠️ <b>Es importante agregar el divisor.</b> Sin él no se calcula el valor del punto de esa noche. Si todavía no lo sabes, puedes dejarlo en blanco y agregarlo después en el Historial.</div>
                         <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:1rem;">
                             <i class="fas fa-floppy-disk"></i> Guardar Registro
                         </button>
@@ -463,6 +475,7 @@
             <select id="edTipo">
                 <option>TarjetaMDA</option><option>EfectivoMDA</option>
                 <option>SalaDeJuegos</option><option>Boveda</option>
+                <option value="TotalGeneral">TotalGeneral (todas las áreas)</option>
             </select>
             <input type="date" id="edFecha">
             <input type="tel" id="edMonto" oninput="formatearMonto(this)" placeholder="Monto">
@@ -532,11 +545,11 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-api.js?v=26"></script>
+    <script src="supabase-api.js?v=27"></script>
     <script src="qr-entrada.js?v=1"></script>
     <script src="desglose.js?v=2"></script>
     <script src="biometria.js?v=1"></script>
-    <script src="app.js?v=39"></script>
+    <script src="app.js?v=40"></script>
     <script src="version.js?v=5"></script>
 <!-- Versión visible de la app (= versión del Service Worker) -->
 <!-- El número lo pone version.js leyendo la caché del Service Worker. -->

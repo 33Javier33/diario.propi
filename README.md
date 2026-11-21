@@ -3,6 +3,12 @@
 
 ## Historial de Cambios
 
+#### 2026-11-21 — Recaudación "Total General" y aviso del divisor (SW v74)
+- Nueva opción **Total General · todas las áreas** en el formulario, para las noches en que solo se sabe el total y no el monto de cada área. También aparece al editar un registro.
+- Regla (`_recConflictoGeneral` en `supabase-api.js`): una noche se carga **por área o con un Total General, nunca ambas**. Si se intenta mezclar, se muestra el aviso, no se guarda y el formulario conserva lo escrito.
+- Nuevo campo **Divisor** en el formulario. Es optativo, pero muestra un aviso de que es importante agregarlo; si ya existe para esa fecha se rellena solo. Si se guarda sin divisor, se pide confirmar.
+- El historial ya no se redibuja mientras se edita un campo dentro de él (se aplica al salir), igual que el arreglo hecho en socios-comicion.
+
 #### 2026-10-25 — La fecha se queda donde la dejaron (SW v73)
 
 Al guardar un dato, el formulario se limpiaba y la fecha volvía a **hoy**. Quien estaba cargando varios registros de otro día tenía que ir al calendario en cada uno.

@@ -292,7 +292,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <strong>TarjetaMDA</strong> — Ingresos por pago con tarjeta.<br>
                 <strong>EfectivoMDA</strong> — Ingresos en efectivo.<br>
                 <strong>SalaDeJuegos</strong> — Recaudación de la sala de juegos.<br>
-                <strong>Boveda</strong> — Fondos de bóveda o caja fuerte.<br><br>
+                <strong>Boveda</strong> — Fondos de bóveda o caja fuerte.<br>
+                <strong>Total General</strong> — Cuando no sabes cuánto fue cada área, solo el total de la noche. Una noche va <b>por área o con total general</b>, no las dos: si no, la plata se contaría dos veces.<br><br>
+                El <strong>divisor</strong> es opcional al guardar, pero es importante: sin él no se calcula el valor del punto de esa noche. Si no lo sabes, lo agregas después en el Historial.<br><br>
                 Si cuentas por denominación, el tipo decide qué se cuenta:
                 <strong>Sala de Juegos son fichas</strong> (de $1.000.000 a $500) y
                 los otros tres son billetes y monedas.`
@@ -501,6 +503,8 @@ document.addEventListener('DOMContentLoaded', () => {
             notes = n.data || [];
             divisores = div.data || {};
             render();
+            // El campo del divisor del formulario trae el de esa noche si ya existe.
+            if (typeof window._pintarDivisorNuevo === 'function') window._pintarDivisorNuevo();
             checkNotesInd();
         } finally {
             if (loader) showLoad(false);
@@ -638,7 +642,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.hist_toggleVista = hist_toggleVista;
 
+    // NO REDIBUJAR MIENTRAS SE ESCRIBE.
+    //
+    // El Historial se reconstruye entero cuando otra app cambia datos. Si en ese
+    // momento se estaba escribiendo un divisor, el campo se borraba y perdía el
+    // foco (el mismo problema que tenía socios-comicion). Mientras haya un campo
+    // del Historial en uso, el redibujo espera a que se suelte.
+    let _renderPendiente = false;
+    function _editandoEnHistorial() {
+        const c = document.getElementById('tablaContainer');
+        const a = document.activeElement;
+        return !!(c && a && c.contains(a) && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName));
+    }
+    function _renderAlSoltar() {
+        if (_renderPendiente) return;
+        const c = document.getElementById('tablaContainer');
+        if (!c) return;
+        _renderPendiente = true;
+        const alSalir = () => setTimeout(() => {
+            if (_editandoEnHistorial()) return;
+            c.removeEventListener('focusout', alSalir);
+            _renderPendiente = false;
+            render();
+        }, 300);
+        c.addEventListener('focusout', alSalir);
+    }
+
     function render() {
+        if (_editandoEnHistorial()) { _renderAlSoltar(); return; }
         const totalRec = datos.reduce((s, d) => s + d.monto, 0);
         document.getElementById('tot-rec').textContent = fNum(totalRec);
 
@@ -868,23 +899,72 @@ document.addEventListener('DOMContentLoaded', () => {
     // Conteo por denominación (opcional) — ver desglose.js
     if (typeof desg_enganchar === 'function') desg_enganchar();
 
+    // --- DIVISOR EN «NUEVO REGISTRO» ---
+    // Si la noche elegida ya tiene divisor, se trae al campo. El aviso de que
+    // es importante se ve solo mientras el campo está vacío.
+    function _pintarDivisorNuevo(forzar) {
+        const inp = document.getElementById('divisorNuevo');
+        const av  = document.getElementById('divisorAviso');
+        if (!inp) return;
+        const f = document.getElementById('fecha').value;
+        const conocido = Number(divisores[f]) > 0 ? String(divisores[f]) : '';
+        if (forzar || !inp.value) inp.value = conocido;
+        if (av) av.classList.toggle('oculto', parseFloat(String(inp.value).replace(',', '.')) > 0);
+    }
+    window._pintarDivisorNuevo = _pintarDivisorNuevo;
+    (function () {
+        const inp = document.getElementById('divisorNuevo');
+        if (inp) inp.addEventListener('input', () => _pintarDivisorNuevo());
+        const f = document.getElementById('fecha');
+        if (f) f.addEventListener('change', () => _pintarDivisorNuevo(true));
+        // Nota del Total General: se muestra al elegirlo.
+        document.querySelectorAll('input[name="tipo"]').forEach(r => r.addEventListener('change', () => {
+            const nota = document.getElementById('tipoGeneralNota');
+            const sel = document.querySelector('input[name="tipo"]:checked');
+            if (nota) nota.style.display = (sel && sel.value === 'TotalGeneral') ? 'block' : 'none';
+        }));
+    })();
+
     // --- ADD RECORD ---
     document.getElementById('agregarForm').onsubmit = async (e) => {
         e.preventDefault();
-        showLoad(true, 'Guardando...');
         const tipo = document.querySelector('input[name="tipo"]:checked').value;
+        const fecha = document.getElementById('fecha').value;
+        // Divisor: opcional, pero con aviso. Si la noche ya tiene uno, no se
+        // pregunta nada.
+        const divTxt = String(document.getElementById('divisorNuevo').value || '').replace(',', '.');
+        const divisor = parseFloat(divTxt) > 0 ? parseFloat(divTxt) : 0;
+        const yaTieneDiv = Number(divisores[fecha]) > 0;
+        if (!divisor && !yaTieneDiv && !(await customConfirm(
+            '⚠️ Falta el divisor',
+            'No agregaste el divisor de esta noche. Es importante: sin él no se calcula el valor del punto. '
+            + 'Puedes agregarlo después en el Historial. ¿Guardar igual sin divisor?'))) return;
+
+        showLoad(true, 'Guardando...');
         const desglose = (typeof desg_paraGuardar === 'function') ? desg_paraGuardar() : null;
-        await post({
-            action: 'add', tipo,
-            fecha: document.getElementById('fecha').value,
+        const res = await post({
+            action: 'add', tipo, fecha,
             monto: parseInt(document.getElementById('monto').value.replace(/\./g, '')),
             desglose
         });
+        // Antes no se miraba la respuesta: si la base lo rechazaba (por ejemplo,
+        // al mezclar áreas con un Total General), igual se limpiaba el formulario
+        // y decía «Dato registrado».
+        if (!res || res.status !== 'success') {
+            showLoad(false);
+            showToast((res && res.message) || 'No se pudo guardar', 'error');
+            return;
+        }
+        if (divisor && Number(divisores[fecha]) !== divisor) {
+            divisores[fecha] = divisor;
+            await post({ action: 'updateDivisor', fecha, divisor });
+        }
         document.getElementById('agregarForm').reset();
         // reset() vacía el campo; se vuelve a poner la fecha que se venía
         // usando, no hoy — cargar diez datos de otro día no debe costar diez
         // viajes al calendario.
         fechaPegajosaPoner('fecha');
+        _pintarDivisorNuevo();
         // reset() desmarca la casilla pero no cierra el panel ni limpia la grilla
         if (typeof desg_alternar === 'function') desg_alternar();
         showToast(desglose ? 'Registrado con el conteo — llega listo a la verificación' : 'Dato registrado');
@@ -903,12 +983,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btnSaveEd').onclick = async () => {
         showLoad(true, 'Actualizando...');
-        await post({
+        const res = await post({
             action: 'update', index: editIndex,
             tipo:  document.getElementById('edTipo').value,
             fecha: document.getElementById('edFecha').value,
             monto: parseInt(document.getElementById('edMonto').value.replace(/\./g, ''))
         });
+        if (!res || res.status !== 'success') {
+            showLoad(false);
+            showToast((res && res.message) || 'No se pudo actualizar', 'error');
+            return;
+        }
         document.getElementById('editModal').style.display = 'none';
         showToast('Actualizado con éxito');
         await cargar();
