@@ -93,7 +93,10 @@ async function qrIntentarEntradaDiario() {
 
     // El área guardada en la ficha puede venir con otra capitalización que la
     // del select ("mesas" vs "Mesas"), así que se busca sin distinguir.
-    const areaFicha = String(s.area || '').trim().toLowerCase();
+    // «Mesas - Cambistas» es de Mesas y «Bóveda» va sin tilde en el select:
+    // se usa la misma regla que arma las listas del login.
+    const areaLogin = (typeof window.diarioAreaLogin === 'function') ? window.diarioAreaLogin(s.area) : '';
+    const areaFicha = (areaLogin || String(s.area || '')).trim().toLowerCase();
     const opcionArea = [...selA.options].find(o => String(o.value).trim().toLowerCase() === areaFicha);
     if (!opcionArea) {
         avisar('Tu área (' + (s.area || '—') + ') no está en la lista. Elígela a mano.', '#b45309');

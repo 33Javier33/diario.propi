@@ -3,6 +3,12 @@
 
 ## Historial de Cambios
 
+#### 2026-11-24 — Áreas del login: se quita Técnicos, se agrega Bóveda y los cambistas pasan a Mesas (SW v76)
+- El login ahora ofrece **Mesas, Máquinas y Bóveda**. Se quitó Técnicos porque no hay socios en esa área, y Cambistas dejó de ser un área aparte.
+- Nueva `diarioAreaLogin(area)` en `supabase-api.js`: una sola regla para ubicar cada ficha. «Mesas - Cambistas» va a Mesas, y «Bóveda» se reconoce con o sin tilde. La usan la lista de socios del login y la entrada por QR, que antes fallaba con el cambista porque su ficha no calzaba exacto con ninguna opción.
+- Un acceso directo guardado con el área «Cambistas» se pasa solo a Mesas.
+- Guía de ayuda actualizada.
+
 #### 2026-11-21 — Pts Planta y Total Puntos junto al divisor (SW v75)
 - El campo del divisor muestra como texto de ayuda los puntos de hoy (p. ej. «Pts Planta 810 · Total Puntos 836»). Debajo hay dos botones que lo rellenan con un toque.
 - Son los mismos números del panel de socios-comicion. Se calculan en `puntosSociosActuales()` (`supabase-api.js`): suma los puntos de los socios activos cuyos puntos ya empezaron (primer día 15 tras cumplir un mes, o fecha de inicio manual). Cambian solos cuando cambian los puntos y nunca se guardan sin que el socio lo decida.

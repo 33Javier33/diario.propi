@@ -1449,6 +1449,10 @@ async function favAplicar() {
     const selA = document.getElementById('loginArea');
     const selU = document.getElementById('username');
     if (!selA || !selU) return;
+    // Áreas que ya no existen en el login: Cambistas pasó a Mesas.
+    // Técnicos se quitó; ese atajo se deja como está y el socio elige a mano.
+    if (f.area === 'Cambistas') { f.area = 'Mesas'; favGuardar(f.area, f.id, f.nombre || ''); favPintarTarjeta(); }
+    if (![...selA.options].some(o => o.value && o.value === f.area)) { favPintarBoton(); return; }
     selA.value = f.area;
     if (selA.onchange) await selA.onchange();          // carga los socios del área
     // Ojo: si la lista NO llegó a cargar (sin red, Supabase lento), el select

@@ -209,20 +209,24 @@ function _audit(accion, detalle, datos) {
 // ── Usuarios diario.propi: socios (por área) + PIN de 4 dígitos en Supabase ──
 function _normArea(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
 
+// Área del login a la que pertenece la ficha de un socio. Las áreas del
+// login son Mesas, Maquinas y Boveda; los cambistas («Mesas - Cambistas»)
+// son de Mesas. Devuelve '' si no calza con ninguna (p. ej. Gastos Comisión).
+window.diarioAreaLogin = function (area) {
+    const a = _normArea(area);
+    if (a.includes('cambist') || a.includes('mesa')) return 'Mesas';
+    if (a.includes('maquina')) return 'Maquinas';
+    if (a.includes('boveda'))  return 'Boveda';
+    return '';
+};
+
 // Devuelve los socios de socios-comicion que pertenecen al área elegida (filtro tolerante)
 window.diarioGetSociosByArea = async function(areaSel) {
     const target = _normArea(areaSel);
     try {
         const { data, error } = await dbSoc.from('socios').select('id, nombre, apellido, area, foto_url').order('nombre', { ascending: true });
         if (error || !data) return [];
-        return data.filter(s => {
-            const a = _normArea(s.area);
-            if (target === 'cambistas') return a.includes('cambist');
-            if (target === 'mesas')     return a.includes('mesa') && !a.includes('cambist');
-            if (target === 'maquinas')  return a.includes('maquina');
-            if (target === 'tecnicos')  return a.includes('tecnic');
-            return a === target;
-        }).map(s => ({ id: s.id, nombre: ((s.nombre || '') + ' ' + (s.apellido || '')).trim(), area: s.area, foto: s.foto_url || '' }));
+        return data.filter(s => _normArea(window.diarioAreaLogin(s.area)) === target).map(s => ({ id: s.id, nombre: ((s.nombre || '') + ' ' + (s.apellido || '')).trim(), area: s.area, foto: s.foto_url || '' }));
     } catch(e) { return []; }
 };
 
